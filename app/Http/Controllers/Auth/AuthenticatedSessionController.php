@@ -35,8 +35,7 @@ class AuthenticatedSessionController extends Controller
         return redirect()->route('admin.dashboard');
     }
 
-    // normal user → alumni form
-    return redirect()->route('profile.create');
+    return redirect()->route('dashboard');
 }
     /**
      * Destroy an authenticated session.
