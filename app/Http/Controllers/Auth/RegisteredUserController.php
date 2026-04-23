@@ -41,13 +41,14 @@ class RegisteredUserController extends Controller
 
         $password = Str::random(8);
 
-        $user = User::create([
+        User::create([
+            'name' => 'Alumni User',
             'email' => $request->email,
             'password' => Hash::make($password),
         ]);
 
         Mail::to($request->email)->send(new SendPasswordMail($password));
 
-        return redirect('/login')->with('status', 'Password has been sent to your email');
+        return redirect()->route('login')->with('status', 'A password has been sent to your email. Use it to log in.');
     }
 }
