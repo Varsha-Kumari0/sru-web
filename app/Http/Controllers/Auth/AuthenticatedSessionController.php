@@ -39,6 +39,9 @@ class AuthenticatedSessionController extends Controller
         return redirect()->route('profile.create');
     }
 
+    /**
+     * Destroy an authenticated session.
+     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
