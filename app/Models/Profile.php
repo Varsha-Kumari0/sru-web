@@ -25,6 +25,16 @@ class Profile extends Model
         'passing_year',
 
         'current_status',
-        'company'
+        'company',
+
+        'status',
     ];
+
+    /**
+     * Get the user that owns the profile.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
