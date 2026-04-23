@@ -438,6 +438,14 @@ const getColor  = (i) => COLORS[i % COLORS.length];
 window.addEventListener('DOMContentLoaded', () => {
     populateYearFilter();
     filterTable();
+
+    // Keep the admin dashboard on-screen when the browser back button is used.
+    // This prevents going back to the login page from the protected dashboard.
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', () => {
+        window.history.pushState(null, '', window.location.href);
+        window.location.reload();
+    });
 });
 
 // ── Year filter dropdown ──────────────────────────────────────────────────────
