@@ -18,9 +18,21 @@ Route::get('/', function () {
 });
 
 // Dashboard (default)
+use App\Models\Profile;
+use App\Models\Professional;
+
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
+    $user = auth()->user();
+
+    $profile = Profile::where('user_id', $user->id)->first();
+    $experiences = Professional::where('user_id', $user->id)
+        ->orderBy('from', 'desc')
+        ->get();
+
+    return view('dashboard', compact('profile', 'experiences'));
+
+})->middleware(['auth'])->name('dashboard');
 
 
 /*

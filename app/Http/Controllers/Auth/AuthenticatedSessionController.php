@@ -8,47 +8,44 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Models\Profile;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
     public function create(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
+    {
+        $request->authenticate();
+        $request->session()->regenerate();
 
-    $request->session()->regenerate();
+        $user = auth()->user();
 
-    $user = auth()->user();
-    
-    // admin redirect
-    if ($user && $user->role === 'admin') {
-        return redirect()->route('admin.dashboard');
+        // admin
+        if ($user && $user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // check profile
+        $profile = Profile::where('user_id', $user->id)->first();
+
+        if ($profile) {
+            return redirect()->route('dashboard');
+        }
+
+        return redirect()->route('profile.create');
     }
 
-    // normal user → alumni form
-    return redirect()->route('profile.create');
-}
-    /**
-     * Destroy an authenticated session.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login'); // better UX
     }
 }
