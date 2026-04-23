@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'name')) {
-                $table->string('name')->nullable();
-            }
+        Schema::table('profiles', function (Blueprint $table) {
+            $table->string('status')->default('pending');
         });
     }
 
@@ -23,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('name');
+        Schema::table('profiles', function (Blueprint $table) {
+            $table->dropColumn('status');
         });
     }
 };
