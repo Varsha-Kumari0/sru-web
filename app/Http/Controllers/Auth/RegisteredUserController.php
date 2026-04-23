@@ -12,6 +12,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendPasswordMail;
+>>>>>>> 8ee68d96137b7c70309db3b082c7dd2ac6ee0dbd
 
 class RegisteredUserController extends Controller
 {
@@ -28,6 +34,7 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
+<<<<<<< HEAD
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -47,5 +54,25 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));
+=======
+    
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email', 'unique:users'],
+        ]);
+
+        $password = Str::random(8);
+
+        $user = User::create([
+            'email' => $request->email,
+            'password' => Hash::make($password),
+        ]);
+
+        Mail::to($request->email)->send(new SendPasswordMail($password));
+
+        return redirect('/login')->with('status', 'Password has been sent to your email');
+>>>>>>> 8ee68d96137b7c70309db3b082c7dd2ac6ee0dbd
     }
 }
