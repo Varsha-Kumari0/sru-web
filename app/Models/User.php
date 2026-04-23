@@ -47,4 +47,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the user's profile.
+     */
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
+
+    /**
+     * Get the user's professional record.
+     */
+    public function professional()
+    {
+        return $this->hasOne(Professional::class);
+    }
+
+    /**     * Get the user's status from profile.
+     */
+    public function getStatusAttribute()
+    {
+        $status = $this->profile?->status ?? 'pending';
+        return ucfirst($status);
+    }
 }

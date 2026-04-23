@@ -74,6 +74,10 @@ class ProfileController extends Controller
      */
     public function storeProfile(Request $request)
 {
+
+if (Profile::where('user_id', auth()->id())->exists()) {
+    return redirect('/dashboard')->with('error', 'Profile already exists');
+}
     // 🔒 optional validation (recommended)
     $request->validate([
         'full_name' => 'required',
