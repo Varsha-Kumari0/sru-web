@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — Alumni Portal</title>
+    <title>SRU Admin Dashboard — Alumni Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* ── Custom properties not in Tailwind ── */
         :root {
-            --gold:      #c9a84c;
-            --gold-lt:   #e8c97a;
+            --gold:      #003366;
+            --gold-lt:   #005599;
             --surface:   #13161e;
             --card:      #181c26;
             --border:    #252a38;
@@ -108,7 +108,7 @@
     {{-- Logo --}}
     <div class="px-7 py-8" style="border-bottom:1px solid var(--border);">
         <h1 class="font-display text-xl font-bold" style="color:var(--gold-lt); letter-spacing:.02em; line-height:1.2;">
-            Alumni<br>Portal
+            SRU<br>Alumni
         </h1>
         <span class="text-xs font-semibold tracking-widest uppercase mt-1 block" style="color:#7a7f90;">
             Admin Control
@@ -137,7 +137,7 @@
                 <circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            All Alumni
+            All SRU Alumni
         </a>
 
         <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-5" style="color:#7a7f90;">Management</p>
@@ -147,7 +147,7 @@
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
-            Pending Approvals
+            Pending SRU Approvals
             @php $pendingCount = $users->where('status','Pending')->count(); @endphp
             @if($pendingCount > 0)
                 <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"
@@ -220,9 +220,9 @@
     <header class="sticky top-0 z-40 flex items-center justify-between px-9 py-5"
             style="background:var(--surface); border-bottom:1px solid var(--border);">
         <div>
-            <h2 class="font-display text-2xl font-semibold" style="letter-spacing:.01em;">Alumni Dashboard</h2>
+            <h2 class="font-display text-2xl font-semibold" style="letter-spacing:.01em;">SRU Alumni Dashboard</h2>
             <p class="text-xs mt-0.5" style="color:#7a7f90;">
-                {{ now()->format('l, d F Y') }} &mdash; Welcome back, {{ auth()->user()->name ?? 'Admin' }}
+                {{ now()->format('l, d F Y') }} &mdash; Welcome back to SRU, {{ auth()->user()->name ?? 'Admin' }}
             </p>
         </div>
         <div class="flex items-center gap-3">
@@ -241,7 +241,7 @@
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                Invite Alumni
+                Invite SRU Alumni
             </button>
         </div>
     </header>
@@ -261,8 +261,8 @@
 
             {{-- Stat Card helper macro (inline) --}}
             @foreach([
-                ['label'=>'Total Alumni',       'value'=> $totalCount,    'change'=>'+12 this month',      'changeColor'=>'#4caf7d', 'icon'=>'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75 circle cx=9 cy=7 r=4'],
-                ['label'=>'Active Members',     'value'=> $activeCount,   'change'=>'↑ 4.2% vs last month','changeColor'=>'#4caf7d', 'icon'=>'polyline points=9 11 12 14 22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
+                ['label'=>'Total SRU Alumni',       'value'=> $totalCount,    'change'=>'+12 this month',      'changeColor'=>'#4caf7d', 'icon'=>'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75 circle cx=9 cy=7 r=4'],
+                ['label'=>'Active SRU Members',     'value'=> $activeCount,   'change'=>'↑ 4.2% vs last month','changeColor'=>'#4caf7d', 'icon'=>'polyline points=9 11 12 14 22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
                 ['label'=>'Pending Approval',   'value'=> $pendingCount,  'change'=>'Needs review',        'changeColor'=>'#e8c97a', 'icon'=>'circle cx=12 cy=12 r=10 polyline points=12 6 12 12 16 14'],
                 ['label'=>'Graduation Batches', 'value'=> $yearsCount,    'change'=>'Across all years',    'changeColor'=>'#7a7f90', 'icon'=>'rect x=3 y=4 width=18 height=18 rx=2 M16 2v4 M8 2v4 M3 10h18'],
             ] as $stat)
@@ -284,7 +284,7 @@
             {{-- Table Header / Controls --}}
             <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5"
                  style="border-bottom:1px solid var(--border);">
-                <h3 class="font-display text-lg font-semibold">All Registered Alumni</h3>
+                <h3 class="font-display text-lg font-semibold">All Registered SRU Alumni</h3>
                 <div class="flex items-center gap-3 flex-wrap">
                     {{-- Search --}}
                     <div class="search-wrap flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-150"
@@ -292,7 +292,7 @@
                         <svg width="13" height="13" fill="none" stroke="#7a7f90" stroke-width="2" viewBox="0 0 24 24">
                             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
-                        <input type="text" id="searchInput" placeholder="Search alumni…"
+                        <input type="text" id="searchInput" placeholder="Search SRU alumni…"
                                oninput="filterTable()"
                                class="bg-transparent outline-none text-sm w-48"
                                style="color:#e8e6df; font-family:'DM Sans',sans-serif;"
@@ -322,7 +322,7 @@
                     <thead>
                         <tr>
                             @foreach([
-                                ['name',            'Alumni'],
+                                ['name',            'SRU Alumni'],
                                 ['department',      'Department'],
                                 ['graduation_year', 'Batch Year'],
                                 ['email',           'Email'],
@@ -345,7 +345,7 @@
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                     <circle cx="9" cy="7" r="4"/>
                                 </svg>
-                                <p class="text-sm">Loading alumni data…</p>
+                                <p class="text-sm">Loading SRU alumni data…</p>
                             </td>
                         </tr>
                     </tbody>
@@ -372,7 +372,7 @@
          style="background:var(--card); border:1px solid var(--border);">
         <div class="flex items-center justify-between px-6 py-5"
              style="border-bottom:1px solid var(--border);">
-            <h3 class="font-display text-lg font-semibold">Alumni Details</h3>
+            <h3 class="font-display text-lg font-semibold">SRU Alumni Details</h3>
             <button onclick="closeModal()"
                     class="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors duration-150 hover:text-white"
                     style="background:#252a38; color:#7a7f90;">✕</button>
@@ -521,7 +521,7 @@ function renderTable() {
             <svg style="margin:0 auto 12px" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
             </svg>
-            <p style="font-size:14px">No alumni match your filters.</p>
+            <p style="font-size:14px">No SRU alumni match your filters.</p>
         </td></tr>`;
     } else {
         tbody.innerHTML = slice.map(a => {
@@ -551,7 +551,7 @@ function renderTable() {
                         </div>
                         <div>
                             <div style="font-weight:600;font-size:14px;">${a.name}</div>
-                            <div style="font-size:11px;color:#7a7f90;">#ALM-${String(a.id).padStart(4,'0')}</div>
+                            <div style="font-size:11px;color:#7a7f90;">#SRU-${String(a.id).padStart(4,'0')}</div>
                         </div>
                     </div>
                 </td>
@@ -615,7 +615,7 @@ function renderTable() {
     }
 
     document.getElementById('paginationInfo').textContent =
-        `Showing ${Math.min(start + 1, total)}–${Math.min(start + perPage, total)} of ${total} alumni`;
+        `Showing ${Math.min(start + 1, total)}–${Math.min(start + perPage, total)} of ${total} SRU alumni`;
 
     // Pagination buttons
     const ctrl = document.getElementById('paginationControls');
@@ -663,7 +663,7 @@ function openModal(id) {
             </div>
             <div>
                 <div style="font-size:20px;font-weight:700;font-family:'Playfair Display',serif;">${a.name}</div>
-                <div style="font-size:12px;color:#7a7f90;margin-top:3px;">#ALM-${String(a.id).padStart(4,'0')}</div>
+                <div style="font-size:12px;color:#7a7f90;margin-top:3px;">#SRU-${String(a.id).padStart(4,'0')}</div>
             </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
@@ -725,7 +725,7 @@ function approveAlumni(id) {
 
 function removeAlumni(id) {
     const a = alumni.find(x => x.id === id);
-    if (!a || !confirm(`Remove ${a.name} from the registry? This cannot be undone.`)) return;
+    if (!a || !confirm(`Remove ${a.name} from the SRU registry? This cannot be undone.`)) return;
 
     // Send to Laravel backend via AJAX
     fetch(`/admin/alumni/${id}`, {
@@ -739,7 +739,7 @@ function removeAlumni(id) {
     alumni.splice(alumni.indexOf(a), 1);
     filtered = filtered.filter(x => x.id !== id);
     renderTable();
-    showToast(`${a.name} removed from registry`);
+    showToast(`${a.name} removed from SRU registry`);
 }
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
@@ -754,10 +754,10 @@ function exportCSV() {
     const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `alumni_export_${new Date().toISOString().slice(0,10)}.csv`;
+    link.download = `sru_alumni_export_${new Date().toISOString().slice(0,10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    showToast('CSV exported successfully');
+    showToast('SRU alumni CSV exported successfully');
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
