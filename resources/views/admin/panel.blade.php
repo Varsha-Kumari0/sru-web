@@ -410,17 +410,19 @@
 // This passes the $users collection from your controller directly into JS.
 // In your controller: $users = User::where('role','user')->get();
 
-const alumni = @json($users->map(fn($u) => [
-    'id'              => $u->id,
-    'name'            => $u->name,
-    'email'           => $u->email,
-    'phone'           => $u->phone         ?? '—',
-    'department'      => $u->department    ?? '—',
-    'graduation_year' => $u->graduation_year ?? '—',
-    'location'        => $u->location      ?? '—',
-    'status'          => $u->status        ?? 'Pending',
-    'created_at'      => $u->created_at,
-]));
+const alumni = {!! json_encode($users->map(function($u) {
+    return [
+        'id'              => $u->id,
+        'name'            => $u->name,
+        'email'           => $u->email,
+        'phone'           => $u->phone ?? '—',
+        'department'      => $u->department ?? '—',
+        'graduation_year' => $u->graduation_year ?? '—',
+        'location'        => $u->location ?? '—',
+        'status'          => $u->status ?? 'Pending',
+        'created_at'      => $u->created_at,
+    ];
+})) !!};
 
 // ── State ────────────────────────────────────────────────────────────────────
 let filtered    = [...alumni];

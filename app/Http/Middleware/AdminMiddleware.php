@@ -10,10 +10,23 @@ class AdminMiddleware
 {
     public function handle($request, Closure $next)
     {
-        if (auth()->user() && auth()->user()->role === 'admin') {
-        return $next($request);
+        if (!auth()->check()) {
+            return redirect('/admin/login');
         }
 
-        return redirect('/login');
+        $user = auth()->user();
+        
+        // Only allow users with 'admin' role
+        if ($user->role === 'admin') {
+            return $next($request);
+        }
+        
+        // If regular user, redirect to user dashboard
+        if ($user->role === 'user') {
+            return redirect('/dashboard');
+        }
+        
+        // For any other role, redirect to login
+        return redirect('/admin/login');
     }
 }
