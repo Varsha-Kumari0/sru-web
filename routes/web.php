@@ -9,10 +9,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-<<<<<<< HEAD
 // Admin login page
 Route::get('/admin/login', function () {
-    return view('admin.login');
+    return view('auth.login');
 });
 
 // Protected admin dashboard
@@ -22,10 +21,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         $users = User::where('role', 'user')->get(); // alumni only
 
         return view('admin.panel', compact('users'));
-    });
+    })->name('admin.dashboard');
 });
-});
-=======
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -37,4 +35,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
->>>>>>> 8ee68d96137b7c70309db3b082c7dd2ac6ee0dbd
