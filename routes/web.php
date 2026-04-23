@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
-use App\Models\Profile;
 use App\Http\Controllers\AdminController;
 
 /*
