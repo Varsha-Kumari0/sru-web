@@ -71,6 +71,8 @@ Route::get('/admin/login', function () {
 // Admin dashboard (protected)
 Route::middleware(['auth', 'admin'])->group(function () {
 
+    Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
+
     Route::get('/admin/dashboard', function () {
 
         $users = User::where('role', 'user')->with('profile', 'professional')->get(); // only alumni users

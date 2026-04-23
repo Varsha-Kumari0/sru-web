@@ -769,12 +769,22 @@ function removeAlumni(id) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
             'Accept': 'application/json',
         }
-    }).catch(err => console.warn('Backend not connected yet:', err));
-
-    alumni.splice(alumni.indexOf(a), 1);
-    filtered = filtered.filter(x => x.id !== id);
-    renderTable();
-    showToast(`${a.name} removed from SRU registry`);
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alumni.splice(alumni.indexOf(a), 1);
+            filtered = filtered.filter(x => x.id !== id);
+            renderTable();
+            showToast(`${a.name} removed from SRU registry`);
+        } else {
+            showToast(`✗ Failed to delete: ${data.message}`);
+        }
+    })
+    .catch(err => {
+        console.warn('Backend error:', err);
+        showToast('✗ Failed to delete alumni');
+    });
 }
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
