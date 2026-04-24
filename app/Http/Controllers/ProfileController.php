@@ -66,7 +66,16 @@ class ProfileController extends Controller
      */
     public function createProfile()
     {
-        return view('profile.create');
+        $selectDegree = [
+        "BTech" => ["CSE", "ECE", "Mechanical", "Civil"],
+        "BSc" => ["Physics", "Chemistry", "Maths"],
+        "BCom" => ["General", "Honours"],
+        "BCA" => ["Computer Applications"],
+        "Business" => ["MBA Finance", "MBA Marketing"],
+        "Agriculture" => ["Agri Science"]
+    ];
+
+    return view('profile.create', compact('selectDegree'));
     }
 
     /**
@@ -76,7 +85,7 @@ class ProfileController extends Controller
     {
         // ❌ prevent duplicate profile
         if (Profile::where('user_id', auth()->id())->exists()) {
-            return redirect('/dashboard')->with('error', 'Profile already exists');
+            return redirect()->route('profile')->with('error', 'Profile already exists');
         }
 
         // ✅ VALIDATION
@@ -146,7 +155,7 @@ class ProfileController extends Controller
             }
         }
 
-        return redirect('/dashboard')->with('success', 'Profile created successfully');
+        return redirect()->route('profile')->with('success', 'Profile created successfully');
     }
 
     /**

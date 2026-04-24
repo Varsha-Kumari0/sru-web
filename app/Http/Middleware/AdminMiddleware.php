@@ -21,9 +21,9 @@ class AdminMiddleware
             return $next($request);
         }
         
-        // If regular user, redirect to user dashboard
+        // If regular user, redirect to profile
         if ($user->role === 'user') {
-            return redirect('/dashboard');
+            return redirect('/profile');
         }
         
         // For any other role, redirect to login
