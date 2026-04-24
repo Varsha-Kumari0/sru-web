@@ -67,9 +67,35 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
 
-        $users = User::where('role', 'user')->get();
+        $users = User::where('role', 'user')
+            ->with(['profile', 'professional'])
+            ->get();
 
-        return view('admin.panel', compact('users'));
+        $totalCount = $users->count();
+        $activeCount = $users->filter(function ($user) {
+            return strtolower($user->profile?->status ?? '') === 'active';
+        })->count();
+        $pendingCount = $users->filter(function ($user) {
+            return strtolower($user->profile?->status ?? 'pending') === 'pending';
+        })->count();
+        $yearsCount = $users
+            ->pluck('profile.passing_year')
+            ->filter(fn ($year) => !empty($year) && $year !== '—')
+            ->unique()
+            ->count();
+
+        $totalChange = 'All time';
+        $activeChange = 'Verified members';
+
+        return view('admin.panel', compact(
+            'users',
+            'totalCount',
+            'activeCount',
+            'pendingCount',
+            'yearsCount',
+            'totalChange',
+            'activeChange'
+        ));
 
     })->name('admin.dashboard');
 
