@@ -63,11 +63,6 @@
             transition: transform 0.25s ease;
         }
 
-        .badge-pending { animation: pendingPulse 2.5s ease-in-out infinite; }
-        @keyframes pendingPulse {
-            0%, 100% { opacity: 1; }
-            50%       { opacity: 0.65; }
-        }
     </style>
 </head>
 
@@ -236,14 +231,6 @@
                                class="bg-transparent outline-none text-sm w-48 h-5 border-none text-slate-900"
                                placeholder-style="color:#7a7f90">
                     </div>
-                    {{-- Status Filter --}}
-                    <select id="statusFilter" onchange="filterTable()"
-                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150 bg-white border border-slate-300 text-slate-500">
-                        <option value="">All Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
                     {{-- Year Filter --}}
                     <select id="yearFilter" onchange="filterTable()"
                             class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150 bg-white border border-slate-300 text-slate-500">
@@ -262,7 +249,6 @@
                                 ['department',      'Department'],
                                 ['graduation_year', 'Graduation Year'],
                                 ['email',           'Email'],
-                                ['status',          'Status'],
                                 ['created_at',      'Registered'],
                                 [null,              'Actions'],
                             ] as [$key, $label])
@@ -275,7 +261,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="7" class="py-16 text-center text-slate-500">
+                            <td colspan="6" class="py-16 text-center text-slate-500">
                                 <svg class="mx-auto mb-3" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                     <circle cx="9" cy="7" r="4"/>
@@ -343,7 +329,6 @@ const alumni = {!! json_encode($users->map(function($u) {
         'department'      => $u->profile?->branch ?? '—',
         'graduation_year' => $u->profile?->passing_year ?? '—',
         'location'        => $u->professional?->location ?? '—',
-        'status'          => ucfirst($u->profile?->status ?? 'pending'),
         'created_at'      => $u->created_at,
         // Profile fields
         'city'            => $u->profile?->city ?? '—',
@@ -401,7 +386,6 @@ function populateYearFilter() {
 // ── Filter ───────────────────────────────────────────────────────────────────
 function filterTable() {
     const q      = document.getElementById('searchInput').value.toLowerCase();
-    const status = document.getElementById('statusFilter').value;
     const year   = document.getElementById('yearFilter').value;
 
     filtered = alumni.filter(a => {
@@ -410,9 +394,8 @@ function filterTable() {
             a.email.toLowerCase().includes(q) ||
             (a.department && a.department.toLowerCase().includes(q)) ||
             String(a.graduation_year).includes(q);
-        const matchS = !status || a.status === status;
         const matchY = !year   || a.graduation_year == year;
-        return matchQ && matchS && matchY;
+        return matchQ && matchY;
     });
 
     currentPage = 1;
@@ -428,7 +411,7 @@ function sortTable(key) {
         th.classList.remove('sort-asc', 'sort-desc');
     });
 
-    const headers = ['name', 'department', 'graduation_year', 'email', 'status', 'created_at'];
+    const headers = ['name', 'department', 'graduation_year', 'email', 'created_at'];
     const idx = headers.indexOf(key);
     if (idx >= 0) {
         const ths = document.querySelectorAll('thead th');
@@ -455,7 +438,7 @@ function renderTable() {
     const slice = filtered.slice(start, start + perPage);
 
     if (slice.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="padding:60px 0; text-align:center; color:#7a7f90;">
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:60px 0; text-align:center; color:#7a7f90;">
             <svg style="margin:0 auto 12px" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
             </svg>
@@ -465,12 +448,6 @@ function renderTable() {
         tbody.innerHTML = slice.map(a => {
             const initials  = (a.full_name && a.full_name !== '—' ? a.full_name : a.name).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
             const color     = getColor(a.id);
-            const badgeStyles = {
-                Active:   'background:rgba(76,175,125,.15); color:#4caf7d;',
-                Pending:  'background:rgba(201,168,76,.15);  color:#e8c97a;',
-                Inactive: 'background:rgba(122,127,144,.12); color:#7a7f90;',
-            };
-            const badge = badgeStyles[a.status] || badgeStyles.Inactive;
             const date  = a.created_at
                 ? new Date(a.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })
                 : '—';
@@ -500,14 +477,6 @@ function renderTable() {
                 <td style="padding:16px 20px;font-size:13.5px;vertical-align:middle;">${a.department}</td>
                 <td style="padding:16px 20px;font-size:13.5px;vertical-align:middle;">${a.graduation_year}</td>
                 <td style="padding:16px 20px;font-size:13.5px;vertical-align:middle;color:#7a7f90;">${a.email}</td>
-
-                <td style="padding:16px 20px;vertical-align:middle;">
-                    <span class="${a.status === 'Pending' ? 'badge-pending' : ''}"
-                          style="${badge} display:inline-flex;align-items:center;padding:3px 10px;
-                                 border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.04em;">
-                        ${a.status}
-                    </span>
-                </td>
 
                 <td style="padding:16px 20px;font-size:13px;color:#7a7f90;vertical-align:middle;">${date}</td>
 
@@ -589,12 +558,6 @@ function openModal(id) {
     const displayName = (a.full_name && a.full_name !== '—') ? a.full_name : a.name;
     const color    = getColor(a.id);
     const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-    const badgeStyles = {
-        Active:   'background:rgba(76,175,125,.15); color:#4caf7d;',
-        Pending:  'background:rgba(201,168,76,.15);  color:#e8c97a;',
-        Inactive: 'background:rgba(122,127,144,.12); color:#7a7f90;',
-    };
-    const badge = badgeStyles[a.status] || badgeStyles.Inactive;
 
     document.getElementById('modalContent').innerHTML = `
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
@@ -627,7 +590,6 @@ function openModal(id) {
                 ['Work From',       a.from],
                 ['Work To',         a.to],
                 ['Work Location',   a.pro_location],
-                ['Status',          `<span style="${badge};display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">${a.status}</span>`],
                 ['Registered',      a.created_at ? new Date(a.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : '—'],
               ].map(([label, val]) => `
                                 <div style="background:#e4e5e6;border-radius:10px;padding:14px 16px;">
@@ -682,10 +644,10 @@ function removeAlumni(id) {
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV() {
-    const headers = ['ID','Name','Email','Phone','Department','Graduation Year','Status','Location','Registered'];
+    const headers = ['ID','Name','Email','Phone','Department','Graduation Year','Location','Registered'];
     const rows = alumni.map(a => [
         a.id, a.name, a.email, a.phone, a.department,
-        a.graduation_year, a.status, a.location, a.created_at
+        a.graduation_year, a.location, a.created_at
     ]);
     const csv  = [headers, ...rows].map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });

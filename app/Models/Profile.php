@@ -29,8 +29,6 @@ class Profile extends Model
 
     'current_status',
     'company',
-
-    'status',
 ];
     /**
      * Get the user that owns the profile.

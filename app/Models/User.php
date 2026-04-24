@@ -64,12 +64,4 @@ class User extends Authenticatable
     {
         return $this->hasOne(Professional::class);
     }
-
-    /**     * Get the user's status from profile.
-     */
-    public function getStatusAttribute()
-    {
-        $status = $this->profile?->status ?? 'pending';
-        return ucfirst($status);
-    }
 }

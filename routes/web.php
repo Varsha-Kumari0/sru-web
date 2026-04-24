@@ -74,7 +74,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         $totalCount = $users->count();
         $activeCount = $users->filter(function ($user) {
-            return strtolower($user->profile?->status ?? '') === 'active';
+            return !empty($user->profile?->current_status);
         })->count();
         $yearsCount = $users
             ->pluck('profile.passing_year')
@@ -83,7 +83,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->count();
 
         $totalChange = 'All time';
-        $activeChange = 'Verified members';
+    $activeChange = 'With current status';
 
         return view('admin.panel', compact(
             'users',
