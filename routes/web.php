@@ -39,7 +39,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/store', [ProfileController::class, 'storeProfile'])->name('profile.store');
 
     // ✅ EDIT PROFILE (FIXED 🔥)
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/edit', [ProfileController::class, 'editProfile'])->name('profile.edit');
 
     // ✅ UPDATE PROFILE (FIXED 🔥)
     Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
