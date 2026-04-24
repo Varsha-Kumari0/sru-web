@@ -16,18 +16,18 @@ Route::get('/', function () {
 });
 
 
-// 📊 Dashboard (after login)
+// 📊 Profile (after login)
 use App\Models\Profile;
 use App\Models\Professional;
 
-Route::get('/dashboard', function () {
+Route::get('/profile', function () {
 
     $profile = Profile::where('user_id', auth()->id())->first();
     $experiences = Professional::where('user_id', auth()->id())->get();
 
-    return view('dashboard', compact('profile', 'experiences'));
+    return view('profile.profile', compact('profile', 'experiences'));
 
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth'])->name('profile');
 
 // 🔐 AUTH REQUIRED ROUTES
 Route::middleware(['auth'])->group(function () {
