@@ -8,7 +8,7 @@
 
     <h2 class="text-3xl font-bold mb-6 text-gray-800">Create Profile</h2>
 
-    <form method="POST" action="/profile/store">
+    <form method="POST" action="/profile/store" enctype="multipart/form-data">
         @csrf
 
         <!-- BASIC DETAILS -->
@@ -90,6 +90,15 @@
                 </select>
             </div>
 
+        </div>
+
+        <!-- PROFILE PHOTO -->
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+                Profile Photo
+            </label>
+            <input type="file" name="profile_photo"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
         </div>
 
         <!-- PASSING YEAR -->
