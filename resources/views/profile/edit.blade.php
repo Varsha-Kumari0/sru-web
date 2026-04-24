@@ -16,7 +16,7 @@
         @endif
 
         <form id="profileForm" method="POST" action="/profile/update" enctype="multipart/form-data">
-            @csrf
+        @csrf
 
             <!-- 🔴 GLOBAL ERRORS -->
             @php
