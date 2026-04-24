@@ -1,27 +1,63 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Password</title>
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex items-center justify-center font-sans">
+
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+
+        <!-- Header -->
+        <div class="bg-pink-600 text-white text-center py-5">
+            <h2 class="text-xl font-bold">Confirm Password</h2>
+            <p class="text-sm opacity-90">Secure Area Access</p>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6">
+
+            <!-- Info Text -->
+            <p class="text-sm text-gray-600 mb-4 text-center">
+                This is a secure area. Please confirm your password to continue.
+            </p>
+
+            <!-- Form -->
+            <form method="POST" action="{{ route('password.confirm') }}">
+                @csrf
+
+                <!-- Password -->
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700">Password</label>
+
+                    <input 
+                        type="password" 
+                        name="password"
+                        required
+                        class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    >
+
+                    @error('password')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Button -->
+                <button 
+                    type="submit"
+                    class="w-full bg-pink-600 hover:bg-pink-800 text-white py-2 rounded-md font-semibold transition duration-200"
+                >
+                    Confirm
+                </button>
+
+            </form>
+
+        </div>
     </div>
 
-    <form method="POST" action="{{ route('password.confirm') }}">
-        @csrf
-
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+</body>
+</html>
