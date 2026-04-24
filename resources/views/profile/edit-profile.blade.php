@@ -8,63 +8,102 @@
 
         <h2 class="text-2xl font-semibold mb-6">Edit Profile</h2>
 
-       <form id="profileForm" method="POST" action="/profile/update">
+        <form method="POST" action="/profile/update" enctype="multipart/form-data">
             @csrf
 
-            <!-- 🔴 GLOBAL ERRORS (ONLY NON-URL) -->
-           @php
-    $filteredErrors = collect($errors->all())->filter(fn($e) => !str_contains($e, 'URL'));
-@endphp
-
-@if ($filteredErrors->count())
-    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-        <ul class="list-disc ml-5">
-            @foreach ($filteredErrors as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+            <!-- 🔴 GLOBAL ERRORS -->
+            @if ($errors->any())
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <ul class="list-disc ml-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <!-- 🔒 LOCKED DETAILS -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
                 <input value="{{ $profile->full_name }}" class="input bg-gray-100" disabled>
                 <input value="{{ $profile->mobile }}" class="input bg-gray-100" disabled>
-
                 <input value="{{ auth()->user()->email }}" class="input bg-gray-100" disabled>
                 <input value="{{ $profile->degree }}" class="input bg-gray-100" disabled>
-
                 <input value="{{ $profile->branch }}" class="input bg-gray-100" disabled>
                 <input value="{{ $profile->passing_year }}" class="input bg-gray-100" disabled>
 
             </div>
 
-            <!-- ✏️ EDITABLE -->
+            <!-- ✏️ EDITABLE DETAILS -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <input name="city" value="{{ old('city', $profile->city) }}" class="input" placeholder="City">
-                <input name="country" value="{{ old('country', $profile->country) }}" class="input" placeholder="Country">
-
+                <!-- CITY -->
                 <div>
-                    <input name="linkedin" value="{{ old('linkedin', $profile->linkedin) }}" class="input" placeholder="LinkedIn">
+                    <input name="city" value="{{ old('city', $profile->city) }}" 
+                        class="input @error('city') border-red-500 @enderror"
+                        placeholder="City">
+                    @error('city')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
+                <!-- COUNTRY -->
                 <div>
-                    <input name="instagram" value="{{ old('instagram', $profile->instagram) }}" class="input" placeholder="Instagram">
+                    <input name="country" value="{{ old('country', $profile->country) }}" 
+                        class="input @error('country') border-red-500 @enderror"
+                        placeholder="Country">
+                    @error('country')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
+                <!-- LINKEDIN -->
                 <div>
-                    <input name="facebook" value="{{ old('facebook', $profile->facebook) }}" class="input" placeholder="Facebook">
+                    <input name="linkedin" 
+                        value="{{ old('linkedin', $profile->linkedin) }}" 
+                        class="input @error('linkedin') border-red-500 @enderror"
+                        placeholder="LinkedIn URL">
+                    @error('linkedin')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
+                <!-- INSTAGRAM -->
                 <div>
-                    <input name="twitter" value="{{ old('twitter', $profile->twitter) }}" class="input" placeholder="Twitter / X">
+                    <input name="instagram" 
+                        value="{{ old('instagram', $profile->instagram) }}" 
+                        class="input @error('instagram') border-red-500 @enderror"
+                        placeholder="Instagram URL">
+                    @error('instagram')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- FACEBOOK -->
+                <div>
+                    <input name="facebook" 
+                        value="{{ old('facebook', $profile->facebook) }}" 
+                        class="input @error('facebook') border-red-500 @enderror"
+                        placeholder="Facebook URL">
+                    @error('facebook')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- TWITTER -->
+                <div>
+                    <input name="twitter" 
+                        value="{{ old('twitter', $profile->twitter) }}" 
+                        class="input @error('twitter') border-red-500 @enderror"
+                        placeholder="Twitter / X URL">
+                    @error('twitter')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
             </div>
 
-            <!-- 💼 EXPERIENCE -->
+            <!-- EXPERIENCE -->
             <div class="mt-10">
                 <h3 class="text-lg font-semibold text-gray-700 mb-4">
                     Professional Experience
@@ -76,19 +115,12 @@
                     <div class="bg-gray-50 border rounded p-5 mb-4">
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                             <input name="organization[]" value="{{ $exp->organization }}" class="input" placeholder="Organization">
-
-                            <input name="role[]" value="{{ $exp->role }}" class="input" placeholder="Role">
-
+                            <input name="role[]" value="{{ $exp->role }}" class="input" placeholder="Role / Designation">
                             <input name="industry[]" value="{{ $exp->industry }}" class="input" placeholder="Industry">
-
                             <input name="location_exp[]" value="{{ $exp->location }}" class="input" placeholder="Location">
-
                             <input type="date" name="from[]" value="{{ $exp->from }}" class="input">
-
                             <input type="date" name="to[]" value="{{ $exp->to }}" class="input">
-
                         </div>
 
                         <button type="button" onclick="this.parentElement.remove()" 
@@ -120,7 +152,7 @@
 
 </div>
 
-<!-- 🎨 STYLE -->
+<!-- STYLES -->
 <style>
 .input {
     width: 100%;
@@ -130,7 +162,7 @@
 }
 </style>
 
-<!-- ➕ ADD EXPERIENCE -->
+<!-- EXPERIENCE JS -->
 <script>
 function addExperience() {
     let container = document.getElementById('experienceContainer');
@@ -141,7 +173,7 @@ function addExperience() {
     div.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input name="organization[]" class="input" placeholder="Organization">
-            <input name="role[]" class="input" placeholder="Role">
+            <input name="role[]" class="input" placeholder="Role / Designation">
             <input name="industry[]" class="input" placeholder="Industry">
             <input name="location_exp[]" class="input" placeholder="Location">
             <input type="date" name="from[]" class="input">
@@ -158,7 +190,7 @@ function addExperience() {
 }
 </script>
 
-<!-- ⚡ LIVE VALIDATION -->
+<!-- 🔥 LIVE VALIDATION -->
 <script>
 function validateField(input, regex, message) {
     let existingError = input.parentElement.querySelector('.live-error');
@@ -168,6 +200,7 @@ function validateField(input, regex, message) {
     input.classList.remove('border-red-500', 'border-green-500');
 
     let value = input.value.trim();
+
     if (value === '') return;
 
     if (!regex.test(value)) {
@@ -186,22 +219,10 @@ function validateField(input, regex, message) {
 document.addEventListener('DOMContentLoaded', function () {
 
     const rules = {
-        linkedin: {
-            regex: /^https?:\/\/(www\.)?linkedin\.com/,
-            message: "Enter valid LinkedIn URL"
-        },
-        instagram: {
-            regex: /^https?:\/\/(www\.)?instagram\.com/,
-            message: "Enter valid Instagram URL"
-        },
-        facebook: {
-            regex: /^https?:\/\/(www\.)?facebook\.com/,
-            message: "Enter valid Facebook URL"
-        },
-        twitter: {
-            regex: /^https?:\/\/(www\.)?(twitter\.com|x\.com)/,
-            message: "Enter valid Twitter/X URL"
-        }
+        linkedin: { regex: /^https?:\/\/(www\.)?linkedin\.com/, message: "Enter valid LinkedIn URL" },
+        instagram: { regex: /^https?:\/\/(www\.)?instagram\.com/, message: "Enter valid Instagram URL" },
+        facebook: { regex: /^https?:\/\/(www\.)?facebook\.com/, message: "Enter valid Facebook URL" },
+        twitter: { regex: /^https?:\/\/(www\.)?(twitter\.com|x\.com)/, message: "Enter valid Twitter/X URL" }
     };
 
     Object.keys(rules).forEach(name => {
@@ -210,45 +231,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 validateField(input, rules[name].regex, rules[name].message);
             });
         });
-    });
-
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const form = document.getElementById("profileForm");
-
-    form.addEventListener("submit", function(e) {
-
-        const rules = {
-            linkedin: /^https?:\/\/(www\.)?linkedin\.com/,
-            instagram: /^https?:\/\/(www\.)?instagram\.com/,
-            facebook: /^https?:\/\/(www\.)?facebook\.com/,
-            twitter: /^https?:\/\/(www\.)?(twitter\.com|x\.com)/
-        };
-
-        let isValid = true;
-
-        Object.keys(rules).forEach(name => {
-            const input = document.querySelector(`input[name="${name}"]`);
-
-            if (input) {
-                let value = input.value.trim();
-
-                if (value !== '' && !rules[name].test(value)) {
-                    isValid = false;
-                    input.classList.add('border-red-500');
-                }
-            }
-        });
-
-        if (!isValid) {
-            e.preventDefault();
-            alert("❌ Please enter valid social media URLs before submitting.");
-        }
-
     });
 
 });

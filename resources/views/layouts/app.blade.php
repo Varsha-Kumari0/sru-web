@@ -5,22 +5,26 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gradient-to-br from-blue-700 to-blue-500 min-h-screen">
+<body class="bg-gray-100 min-h-screen">
 
     <!-- NAVBAR -->
-    <nav class="bg-white shadow-md p-4 flex justify-between">
-        <h1 class="text-blue-700 font-semibold text-lg">SRU Alumni</h1>
+    <nav class="bg-[#2f4f8f] text-white px-6 py-3 flex justify-between items-center">
 
-        <div>
-            <a href="/dashboard" class="mr-4 text-gray-700">Dashboard</a>
-            <a href="/profile/create" class="mr-4 text-gray-700">Profile</a>
+    <div class="font-semibold text-lg">
+        SRU Alumni
+    </div>
 
-            <form method="POST" action="/logout" class="inline">
-                @csrf
-                <button class="text-red-500">Logout</button>
-            </form>
-        </div>
-    </nav>
+    <div class="space-x-6 text-sm">
+        <a href="/dashboard" class="hover:underline">Dashboard</a>
+        <a href="/profile/edit" class="hover:underline">Profile</a>
+
+        <form method="POST" action="/logout" class="inline">
+            @csrf
+            <button class="hover:underline">Logout</button>
+        </form>
+    </div>
+
+</nav>
 
     <!-- CONTENT -->
     <div class="p-6">
