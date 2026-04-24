@@ -14,7 +14,7 @@
         <div class="flex items-center mb-10">
 
             <img 
-                src="{{ $profile->profile_image ? asset('storage/'.$profile->profile_image) : 'https://via.placeholder.com/80' }}"
+                src="{{ $profile->profile_photo ? asset('storage/'.$profile->profile_photo) : 'data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 80 80\"><rect width=\"80\" height=\"80\" rx=\"40\" fill=\"%23dbeafe\"/><circle cx=\"40\" cy=\"30\" r=\"14\" fill=\"%2393c5fd\"/><path d=\"M18 68c4-14 16-22 22-22s18 8 22 22\" fill=\"%2393c5fd\"/></svg>' }}"
                 class="w-20 h-20 rounded-full border-4 border-blue-500 object-cover shadow"
             >
 

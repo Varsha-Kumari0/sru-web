@@ -220,6 +220,6 @@ class ProfileController extends Controller
             }
         }
 
-        return redirect('/dashboard')->with('success', 'Profile updated successfully');
+        return redirect()->route('profile')->with('success', 'Profile updated successfully');
     }
 }
