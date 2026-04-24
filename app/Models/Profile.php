@@ -6,33 +6,32 @@ use Illuminate\Database\Eloquent\Model;
 
 class Profile extends Model
 {
-    protected $fillable = [
+   protected $fillable = [
 
-        'user_id',
+    'user_id',
 
-        'profile_image',
+    'profile_photo', // ✅ keep ONLY this
 
-        'full_name',
-        'mobile',
+    'full_name',
+    'mobile',
 
-        'city',
-        'country',
+    'city',
+    'country',
 
-        'linkedin',
-        'facebook',
-        'instagram',
-        'twitter',
+    'linkedin',
+    'facebook',
+    'instagram',
+    'twitter',
 
-        'degree',
-        'branch',
-        'passing_year',
+    'degree',
+    'branch',
+    'passing_year',
 
-        'current_status',
-        'company',
+    'current_status',
+    'company',
 
-        'status',
-    ];
-
+    'status',
+];
     /**
      * Get the user that owns the profile.
      */

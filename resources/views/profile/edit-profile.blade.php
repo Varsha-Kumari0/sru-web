@@ -8,102 +8,113 @@
 
         <h2 class="text-2xl font-semibold mb-6">Edit Profile</h2>
 
-        <form method="POST" action="/profile/update" enctype="multipart/form-data">
+        <form id="profileForm" method="POST" action="/profile/update" enctype="multipart/form-data">
             @csrf
 
             <!-- 🔴 GLOBAL ERRORS -->
-            @if ($errors->any())
+            @php
+                $filteredErrors = collect($errors->all())->filter(fn($e) => !str_contains($e, 'URL'));
+            @endphp
+
+            @if ($filteredErrors->count())
                 <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                     <ul class="list-disc ml-5">
-                        @foreach ($errors->all() as $error)
+                        @foreach ($filteredErrors as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
             @endif
 
+            <!-- 🖼 PROFILE IMAGE -->
+            <div class="mb-6 text-center">
+
+                <label class="block text-sm font-semibold text-gray-600 mb-2">
+                    Profile Picture
+                </label>
+
+                @if($profile->profile_photo)
+                    <img 
+                        src="{{ asset('storage/'.$profile->profile_photo) }}" 
+                        class="w-24 h-24 rounded-full mx-auto mb-3 object-cover border"
+                    >
+                @endif
+
+                <input type="file" name="profile_photo" class="text-sm">
+
+            </div>
+
             <!-- 🔒 LOCKED DETAILS -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
-                <input value="{{ $profile->full_name }}" class="input bg-gray-100" disabled>
-                <input value="{{ $profile->mobile }}" class="input bg-gray-100" disabled>
-                <input value="{{ auth()->user()->email }}" class="input bg-gray-100" disabled>
-                <input value="{{ $profile->degree }}" class="input bg-gray-100" disabled>
-                <input value="{{ $profile->branch }}" class="input bg-gray-100" disabled>
-                <input value="{{ $profile->passing_year }}" class="input bg-gray-100" disabled>
+                <div>
+                    <label class="label">Full Name</label>
+                    <input value="{{ $profile->full_name }}" class="input bg-gray-100" disabled>
+                </div>
+
+                <div>
+                    <label class="label">Mobile Number</label>
+                    <input value="{{ $profile->mobile }}" class="input bg-gray-100" disabled>
+                </div>
+
+                <div>
+                    <label class="label">Email</label>
+                    <input value="{{ auth()->user()->email }}" class="input bg-gray-100" disabled>
+                </div>
+
+                <div>
+                    <label class="label">Degree</label>
+                    <input value="{{ $profile->degree }}" class="input bg-gray-100" disabled>
+                </div>
+
+                <div>
+                    <label class="label">Branch</label>
+                    <input value="{{ $profile->branch }}" class="input bg-gray-100" disabled>
+                </div>
+
+                <div>
+                    <label class="label">Passing Year</label>
+                    <input value="{{ $profile->passing_year }}" class="input bg-gray-100" disabled>
+                </div>
 
             </div>
 
-            <!-- ✏️ EDITABLE DETAILS -->
+            <!-- ✏️ EDITABLE -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <!-- CITY -->
                 <div>
-                    <input name="city" value="{{ old('city', $profile->city) }}" 
-                        class="input @error('city') border-red-500 @enderror"
-                        placeholder="City">
-                    @error('city')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label class="label">City</label>
+                    <input name="city" value="{{ old('city', $profile->city) }}" class="input">
                 </div>
 
-                <!-- COUNTRY -->
                 <div>
-                    <input name="country" value="{{ old('country', $profile->country) }}" 
-                        class="input @error('country') border-red-500 @enderror"
-                        placeholder="Country">
-                    @error('country')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label class="label">Country</label>
+                    <input name="country" value="{{ old('country', $profile->country) }}" class="input">
                 </div>
 
-                <!-- LINKEDIN -->
                 <div>
-                    <input name="linkedin" 
-                        value="{{ old('linkedin', $profile->linkedin) }}" 
-                        class="input @error('linkedin') border-red-500 @enderror"
-                        placeholder="LinkedIn URL">
-                    @error('linkedin')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label class="label">LinkedIn URL</label>
+                    <input name="linkedin" value="{{ old('linkedin', $profile->linkedin) }}" class="input">
                 </div>
 
-                <!-- INSTAGRAM -->
                 <div>
-                    <input name="instagram" 
-                        value="{{ old('instagram', $profile->instagram) }}" 
-                        class="input @error('instagram') border-red-500 @enderror"
-                        placeholder="Instagram URL">
-                    @error('instagram')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label class="label">Instagram URL</label>
+                    <input name="instagram" value="{{ old('instagram', $profile->instagram) }}" class="input">
                 </div>
 
-                <!-- FACEBOOK -->
                 <div>
-                    <input name="facebook" 
-                        value="{{ old('facebook', $profile->facebook) }}" 
-                        class="input @error('facebook') border-red-500 @enderror"
-                        placeholder="Facebook URL">
-                    @error('facebook')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label class="label">Facebook URL</label>
+                    <input name="facebook" value="{{ old('facebook', $profile->facebook) }}" class="input">
                 </div>
 
-                <!-- TWITTER -->
                 <div>
-                    <input name="twitter" 
-                        value="{{ old('twitter', $profile->twitter) }}" 
-                        class="input @error('twitter') border-red-500 @enderror"
-                        placeholder="Twitter / X URL">
-                    @error('twitter')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <label class="label">Twitter / X URL</label>
+                    <input name="twitter" value="{{ old('twitter', $profile->twitter) }}" class="input">
                 </div>
 
             </div>
 
-            <!-- EXPERIENCE -->
+            <!-- 💼 EXPERIENCE -->
             <div class="mt-10">
                 <h3 class="text-lg font-semibold text-gray-700 mb-4">
                     Professional Experience
@@ -115,12 +126,37 @@
                     <div class="bg-gray-50 border rounded p-5 mb-4">
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input name="organization[]" value="{{ $exp->organization }}" class="input" placeholder="Organization">
-                            <input name="role[]" value="{{ $exp->role }}" class="input" placeholder="Role / Designation">
-                            <input name="industry[]" value="{{ $exp->industry }}" class="input" placeholder="Industry">
-                            <input name="location_exp[]" value="{{ $exp->location }}" class="input" placeholder="Location">
-                            <input type="date" name="from[]" value="{{ $exp->from }}" class="input">
-                            <input type="date" name="to[]" value="{{ $exp->to }}" class="input">
+
+                            <div>
+                                <label class="label">Organization</label>
+                                <input name="organization[]" value="{{ $exp->organization }}" class="input">
+                            </div>
+
+                            <div>
+                                <label class="label">Role</label>
+                                <input name="role[]" value="{{ $exp->role }}" class="input">
+                            </div>
+
+                            <div>
+                                <label class="label">Industry</label>
+                                <input name="industry[]" value="{{ $exp->industry }}" class="input">
+                            </div>
+
+                            <div>
+                                <label class="label">Location</label>
+                                <input name="location_exp[]" value="{{ $exp->location }}" class="input">
+                            </div>
+
+                            <div>
+                                <label class="label">From</label>
+                                <input type="date" name="from[]" value="{{ $exp->from }}" class="input">
+                            </div>
+
+                            <div>
+                                <label class="label">To</label>
+                                <input type="date" name="to[]" value="{{ $exp->to }}" class="input">
+                            </div>
+
                         </div>
 
                         <button type="button" onclick="this.parentElement.remove()" 
@@ -152,7 +188,7 @@
 
 </div>
 
-<!-- STYLES -->
+<!-- 🎨 STYLE -->
 <style>
 .input {
     width: 100%;
@@ -160,80 +196,13 @@
     border: 1px solid #ccc;
     border-radius: 6px;
 }
+.label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 4px;
+}
 </style>
-
-<!-- EXPERIENCE JS -->
-<script>
-function addExperience() {
-    let container = document.getElementById('experienceContainer');
-
-    let div = document.createElement('div');
-    div.classList.add('bg-gray-50','border','rounded','p-5','mb-4');
-
-    div.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input name="organization[]" class="input" placeholder="Organization">
-            <input name="role[]" class="input" placeholder="Role / Designation">
-            <input name="industry[]" class="input" placeholder="Industry">
-            <input name="location_exp[]" class="input" placeholder="Location">
-            <input type="date" name="from[]" class="input">
-            <input type="date" name="to[]" class="input">
-        </div>
-
-        <button type="button" onclick="this.parentElement.remove()" 
-            class="text-red-500 text-sm mt-3 hover:underline">
-            Remove
-        </button>
-    `;
-
-    container.prepend(div);
-}
-</script>
-
-<!-- 🔥 LIVE VALIDATION -->
-<script>
-function validateField(input, regex, message) {
-    let existingError = input.parentElement.querySelector('.live-error');
-
-    if (existingError) existingError.remove();
-
-    input.classList.remove('border-red-500', 'border-green-500');
-
-    let value = input.value.trim();
-
-    if (value === '') return;
-
-    if (!regex.test(value)) {
-        input.classList.add('border-red-500');
-
-        let error = document.createElement('p');
-        error.className = "text-red-500 text-xs mt-1 live-error";
-        error.innerText = message;
-
-        input.parentElement.appendChild(error);
-    } else {
-        input.classList.add('border-green-500');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    const rules = {
-        linkedin: { regex: /^https?:\/\/(www\.)?linkedin\.com/, message: "Enter valid LinkedIn URL" },
-        instagram: { regex: /^https?:\/\/(www\.)?instagram\.com/, message: "Enter valid Instagram URL" },
-        facebook: { regex: /^https?:\/\/(www\.)?facebook\.com/, message: "Enter valid Facebook URL" },
-        twitter: { regex: /^https?:\/\/(www\.)?(twitter\.com|x\.com)/, message: "Enter valid Twitter/X URL" }
-    };
-
-    Object.keys(rules).forEach(name => {
-        document.querySelectorAll(`input[name="${name}"]`).forEach(input => {
-            input.addEventListener('input', () => {
-                validateField(input, rules[name].regex, rules[name].message);
-            });
-        });
-    });
-
-});
-</script>
 
 @endsection
