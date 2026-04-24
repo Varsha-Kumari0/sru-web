@@ -9,50 +9,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        /* ── Custom properties not in Tailwind ── */
-        :root {
-            --gold:      #003366;
-            --gold-lt:   #005599;
-            --surface:   #13161e;
-            --card:      #181c26;
-            --border:    #252a38;
-        }
         body { font-family: 'DM Sans', sans-serif; }
         .font-display { font-family: 'Playfair Display', serif; }
 
-        /* Sidebar active state */
         .nav-active {
-            background: rgba(201,168,76,.13);
-            color: #e8c97a !important;
+            background: rgba(59,130,246,.14);
+            color: #1d4ed8 !important;
         }
 
-        /* Gold accent top bar on stat cards */
         .stat-card::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 2px;
-            background: var(--gold);
+            background: #3b82f6;
             border-radius: 12px 12px 0 0;
         }
 
-        /* Sortable header arrow indicators */
-        th.sort-asc::after  { content: ' ↑'; color: var(--gold); }
-        th.sort-desc::after { content: ' ↓'; color: var(--gold); }
+        th.sort-asc::after  { content: ' ↑'; color: #3b82f6; }
+        th.sort-desc::after { content: ' ↓'; color: #3b82f6; }
 
-        /* Row action buttons fade in on hover */
         tr:hover .row-actions { opacity: 1 !important; }
 
-        /* Search focus ring gold */
-        .search-wrap:focus-within { border-color: var(--gold) !important; }
+        .search-wrap:focus-within { border-color: #3b82f6 !important; }
 
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0d0f14; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #35394a; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Toast */
         #toast {
             transform: translateY(20px);
             opacity: 0;
@@ -63,7 +48,6 @@
             opacity: 1;
         }
 
-        /* Modal */
         #modalOverlay {
             opacity: 0;
             pointer-events: none;
@@ -81,37 +65,27 @@
             transition: transform 0.25s ease;
         }
 
-        /* Badge pulse for pending */
         .badge-pending { animation: pendingPulse 2.5s ease-in-out infinite; }
         @keyframes pendingPulse {
             0%, 100% { opacity: 1; }
             50%       { opacity: 0.65; }
         }
-
-        /* Gradient mesh background subtle */
-        .bg-mesh {
-            background-color: #0d0f14;
-            background-image:
-                radial-gradient(ellipse at 10% 20%, rgba(201,168,76,.04) 0%, transparent 60%),
-                radial-gradient(ellipse at 90% 80%, rgba(91,141,238,.04) 0%, transparent 60%);
-        }
     </style>
 </head>
 
-<body class="bg-mesh min-h-screen flex" style="background-color:#0d0f14; color:#e8e6df;">
+<body class="min-h-screen flex bg-slate-50 text-slate-900 [background-image:radial-gradient(ellipse_at_10%_20%,rgba(59,130,246,.08)_0%,transparent_60%),radial-gradient(ellipse_at_90%_80%,rgba(148,163,184,.12)_0%,transparent_60%)]">
 
 {{-- ══════════════════════════════════════
      SIDEBAR
 ══════════════════════════════════════ --}}
-<aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50"
-       style="background:var(--surface); border-right:1px solid var(--border);">
+<aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
 
     {{-- Logo --}}
-    <div class="px-7 py-8" style="border-bottom:1px solid var(--border);">
-        <h1 class="font-display text-xl font-bold" style="color:var(--gold-lt); letter-spacing:.02em; line-height:1.2;">
+    <div class="px-7 py-8 border-b border-slate-300">
+        <h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">
             SRU<br>Alumni
         </h1>
-        <span class="text-xs font-semibold tracking-widest uppercase mt-1 block" style="color:#7a7f90;">
+        <span class="text-xs font-semibold tracking-widest uppercase mt-1 block text-slate-500">
             Admin Control
         </span>
     </div>
@@ -119,11 +93,10 @@
     {{-- Navigation --}}
     <nav class="flex-1 px-4 py-5 space-y-0.5">
 
-        <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-1" style="color:#7a7f90;">Overview</p>
+        <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-1 text-slate-500">Overview</p>
 
         <a href="{{ route('admin.dashboard') }}"
-           class="nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 hover:text-white"
-           style="color:#e8e6df;">
+           class="nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-900 hover:text-slate-900">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
                 <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
@@ -131,8 +104,7 @@
             Dashboard
         </a>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 hover:text-white"
-           style="color:#7a7f90;">
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -141,25 +113,22 @@
             All SRU Alumni
         </a>
 
-        <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-5" style="color:#7a7f90;">Management</p>
+        <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-5 text-slate-500">Management</p>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 hover:text-white"
-           style="color:#7a7f90;">
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
             Pending SRU Approvals
             @php $pendingCount = $users->where('status','Pending')->count(); @endphp
             @if($pendingCount > 0)
-                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"
-                      style="background:rgba(201,168,76,.2); color:var(--gold-lt);">
+                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-sky-400">
                     {{ $pendingCount }}
                 </span>
             @endif
         </a>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 hover:text-white"
-           style="color:#7a7f90;">
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
@@ -167,18 +136,16 @@
             Messages
         </a>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 hover:text-white"
-           style="color:#7a7f90;">
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
             Reports
         </a>
 
-        <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-5" style="color:#7a7f90;">System</p>
+        <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-5 text-slate-500">System</p>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 hover:text-white"
-           style="color:#7a7f90;">
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/>
@@ -188,15 +155,15 @@
     </nav>
 
     {{-- Admin Footer --}}
-    <div class="px-4 py-5" style="border-top:1px solid var(--border);">
-        <div class="flex items-center gap-3 p-3 rounded-xl" style="background:var(--card);">
+    <div class="px-4 py-5 border-t border-slate-300">
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
             <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white flex-shrink-0"
-                 style="background: linear-gradient(135deg, var(--gold), #8b6a28);">
+                  style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold truncate" style="color:#e8e6df;">{{ auth()->user()->name ?? 'Administrator' }}</p>
-                <p class="text-xs" style="color:#7a7f90;">Super Admin</p>
+                <p class="text-sm font-semibold truncate text-slate-900">{{ auth()->user()->name ?? 'Administrator' }}</p>
+                <p class="text-xs text-slate-500">Super Admin</p>
             </div>
             <a href="{{ route('logout') }}"
                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
@@ -218,18 +185,16 @@
 <main class="ml-64 flex-1 flex flex-col min-h-screen">
 
     {{-- Topbar --}}
-    <header class="sticky top-0 z-40 flex items-center justify-between px-9 py-5"
-            style="background:var(--surface); border-bottom:1px solid var(--border);">
+    <header class="sticky top-0 z-40 flex items-center justify-between px-9 py-5 bg-white border-b border-slate-300">
         <div>
             <h2 class="font-display text-2xl font-semibold" style="letter-spacing:.01em;">SRU Alumni Dashboard</h2>
-            <p class="text-xs mt-0.5" style="color:#7a7f90;">
+            <p class="text-xs mt-0.5 text-slate-500">
                 {{ now()->format('l, d F Y') }} &mdash; Welcome back to SRU, {{ auth()->user()->name ?? 'Admin' }}
             </p>
         </div>
         <div class="flex items-center gap-3">
             <button onclick="exportCSV()"
-                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 hover:text-white"
-                    style="background:var(--card); color:#7a7f90; border:1px solid var(--border);">
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 bg-slate-50 text-slate-500 border border-slate-300 hover:bg-slate-100 hover:text-slate-900">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -237,8 +202,7 @@
                 Export CSV
             </button>
             <button onclick="showToast('Invite link copied to clipboard!')"
-                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all duration-150 hover:-translate-y-0.5"
-                    style="background:var(--gold); color:#0d0f14;">
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all duration-150 hover:-translate-y-0.5 bg-blue-500 text-white hover:bg-blue-600">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
@@ -260,12 +224,11 @@
                 ['label'=>'Pending Approval',   'value'=> $pendingCount,  'change'=>'Needs review',        'changeColor'=>'#e8c97a', 'icon'=>'circle cx=12 cy=12 r=10 polyline points=12 6 12 12 16 14'],
                 ['label'=>'Graduation Batches', 'value'=> $yearsCount,    'change'=>'Across all years',    'changeColor'=>'#7a7f90', 'icon'=>'rect x=3 y=4 width=18 height=18 rx=2 M16 2v4 M8 2v4 M3 10h18'],
             ] as $stat)
-            <div class="stat-card relative rounded-xl p-6 transition-transform duration-200 hover:-translate-y-0.5"
-                 style="background:var(--card); border:1px solid var(--border);">
-                <p class="text-xs font-semibold tracking-widest uppercase" style="color:#7a7f90; letter-spacing:.1em;">
+            <div class="stat-card relative rounded-xl p-6 transition-transform duration-200 hover:-translate-y-0.5 bg-slate-50 border border-slate-300">
+                <p class="text-xs font-semibold tracking-widest uppercase text-slate-500 tracking-[0.1em]">
                     {{ $stat['label'] }}
                 </p>
-                <p class="font-display text-4xl font-bold my-2" style="color:#e8e6df;">{{ $stat['value'] }}</p>
+                <p class="font-display text-4xl font-bold my-2 text-slate-900">{{ $stat['value'] }}</p>
                 <p class="text-xs font-medium" style="color:{{ $stat['changeColor'] }}">{{ $stat['change'] }}</p>
             </div>
             @endforeach
@@ -273,29 +236,25 @@
         </div>
 
         {{-- ── Alumni Table ── --}}
-        <div class="rounded-xl overflow-hidden" style="background:var(--card); border:1px solid var(--border);">
+        <div class="rounded-xl overflow-hidden bg-slate-50 border border-slate-300">
 
             {{-- Table Header / Controls --}}
-            <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5"
-                 style="border-bottom:1px solid var(--border);">
+              <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border-b border-slate-300">
                 <h3 class="font-display text-lg font-semibold">All Registered SRU Alumni</h3>
                 <div class="flex items-center gap-3 flex-wrap">
                     {{-- Search --}}
-                    <div class="search-wrap flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-150"
-                         style="background:var(--surface); border:1px solid var(--border);">
+                    <div class="search-wrap flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-150 bg-white border border-slate-300">
                         <svg width="13" height="13" fill="none" stroke="#7a7f90" stroke-width="2" viewBox="0 0 24 24">
                             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
                         <input type="text" id="searchInput" placeholder="Search SRU alumni…"
                                oninput="filterTable()"
-                               class="bg-transparent outline-none text-sm w-48 h-5 border-none"
-                               style="color:#e8e6df; font-family:'DM Sans',sans-serif;"
+                               class="bg-transparent outline-none text-sm w-48 h-5 border-none text-slate-900"
                                placeholder-style="color:#7a7f90">
                     </div>
                     {{-- Status Filter --}}
                     <select id="statusFilter" onchange="filterTable()"
-                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150"
-                            style="background:var(--surface); border:1px solid var(--border); color:#7a7f90; font-family:'DM Sans',sans-serif;">
+                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150 bg-white border border-slate-300 text-slate-500">
                         <option value="">All Status</option>
                         <option value="Active">Active</option>
                         <option value="Pending">Pending</option>
@@ -303,8 +262,7 @@
                     </select>
                     {{-- Year Filter --}}
                     <select id="yearFilter" onchange="filterTable()"
-                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150"
-                            style="background:var(--surface); border:1px solid var(--border); color:#7a7f90; font-family:'DM Sans',sans-serif;">
+                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150 bg-white border border-slate-300 text-slate-500">
                         <option value="">All Years</option>
                     </select>
                 </div>
@@ -324,8 +282,7 @@
                                 ['created_at',      'Registered'],
                                 [null,              'Actions'],
                             ] as [$key, $label])
-                            <th class="text-left px-5 py-3.5 text-xs font-semibold tracking-widest uppercase select-none whitespace-nowrap {{ $key ? 'cursor-pointer hover:text-white' : '' }}"
-                                style="color:#7a7f90; border-bottom:1px solid var(--border);"
+                            <th class="text-left px-5 py-3.5 text-xs font-semibold tracking-widest uppercase select-none whitespace-nowrap text-slate-500 border-b border-slate-300 {{ $key ? 'cursor-pointer hover:text-slate-900' : '' }}"
                                 {{ $key ? "onclick=sortTable('$key')" : '' }}>
                                 {{ $label }}
                             </th>
@@ -334,7 +291,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="7" class="py-16 text-center" style="color:#7a7f90;">
+                            <td colspan="7" class="py-16 text-center text-slate-500">
                                 <svg class="mx-auto mb-3" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                     <circle cx="9" cy="7" r="4"/>
@@ -347,8 +304,8 @@
             </div>
 
             {{-- Pagination --}}
-            <div class="flex items-center justify-between px-6 py-4" style="border-top:1px solid var(--border);">
-                <span class="text-sm" id="paginationInfo" style="color:#7a7f90;">Showing 0 of 0 alumni</span>
+            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-300">
+                <span class="text-sm text-slate-500" id="paginationInfo">Showing 0 of 0 alumni</span>
                 <div class="flex items-center gap-1" id="paginationControls"></div>
             </div>
         </div>
@@ -360,28 +317,21 @@
      MODAL — Alumni Detail
 ══════════════════════════════════════ --}}
 <div id="modalOverlay" onclick="handleOverlayClick(event)"
-     class="fixed inset-0 z-50 flex items-center justify-center p-6"
-     style="background:rgba(0,0,0,.65); backdrop-filter:blur(4px);">
-    <div class="modal-box w-full max-w-lg rounded-2xl overflow-hidden"
-         style="background:var(--card); border:1px solid var(--border);">
-        <div class="flex items-center justify-between px-6 py-5"
-             style="border-bottom:1px solid var(--border);">
+    class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/65 backdrop-blur-[4px]">
+    <div class="modal-box w-full max-w-lg rounded-2xl overflow-hidden bg-slate-50 border border-slate-300">
+       <div class="flex items-center justify-between px-6 py-5 border-b border-slate-300">
             <h3 class="font-display text-lg font-semibold">SRU Alumni Details</h3>
             <button onclick="closeModal()"
-                    class="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors duration-150 hover:text-white"
-                    style="background:#252a38; color:#7a7f90;">✕</button>
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors duration-150 bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-900">✕</button>
         </div>
-        <div class="p-6" id="modalContent" style="max-height:340px; overflow-y:auto;"></div>
-        <div class="flex items-center justify-end gap-3 px-6 py-4"
-             style="border-top:1px solid var(--border);">
+        <div class="p-6 max-h-[340px] overflow-y-auto" id="modalContent"></div>
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-300">
             <button onclick="closeModal()"
-                    class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 hover:text-white"
-                    style="background:var(--surface); color:#7a7f90; border:1px solid var(--border);">
+                    class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 bg-white text-slate-500 border border-slate-300 hover:bg-slate-100 hover:text-slate-900">
                 Close
             </button>
             <button id="modalApproveBtn"
-                    class="px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-150 hover:-translate-y-0.5"
-                    style="background:var(--gold); color:#0d0f14; display:none;">
+                    class="px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-150 hover:-translate-y-0.5 bg-blue-500 text-white" style="display:none;">
                 ✓ Approve
             </button>
         </div>
@@ -392,8 +342,7 @@
      TOAST
 ══════════════════════════════════════ --}}
 <div id="toast"
-     class="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl text-sm font-semibold shadow-2xl"
-     style="background:#1e2330; border:1px solid var(--border); color:#e8e6df; min-width:220px;">
+    class="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl text-sm font-semibold shadow-2xl bg-slate-800 border border-slate-300 text-white min-w-[220px]">
 </div>
 
 {{-- ══════════════════════════════════════
