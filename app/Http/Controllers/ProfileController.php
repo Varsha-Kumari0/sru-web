@@ -2,25 +2,63 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\View\View;
+
 use App\Models\Profile;
 use App\Models\Professional;
 
 class ProfileController extends Controller
 {
     /**
-     * Show edit page
+     * Default Laravel profile edit (leave as it is)
      */
-    public function edit()
+    public function edit(Request $request): View
     {
-        $profile = Profile::where('user_id', auth()->id())->first();
-        $experiences = Professional::where('user_id', auth()->id())->get();
+        return view('profile.edit', [
+            'user' => $request->user(),
+        ]);
+    }
 
-        if (!$profile) {
-            return redirect('/profile/create');
+    /**
+     * Default update (leave as it is)
+     */
+    public function update(ProfileUpdateRequest $request): RedirectResponse
+    {
+        $request->user()->fill($request->validated());
+
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
         }
 
-        return view('profile.edit', compact('profile', 'experiences'));
+        $request->user()->save();
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Default delete (leave as it is)
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return Redirect::to('/');
     }
 
     /**
@@ -32,14 +70,16 @@ class ProfileController extends Controller
     }
 
     /**
-     * STORE PROFILE
+     * STORE PROFILE (FINAL FIXED VERSION)
      */
     public function storeProfile(Request $request)
     {
+        // ❌ prevent duplicate profile
         if (Profile::where('user_id', auth()->id())->exists()) {
             return redirect('/dashboard')->with('error', 'Profile already exists');
         }
 
+        // ✅ VALIDATION
         $request->validate([
             'full_name' => 'required',
             'mobile' => 'required',
@@ -49,37 +89,49 @@ class ProfileController extends Controller
             'branch' => 'required',
             'passing_year' => 'required',
 
-            'linkedin'  => ['nullable', 'regex:/^https?:\/\/(www\.)?linkedin\.com/'],
-            'instagram' => ['nullable', 'regex:/^https?:\/\/(www\.)?instagram\.com/'],
-            'facebook'  => ['nullable', 'regex:/^https?:\/\/(www\.)?facebook\.com/'],
-            'twitter'   => ['nullable', 'regex:/^https?:\/\/(www\.)?(twitter\.com|x\.com)/'],
+            // social links
+            'linkedin' => 'nullable|url',
+            'instagram' => 'nullable|url',
+            'facebook' => 'nullable|url',
+            'twitter' => 'nullable|url',
+
+            // image
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $profile = new Profile();
-        $profile->user_id = auth()->id();
-        $profile->full_name = $request->full_name;
-        $profile->mobile = $request->mobile;
-        $profile->city = $request->city;
-        $profile->country = $request->country;
-        $profile->linkedin = $request->linkedin;
-        $profile->facebook = $request->facebook;
-        $profile->instagram = $request->instagram;
-        $profile->twitter = $request->twitter;
-        $profile->degree = $request->degree;
-        $profile->branch = $request->branch;
-        $profile->passing_year = $request->passing_year;
+        // ✅ IMAGE UPLOAD
+        $imagePath = null;
 
-        // ✅ PROFILE IMAGE SAVE
-        if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profiles', 'public');
-            $profile->profile_photo = $path;
+        if ($request->hasFile('profile_image')) {
+            $imagePath = $request->file('profile_image')->store('profiles', 'public');
         }
 
-        $profile->save();
+        // ✅ SAVE PROFILE
+        $profile = Profile::create([
+            'user_id' => auth()->id(),
+
+            'profile_image' => $imagePath,
+
+            'full_name' => $request->full_name,
+            'mobile' => $request->mobile,
+
+            'city' => $request->city,
+            'country' => $request->country,
+
+            'linkedin' => $request->linkedin,
+            'facebook' => $request->facebook,
+            'instagram' => $request->instagram,
+            'twitter' => $request->twitter,
+
+            'degree' => $request->degree,
+            'branch' => $request->branch,
+            'passing_year' => $request->passing_year,
+        ]);
 
         // ✅ SAVE EXPERIENCE
         if ($request->has('organization')) {
             foreach ($request->organization as $i => $org) {
+
                 if (!$org) continue;
 
                 Professional::create([
@@ -98,7 +150,18 @@ class ProfileController extends Controller
     }
 
     /**
-     * UPDATE PROFILE
+     * EDIT PROFILE (your custom one)
+     */
+    public function editProfile()
+    {
+        $profile = Profile::where('user_id', auth()->id())->first();
+        $experiences = Professional::where('user_id', auth()->id())->get();
+
+        return view('profile.edit', compact('profile', 'experiences'));
+    }
+
+    /**
+     * UPDATE PROFILE (FINAL FIXED)
      */
     public function updateProfile(Request $request)
     {
@@ -108,38 +171,41 @@ class ProfileController extends Controller
             return redirect('/profile/create');
         }
 
+        // ✅ VALIDATION
         $request->validate([
             'city' => 'required',
             'country' => 'required',
 
-            'linkedin'  => ['nullable', 'regex:/^https?:\/\/(www\.)?linkedin\.com/'],
-            'instagram' => ['nullable', 'regex:/^https?:\/\/(www\.)?instagram\.com/'],
-            'facebook'  => ['nullable', 'regex:/^https?:\/\/(www\.)?facebook\.com/'],
-            'twitter'   => ['nullable', 'regex:/^https?:\/\/(www\.)?(twitter\.com|x\.com)/'],
+            'linkedin' => 'nullable|url',
+            'instagram' => 'nullable|url',
+            'facebook' => 'nullable|url',
+            'twitter' => 'nullable|url',
+
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // ✅ UPDATE BASIC FIELDS
-        $profile->city = $request->city;
-        $profile->country = $request->country;
-        $profile->linkedin = $request->linkedin;
-        $profile->facebook = $request->facebook;
-        $profile->instagram = $request->instagram;
-        $profile->twitter = $request->twitter;
-
-        // ✅ PROFILE IMAGE UPDATE (THIS WAS MISSING 🔥)
-        if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profiles', 'public');
-            $profile->profile_photo = $path;
+        // ✅ IMAGE UPDATE
+        if ($request->hasFile('profile_image')) {
+            $profile->profile_image = $request->file('profile_image')->store('profiles', 'public');
         }
 
-        $profile->save();
+        // ✅ UPDATE PROFILE
+        $profile->update([
+            'city' => $request->city,
+            'country' => $request->country,
 
-        // ✅ DELETE OLD EXPERIENCE
+            'linkedin' => $request->linkedin,
+            'instagram' => $request->instagram,
+            'facebook' => $request->facebook,
+            'twitter' => $request->twitter,
+        ]);
+
+        // ✅ RESET EXPERIENCES (simple approach)
         Professional::where('user_id', auth()->id())->delete();
 
-        // ✅ SAVE NEW EXPERIENCE
         if ($request->has('organization')) {
             foreach ($request->organization as $i => $org) {
+
                 if (!$org) continue;
 
                 Professional::create([
