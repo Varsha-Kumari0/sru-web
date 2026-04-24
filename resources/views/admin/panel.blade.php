@@ -288,7 +288,7 @@
                         </svg>
                         <input type="text" id="searchInput" placeholder="Search SRU alumni…"
                                oninput="filterTable()"
-                               class="bg-transparent outline-none text-sm w-48"
+                               class="bg-transparent outline-none text-sm w-48 h-5 border-none"
                                style="color:#e8e6df; font-family:'DM Sans',sans-serif;"
                                placeholder-style="color:#7a7f90">
                     </div>
