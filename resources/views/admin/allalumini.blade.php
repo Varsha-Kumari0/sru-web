@@ -48,16 +48,6 @@
 
 		<a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
 			<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-				<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-			</svg>
-			Pending SRU Approvals
-			@if($pendingCount > 0)
-				<span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-sky-500">{{ $pendingCount }}</span>
-			@endif
-		</a>
-
-		<a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
-			<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 				<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
 				<polyline points="22,6 12,13 2,6"/>
 			</svg>
@@ -180,15 +170,17 @@
 											</svg>
 										</button>
 
-										@if($status === 'Pending')
-											<form method="POST" action="{{ route('admin.alumni.approve', $user->id) }}">
-												@csrf
-												@method('PUT')
-												<button type="submit" class="px-2.5 py-1.5 text-xs font-medium rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
-													Approve
-												</button>
-											</form>
-										@endif
+										<a href="{{ route('admin.alumni.edit', $user->id) }}"
+											title="Edit Details"
+											class="h-[30px] w-[30px] rounded-[7px] border-none flex items-center justify-center transition-all"
+											style="background:#ffffff; display:inline-flex;"
+											onmouseover="this.style.background='#fef3c7'"
+											onmouseout="this.style.background='#ffffff'">
+											<svg width="13" height="13" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24">
+												<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+												<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+											</svg>
+										</a>
 
 										<form method="POST" action="{{ route('admin.alumni.delete', $user->id) }}" onsubmit="return confirm('Delete this alumni record?');">
 											@csrf

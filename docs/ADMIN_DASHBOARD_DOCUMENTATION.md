@@ -26,7 +26,6 @@ The common key used across all three tables is `user_id`.
 ### 2.4 Alumni Actions
 On the All Alumni page, Action options are now available per row:
 - `View` (opens details modal)
-- `Approve` (shown for pending alumni)
 - `Delete` (with confirmation)
 
 ### 2.5 Controller Behavior Improvement
@@ -58,12 +57,10 @@ This ensures actions work correctly in both dashboard-style JS calls and form-ba
 ### Routes
 - `routes/web.php`
   - Added `admin.allalumini` route (`GET /admin/allalumini`)
-  - Added approve route (`PUT /admin/alumni/{id}/approve`)
   - Added delete route (`DELETE /admin/alumni/{id}`)
 
 ### Controller
 - `app/Http/Controllers/AdminController.php`
-  - `approveAlumni()` updated for JSON + web responses
   - `deleteAlumni()` updated for JSON + web responses
 
 ### Views
@@ -77,7 +74,7 @@ This ensures actions work correctly in both dashboard-style JS calls and form-ba
 - `resources/views/admin/allalumini.blade.php`
   - Created full page layout with sidebar
   - Added complete alumni table from users + profiles + professionals
-  - Added Action column (View/Approve/Delete)
+  - Added Action column (View/Edit/Delete)
   - Updated View button to dashboard-style icon action
   - Added details modal with alumni full name in title
   - Expanded details modal fields to dashboard-style full profile/professional data
@@ -115,7 +112,6 @@ Result:
    - View opens details modal
   - View modal title shows selected alumni full name
   - View modal includes full profile + professional details on both pages
-   - Approve updates pending user profile status to active
    - Delete removes user and related profile/professional records
 5. Success/error feedback is shown after form actions.
 
