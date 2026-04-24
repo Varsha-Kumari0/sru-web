@@ -16,18 +16,18 @@ Route::get('/', function () {
 });
 
 
-// 📊 Dashboard (after login)
+// 📊 Profile (after login)
 use App\Models\Profile;
 use App\Models\Professional;
 
-Route::get('/dashboard', function () {
+Route::get('/profile', function () {
 
     $profile = Profile::where('user_id', auth()->id())->first();
     $experiences = Professional::where('user_id', auth()->id())->get();
 
-    return view('dashboard', compact('profile', 'experiences'));
+    return view('profile.profile', compact('profile', 'experiences'));
 
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth'])->name('profile');
 
 // 🔐 AUTH REQUIRED ROUTES
 Route::middleware(['auth'])->group(function () {
@@ -67,9 +67,35 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
 
-        $users = User::where('role', 'user')->get();
+        $users = User::where('role', 'user')
+            ->with(['profile', 'professional'])
+            ->get();
 
-        return view('admin.panel', compact('users'));
+        $totalCount = $users->count();
+        $activeCount = $users->filter(function ($user) {
+            return strtolower($user->profile?->status ?? '') === 'active';
+        })->count();
+        $pendingCount = $users->filter(function ($user) {
+            return strtolower($user->profile?->status ?? 'pending') === 'pending';
+        })->count();
+        $yearsCount = $users
+            ->pluck('profile.passing_year')
+            ->filter(fn ($year) => !empty($year) && $year !== '—')
+            ->unique()
+            ->count();
+
+        $totalChange = 'All time';
+        $activeChange = 'Verified members';
+
+        return view('admin.panel', compact(
+            'users',
+            'totalCount',
+            'activeCount',
+            'pendingCount',
+            'yearsCount',
+            'totalChange',
+            'activeChange'
+        ));
 
     })->name('admin.dashboard');
 
