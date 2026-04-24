@@ -1,240 +1,150 @@
 @extends('layouts.app')
 
+@section('title', 'Create Profile')
+
 @section('content')
 
-<div class="max-w-5xl mx-auto mt-8">
-    <div class="bg-white shadow rounded-lg p-8">
+<div class="max-w-5xl mx-auto mt-10 px-6">
 
-        <h2 class="text-2xl font-semibold mb-6">Create Profile</h2>
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">Create Profile</h2>
 
-        <form method="POST" action="/profile/store">
-            @csrf
+    <form method="POST" action="/profile/store">
+        @csrf
 
-            <!-- STEP 1 -->
-            <div id="step1">
+        <!-- BASIC DETAILS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
-                <h3 class="text-lg font-semibold mb-4">Basic & Education Details</h3>
+            <!-- Name -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Full Name
+                </label>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    <input name="full_name" placeholder="Full Name" class="input">
-                    <input name="mobile" placeholder="Mobile" class="input">
-
-                    <input name="city" placeholder="City" class="input">
-                    <input name="country" placeholder="Country" class="input">
-
-                </div>
-
-                <!-- DEGREE + SPECIALIZATION -->
-                <div class="mt-6">
-
-                    <label class="label mb-3">Select Degree & Specialization</label>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <!-- LEFT -->
-                        <div class="bg-blue-900 text-white rounded p-4 space-y-3">
-
-                            <div onclick="selectDegree('btech')" class="degree-item">B.Tech</div>
-                            <div onclick="selectDegree('business')" class="degree-item">Business</div>
-                            <div onclick="selectDegree('agriculture')" class="degree-item">Agriculture</div>
-                            <div onclick="selectDegree('bsc')" class="degree-item">B.Sc</div>
-                            <div onclick="selectDegree('bcom')" class="degree-item">B.Com</div>
-                            <div onclick="selectDegree('bca')" class="degree-item">BCA</div>
-
-                        </div>
-
-                        <!-- RIGHT -->
-                        <div id="specializationBox" class="bg-blue-900 text-white rounded p-4">
-                            <p class="text-gray-300">Select a degree to see options</p>
-                        </div>
-
-                    </div>
-
-                    <input type="hidden" name="degree" id="degreeInput">
-                    <input type="hidden" name="branch" id="branchInput">
-
-                </div>
-
-                <!-- PASSING YEAR -->
-                <div class="mt-6">
-                    <label class="label">Passing Year</label>
-                    <select name="passing_year" class="input">
-                        @for($year = date('Y'); $year >= 2000; $year--)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endfor
-                    </select>
-                </div>
-
-                <div class="mt-6 text-right">
-                    <button type="button" onclick="nextStep()" class="btn">
-                        Next →
-                    </button>
-                </div>
-
+                    
+                <input type="text" name="full_name"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter your name">
             </div>
 
-            <!-- STEP 2 -->
-            <div id="step2" style="display:none">
-
-                <h3 class="text-lg font-semibold mb-4">Professional Experience</h3>
-
-                <div id="experienceContainer"></div>
-
-                <button type="button" onclick="addExperience()" class="text-blue-600 mt-2">
-                    + Add Experience
-                </button>
-
-                <div class="mt-6 flex justify-between">
-                    <button type="button" onclick="prevStep()" class="btn-gray">
-                        ← Back
-                    </button>
-
-                    <button class="btn">
-                        Create Profile
-                    </button>
-                </div>
-
+            <!-- Mobile -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Mobile Number
+                </label>
+                <input type="text" name="mobile"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter mobile number">
             </div>
 
-        </form>
+            <!-- City -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    City
+                </label>
+                <input type="text" name="city"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter city">
+            </div>
 
-    </div>
+            <!-- Country -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Country
+                </label>
+                <input type="text" name="country"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter country">
+            </div>
+
+        </div>
+
+        <!-- DEGREE + SPECIALIZATION -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+            <!-- Degree -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Degree
+                </label>
+
+                <select name="degree" id="degree"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+
+                    <option value="">Select Degree</option>
+                    @foreach($selectDegree as $degree => $branches)
+                        <option value="{{ $degree }}">{{ $degree }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Branch -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Specialization / Branch
+                </label>
+
+                <select name="branch" id="branch"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+
+                    <option value="">Select Specialization</option>
+                </select>
+            </div>
+
+        </div>
+
+        <!-- PASSING YEAR -->
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+                Passing Year
+            </label>
+
+            <select name="passing_year"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+
+                @for($year = date('Y'); $year >= 2000; $year--)
+                    <option value="{{ $year }}">{{ $year }}</option>
+                @endfor
+
+            </select>
+        </div>
+
+        <!-- SUBMIT -->
+        <button type="submit"
+            class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">
+            Save Profile
+        </button>
+
+    </form>
+
 </div>
 
-<!-- STYLE -->
-<style>
-.input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-}
-.label {
-    font-size: 13px;
-    font-weight: 600;
-}
-.btn {
-    background: #2563eb;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-}
-.btn-gray {
-    background: #ccc;
-    padding: 8px 16px;
-    border-radius: 6px;
-}
-.degree-item {
-    padding: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    cursor: pointer;
-}
-.degree-item:hover {
-    color: #facc15;
-}
-.specialization-item {
-    padding: 6px 0;
-    cursor: pointer;
-}
-.specialization-item:hover {
-    color: #facc15;
-}
-</style>
-
-<!-- JS -->
+<!-- PASS DATA TO JS -->
 <script>
+    let degreeData = @json($selectDegree);
+</script>
 
-function nextStep() {
-    document.getElementById('step1').style.display = 'none';
-    document.getElementById('step2').style.display = 'block';
-}
+<!-- DYNAMIC DROPDOWN -->
+<script>
+    const degreeSelect = document.getElementById("degree");
+    const branchSelect = document.getElementById("branch");
 
-function prevStep() {
-    document.getElementById('step1').style.display = 'block';
-    document.getElementById('step2').style.display = 'none';
-}
+    degreeSelect.addEventListener("change", function () {
 
-function selectDegree(degree) {
+        let selectedDegree = this.value;
 
-    document.getElementById('degreeInput').value = degree;
+        branchSelect.innerHTML = '<option value="">Select Specialization</option>';
 
-    let box = document.getElementById('specializationBox');
+        if (degreeData[selectedDegree]) {
+            degreeData[selectedDegree].forEach(function (branch) {
 
-    let data = {
+                let option = document.createElement("option");
+                option.value = branch;
+                option.textContent = branch;
 
-        btech: [
-            "CSE (AI & ML)",
-            "CSE (Cybersecurity)",
-            "CSE (Data Science)",
-            "ECE (VLSI)",
-            "EEE (Renewable Energy)",
-            "Mechanical (Smart Manufacturing)",
-            "Civil (Robotics and Automation)"
-        ],
-
-        business: [
-            "BBA (Marketing)",
-            "BBA (Finance)",
-            "BBA (Operations)",
-            "BBA (International Business)",
-            "BBA (Business Analytics)"
-        ],
-
-        agriculture: [
-            "B.Sc (Hons) Agriculture"
-        ],
-
-        bsc: [
-            "B.Sc (Computer Science)",
-            "B.Sc (Physics)",
-            "B.Sc (Chemistry)",
-            "B.Sc (Mathematics)",
-            "B.Sc (Forensic Science)"
-        ],
-
-        bcom: [
-            "B.Com (Computer Applications)"
-        ],
-
-        bca: [
-            "BCA General",
-            "BCA (Cloud Computing)"
-        ]
-    };
-
-    let html = "";
-
-    data[degree].forEach(item => {
-        html += `<div class="specialization-item" onclick="selectBranch('${item}')">• ${item}</div>`;
+                branchSelect.appendChild(option);
+            });
+        }
     });
-
-    box.innerHTML = html;
-}
-
-function selectBranch(branch) {
-    document.getElementById('branchInput').value = branch;
-}
-
-function addExperience() {
-    let container = document.getElementById('experienceContainer');
-
-    let div = document.createElement('div');
-    div.classList.add('border','p-4','mb-4','rounded');
-
-    div.innerHTML = `
-        <input name="organization[]" class="input mb-2" placeholder="Organization">
-        <input name="role[]" class="input mb-2" placeholder="Role">
-        <input name="industry[]" class="input mb-2" placeholder="Industry">
-        <input name="location_exp[]" class="input mb-2" placeholder="Location">
-        <input type="date" name="from[]" class="input mb-2">
-        <input type="date" name="to[]" class="input mb-2">
-        <button type="button" onclick="this.parentElement.remove()" class="text-red-500">Remove</button>
-    `;
-
-    container.appendChild(div);
-}
-
 </script>
 
 @endsection

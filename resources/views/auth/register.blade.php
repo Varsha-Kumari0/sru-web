@@ -51,7 +51,7 @@
                 <!-- Button -->
                 <button 
                     type="submit"
-                    class="w-full bg-pink-600 hover:bg-blue-800 text-white py-2 rounded-md font-semibold transition duration-200"
+                    class="w-full bg-pink-600 hover:bg-pink-800 text-white py-2 rounded-md font-semibold transition duration-200"
                 >
                     Generate Password
                 </button>
