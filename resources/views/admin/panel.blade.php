@@ -274,7 +274,7 @@
                             @foreach([
                                 ['name',            'SRU Alumni'],
                                 ['department',      'Department'],
-                                ['graduation_year', 'Batch Year'],
+                                ['graduation_year', 'Graduation Year'],
                                 ['email',           'Email'],
                                 ['status',          'Status'],
                                 ['created_at',      'Registered'],
@@ -639,7 +639,7 @@ function openModal(id) {
                 ['Role',            a.role],
                 ['Degree',          a.degree],
                 ['Branch',          a.branch],
-                ['Passing Year',    a.graduation_year],
+                ['Graduation Year',    a.graduation_year],
                 ['Current Status',  a.current_status],
                 ['Company',         a.company],
                 ['Work From',       a.from],
@@ -737,7 +737,7 @@ function removeAlumni(id) {
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV() {
-    const headers = ['ID','Name','Email','Phone','Department','Batch Year','Status','Location','Registered'];
+    const headers = ['ID','Name','Email','Phone','Department','Graduation Year','Status','Location','Registered'];
     const rows = alumni.map(a => [
         a.id, a.name, a.email, a.phone, a.department,
         a.graduation_year, a.status, a.location, a.created_at

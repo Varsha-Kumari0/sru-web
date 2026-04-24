@@ -116,7 +116,7 @@
 							<th class="px-4 py-3 text-left">Email</th>
 							<th class="px-4 py-3 text-left">Mobile</th>
 							<th class="px-4 py-3 text-left">Branch</th>
-							<th class="px-4 py-3 text-left">Passing Year</th>
+							<th class="px-4 py-3 text-left">Graduation Year</th>
 							<th class="px-4 py-3 text-left">Organization</th>
 							<th class="px-4 py-3 text-left">Role</th>
 							<th class="px-4 py-3 text-left">Location</th>
@@ -242,7 +242,7 @@
 			['Role', data.role],
 			['Degree', data.degree],
 			['Branch', data.branch],
-			['Passing Year', data.passing_year],
+			['Graduation Year', data.passing_year],
 			['Current Status', data.current_status],
 			['Company', data.company],
 			['Work From', data.work_from],
