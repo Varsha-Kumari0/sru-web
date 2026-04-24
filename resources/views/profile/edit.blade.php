@@ -10,8 +10,8 @@
 
         @if(!$profile)
             <div class="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
-                <p>You haven't created a profile yet. Please visit the dashboard to create your profile first.</p>
-                <a href="/dashboard" class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Go to Dashboard</a>
+                <p>You haven't created a profile yet. Please create your profile first.</p>
+                <a href="/profile/create" class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create Profile</a>
             </div>
         @endif
 
@@ -19,14 +19,10 @@
             @csrf
 
             <!-- 🔴 GLOBAL ERRORS -->
-            @php
-                $filteredErrors = collect($errors->all())->filter(fn($e) => !str_contains($e, 'URL'));
-            @endphp
-
-            @if ($filteredErrors->count())
+            @if ($errors->any())
                 <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
                     <ul class="list-disc ml-5">
-                        @foreach ($filteredErrors as $error)
+                        @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
@@ -192,7 +188,6 @@
                     Update Profile
                 </button>
             </div>
-
         </form>
 
     </div>
@@ -215,5 +210,49 @@
     margin-bottom: 4px;
 }
 </style>
+
+<!-- 🎯 JAVASCRIPT -->
+<script>
+function addExperience() {
+    const container = document.getElementById('experienceContainer');
+    
+    const newExperience = document.createElement('div');
+    newExperience.className = 'bg-gray-50 border rounded p-5 mb-4';
+    newExperience.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="label">Organization</label>
+                <input name="organization[]" class="input">
+            </div>
+            <div>
+                <label class="label">Role</label>
+                <input name="role[]" class="input">
+            </div>
+            <div>
+                <label class="label">Industry</label>
+                <input name="industry[]" class="input">
+            </div>
+            <div>
+                <label class="label">Location</label>
+                <input name="location_exp[]" class="input">
+            </div>
+            <div>
+                <label class="label">From</label>
+                <input type="date" name="from[]" class="input">
+            </div>
+            <div>
+                <label class="label">To</label>
+                <input type="date" name="to[]" class="input">
+            </div>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" 
+            class="text-red-500 text-sm mt-3 hover:underline">
+            Remove
+        </button>
+    `;
+    
+    container.appendChild(newExperience);
+}
+</script>
 
 @endsection
