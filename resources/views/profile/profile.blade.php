@@ -1,119 +1,133 @@
 @extends('layouts.app')
 
-@section('title', 'Profile')
+@section('title', 'Alumni-Profile')
 
 @section('content')
 
-<div class="max-w-6xl mx-auto mt-6">
+<div class="max-w-7xl mx-auto mt-10 px-6">
 
-    <div class="bg-white border rounded shadow-sm p-6">
+    <div class="bg-white rounded-2xl shadow-lg p-8">
 
-        {{-- PROFILE HEADER --}}
         @if($profile)
-        <div class="flex items-center mb-6">
 
-            <!-- PROFILE IMAGE -->
+        <!-- HEADER -->
+        <div class="flex items-center mb-10">
+
             <img 
-                src="{{ $profile->profile_image ? asset('storage/'.$profile->profile_image) : 'https://via.placeholder.com/60' }}"
-                class="w-16 h-16 rounded-full mr-4 border object-cover"
+                src="{{ $profile->profile_image ? asset('storage/'.$profile->profile_image) : 'https://via.placeholder.com/80' }}"
+                class="w-20 h-20 rounded-full border-4 border-blue-500 object-cover shadow"
             >
 
-            <!-- NAME -->
-            <div>
-                <h2 class="text-xl font-semibold text-gray-800 tracking-wide">
-                    {{ strtoupper($profile->full_name) }}
+            <div class="ml-5">
+                <h2 class="text-3xl font-bold text-gray-800">
+                    {{ $profile->full_name }}
                 </h2>
-                <p class="text-gray-500 text-sm">
-                    Alumni
+                <p class="text-gray-500 text-lg">
+                    Alumni Member
                 </p>
             </div>
 
-            <!-- EDIT BUTTON -->
             <div class="ml-auto">
                 <a href="/profile/edit"
-                   class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition">
+                   class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 hover:scale-105 transition">
                     Edit Profile
                 </a>
             </div>
         </div>
 
-        {{-- TWO COLUMN GRID --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-            {{-- LEFT: PROFILE DETAILS --}}
-            <div class="border rounded p-5 bg-gray-50">
-                <h3 class="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">
+            <!-- LEFT CARD -->
+            <div class="bg-gradient-to-br from-gray-50 to-white border rounded-2xl p-6 shadow-md hover:shadow-lg transition">
+
+                <h3 class="text-xl font-semibold text-blue-700 mb-5">
                     Profile Details
                 </h3>
 
-                <div class="space-y-2 text-sm text-gray-700">
+                <div class="space-y-4 text-base">
 
-                    <p><strong class="text-gray-800">Mobile:</strong> {{ $profile->mobile }}</p>
+                    <p><span class="font-semibold text-gray-800">Mobile:</span> {{ $profile->mobile }}</p>
 
-                    <p><strong class="text-gray-800">Location:</strong> 
+                    <p><span class="font-semibold text-gray-800">Location:</span> 
                         {{ $profile->city }}, {{ $profile->country }}
                     </p>
 
-                    <p><strong class="text-gray-800">Degree:</strong> 
+                    <p><span class="font-semibold text-gray-800">Degree:</span> 
                         {{ ucfirst($profile->degree) }}
                     </p>
 
-                    <p><strong class="text-gray-800">Branch:</strong> 
+                    <p><span class="font-semibold text-gray-800">Branch:</span> 
                         {{ $profile->branch }}
                     </p>
 
-                    <p><strong class="text-gray-800">Passing Year:</strong> 
+                    <p><span class="font-semibold text-gray-800">Passing Year:</span> 
                         {{ $profile->passing_year }}
                     </p>
 
                     <!-- SOCIAL -->
-                    <p class="pt-2">
-                        <strong class="text-gray-800">Social:</strong>
+                    <div>
+                        <span class="font-semibold text-gray-800">Social:</span>
 
-                        @if($profile->linkedin)
-                            <a href="{{ $profile->linkedin }}" target="_blank" 
-                               class="text-blue-600 ml-2 hover:underline">LinkedIn</a>
-                        @endif
+                        <div class="mt-2 flex gap-3 flex-wrap">
 
-                        @if($profile->instagram)
-                            <a href="{{ $profile->instagram }}" target="_blank" 
-                               class="text-pink-500 ml-2 hover:underline">Instagram</a>
-                        @endif
+                            @if($profile->linkedin)
+                                <a href="{{ $profile->linkedin }}" target="_blank"
+                                   class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200">
+                                   LinkedIn
+                                </a>
+                            @endif
 
-                        @if($profile->facebook)
-                            <a href="{{ $profile->facebook }}" target="_blank" 
-                               class="text-blue-500 ml-2 hover:underline">Facebook</a>
-                        @endif
-                    </p>
+                            @if($profile->instagram)
+                                <a href="{{ $profile->instagram }}" target="_blank"
+                                   class="px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm hover:bg-pink-200">
+                                   Instagram
+                                </a>
+                            @endif
+
+                            @if($profile->facebook)
+                                <a href="{{ $profile->facebook }}" target="_blank"
+                                   class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm hover:bg-blue-200">
+                                   Facebook
+                                </a>
+                            @endif
+
+                        </div>
+                    </div>
 
                 </div>
             </div>
 
-            {{-- RIGHT: EXPERIENCE --}}
-            <div class="border rounded p-5 bg-gray-50">
-                <h3 class="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">
+            <!-- RIGHT CARD -->
+            <div class="bg-gradient-to-br from-gray-50 to-white border rounded-2xl p-6 shadow-md hover:shadow-lg transition">
+
+                <h3 class="text-xl font-semibold text-blue-700 mb-5">
                     Professional Details
                 </h3>
 
                 @forelse($experiences as $exp)
-                    <div class="mb-4 pb-3 border-b last:border-none">
+                    <div class="mb-5 pb-4 border-b last:border-none">
 
-                        <p class="font-medium text-gray-800">
-                            {{ $exp->role }} at {{ $exp->organization }}
+                        <p class="text-lg font-semibold text-gray-800">
+                            {{ $exp->role }}
                         </p>
 
-                        <p class="text-xs text-gray-500 mt-1">
+                        <p class="text-blue-600 font-medium">
+                            {{ $exp->organization }}
+                        </p>
+
+                        <p class="text-sm text-gray-500 mt-1">
                             {{ $exp->from }} → {{ $exp->to ?? 'Present' }}
                         </p>
 
-                        <p class="text-xs text-gray-600">
-                            {{ $exp->location }}
+                        <p class="text-sm text-gray-600">
+                            📍 {{ $exp->location }}
                         </p>
 
                     </div>
                 @empty
-                    <p class="text-gray-400 text-sm">
-                        No experience added
+                    <p class="text-gray-400 text-base italic">
+                        No experience added yet
                     </p>
                 @endforelse
 
@@ -123,15 +137,15 @@
 
         @else
 
-        {{-- NO PROFILE CASE --}}
-        <div class="text-center py-12">
+        <!-- EMPTY STATE -->
+        <div class="text-center py-20">
 
-            <p class="text-gray-600 mb-4">
+            <p class="text-gray-600 text-lg mb-6">
                 You have not completed your profile yet.
             </p>
 
             <a href="/profile/create"
-               class="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+               class="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
                 Complete Profile
             </a>
 

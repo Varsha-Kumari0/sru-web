@@ -16,7 +16,7 @@
 
     <div class="space-x-6 text-sm">
         <a href="/dashboard" class="hover:underline">Dashboard</a>
-        <a href="/profile/edit" class="hover:underline">Profile</a>
+        <a href="/profile" class="hover:underline">Profile</a>
 
         <form method="POST" action="/logout" class="inline">
             @csrf
