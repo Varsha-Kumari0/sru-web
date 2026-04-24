@@ -8,6 +8,13 @@
 
         <h2 class="text-2xl font-semibold mb-6">Edit Profile</h2>
 
+        @if(!$profile)
+            <div class="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+                <p>You haven't created a profile yet. Please visit the dashboard to create your profile first.</p>
+                <a href="/dashboard" class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Go to Dashboard</a>
+            </div>
+        @endif
+
         <form id="profileForm" method="POST" action="/profile/update" enctype="multipart/form-data">
             @csrf
 
@@ -33,7 +40,7 @@
                     Profile Picture
                 </label>
 
-                @if($profile->profile_photo)
+@if($profile && $profile->profile_photo)
                     <img 
                         src="{{ asset('storage/'.$profile->profile_photo) }}" 
                         class="w-24 h-24 rounded-full mx-auto mb-3 object-cover border"
@@ -45,6 +52,7 @@
             </div>
 
             <!-- 🔒 LOCKED DETAILS -->
+            @if($profile)
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
                 <div>
@@ -78,41 +86,44 @@
                 </div>
 
             </div>
+            @endif
 
             <!-- ✏️ EDITABLE -->
+            @if($profile)
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <div>
                     <label class="label">City</label>
-                    <input name="city" value="{{ old('city', $profile->city) }}" class="input">
+                    <input name="city" value="{{ old('city', $profile->city ?? '') }}" class="input">
                 </div>
 
                 <div>
                     <label class="label">Country</label>
-                    <input name="country" value="{{ old('country', $profile->country) }}" class="input">
+                    <input name="country" value="{{ old('country', $profile->country ?? '') }}" class="input">
                 </div>
 
                 <div>
                     <label class="label">LinkedIn URL</label>
-                    <input name="linkedin" value="{{ old('linkedin', $profile->linkedin) }}" class="input">
+                    <input name="linkedin" value="{{ old('linkedin', $profile->linkedin ?? '') }}" class="input">
                 </div>
 
                 <div>
                     <label class="label">Instagram URL</label>
-                    <input name="instagram" value="{{ old('instagram', $profile->instagram) }}" class="input">
+                    <input name="instagram" value="{{ old('instagram', $profile->instagram ?? '') }}" class="input">
                 </div>
 
                 <div>
                     <label class="label">Facebook URL</label>
-                    <input name="facebook" value="{{ old('facebook', $profile->facebook) }}" class="input">
+                    <input name="facebook" value="{{ old('facebook', $profile->facebook ?? '') }}" class="input">
                 </div>
 
                 <div>
                     <label class="label">Twitter / X URL</label>
-                    <input name="twitter" value="{{ old('twitter', $profile->twitter) }}" class="input">
+                    <input name="twitter" value="{{ old('twitter', $profile->twitter ?? '') }}" class="input">
                 </div>
 
             </div>
+            @endif
 
             <!-- 💼 EXPERIENCE -->
             <div class="mt-10">

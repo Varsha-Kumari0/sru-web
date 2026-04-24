@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -39,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/store', [ProfileController::class, 'storeProfile'])->name('profile.store');
 
     // ✅ EDIT PROFILE (FIXED 🔥)
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/edit', [ProfileController::class, 'editProfile'])->name('profile.edit');
 
     // ✅ UPDATE PROFILE (FIXED 🔥)
     Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
@@ -98,6 +99,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ));
 
     })->name('admin.dashboard');
+
+    Route::get('/admin/allalumini', function () {
+        $users = User::where('role', 'user')
+            ->with(['profile', 'professional'])
+            ->orderByDesc('id')
+            ->get();
+
+        $pendingCount = $users->filter(function ($user) {
+            return strtolower($user->profile?->status ?? 'pending') === 'pending';
+        })->count();
+
+        return view('admin.allalumini', compact('users', 'pendingCount'));
+    })->name('admin.allalumini');
+
+    Route::put('/admin/alumni/{id}/approve', [AdminController::class, 'approveAlumni'])->name('admin.alumni.approve');
+    Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
 
 });
 
