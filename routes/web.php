@@ -76,9 +76,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         $activeCount = $users->filter(function ($user) {
             return strtolower($user->profile?->status ?? '') === 'active';
         })->count();
-        $pendingCount = $users->filter(function ($user) {
-            return strtolower($user->profile?->status ?? 'pending') === 'pending';
-        })->count();
         $yearsCount = $users
             ->pluck('profile.passing_year')
             ->filter(fn ($year) => !empty($year) && $year !== '—')
@@ -92,7 +89,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
             'users',
             'totalCount',
             'activeCount',
-            'pendingCount',
             'yearsCount',
             'totalChange',
             'activeChange'
@@ -106,15 +102,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->orderByDesc('id')
             ->get();
 
-        $pendingCount = $users->filter(function ($user) {
-            return strtolower($user->profile?->status ?? 'pending') === 'pending';
-        })->count();
-
-        return view('admin.allalumini', compact('users', 'pendingCount'));
+        return view('admin.allalumini', compact('users'));
     })->name('admin.allalumini');
-
-    Route::put('/admin/alumni/{id}/approve', [AdminController::class, 'approveAlumni'])->name('admin.alumni.approve');
     Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
+    Route::get('/admin/alumni/{id}/edit', [AdminController::class, 'editAlumni'])->name('admin.alumni.edit');
+    Route::put('/admin/alumni/{id}', [AdminController::class, 'updateAlumni'])->name('admin.alumni.update');
 
 });
 

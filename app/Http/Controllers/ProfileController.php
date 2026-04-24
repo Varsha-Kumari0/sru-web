@@ -105,21 +105,21 @@ class ProfileController extends Controller
             'twitter' => 'nullable|url',
 
             // image
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         // ✅ IMAGE UPLOAD
         $imagePath = null;
 
-        if ($request->hasFile('profile_image')) {
-            $imagePath = $request->file('profile_image')->store('profiles', 'public');
+        if ($request->hasFile('profile_photo')) {
+            $imagePath = $request->file('profile_photo')->store('profiles', 'public');
         }
 
         // ✅ SAVE PROFILE
         $profile = Profile::create([
             'user_id' => auth()->id(),
 
-            'profile_image' => $imagePath,
+            'profile_photo' => $imagePath,
 
             'full_name' => $request->full_name,
             'mobile' => $request->mobile,
@@ -190,12 +190,12 @@ class ProfileController extends Controller
             'facebook' => 'nullable|url',
             'twitter' => 'nullable|url',
 
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         // ✅ IMAGE UPDATE
-        if ($request->hasFile('profile_image')) {
-            $profile->profile_image = $request->file('profile_image')->store('profiles', 'public');
+        if ($request->hasFile('profile_photo')) {
+            $profile->profile_photo = $request->file('profile_photo')->store('profiles', 'public');
         }
 
         // ✅ UPDATE PROFILE

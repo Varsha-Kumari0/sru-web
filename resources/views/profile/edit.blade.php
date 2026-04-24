@@ -8,36 +8,10 @@
 
             <h2 class="text-2xl font-semibold mb-6">Edit Profile</h2>
 
-<<<<<<< HEAD
-        @if(!$profile)
-            <div class="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
-                <p>You haven't created a profile yet. Please visit the dashboard to create your profile first.</p>
-                <a href="/dashboard" class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Go to Dashboard</a>
-            </div>
-        @endif
-
-        <form id="profileForm" method="POST" action="/profile/update" enctype="multipart/form-data">
-        @csrf
-
-            <!-- 🔴 GLOBAL ERRORS -->
-            @php
-                $filteredErrors = collect($errors->all())->filter(fn($e) => !str_contains($e, 'URL'));
-            @endphp
-
-            @if ($filteredErrors->count())
-                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                    <ul class="list-disc ml-5">
-                        @foreach ($filteredErrors as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-=======
             @if(!$profile)
                 <div class="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
-                    <p>You haven't created a profile yet. Please create your profile first.</p>
-                    <a href="/profile/create"
-                        class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create Profile</a>
->>>>>>> 3a3ba033ee4efa54fac90bad5c2c0eef4816bae8
+                    <p>You haven't created a profile yet. Please visit the dashboard to create your profile first.</p>
+                    <a href="/dashboard" class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Go to Dashboard</a>
                 </div>
             @endif
 
