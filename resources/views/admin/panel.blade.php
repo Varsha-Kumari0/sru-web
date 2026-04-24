@@ -115,19 +115,6 @@
 
         <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-            Pending SRU Approvals
-            @php $pendingCount = $users->where('status','Pending')->count(); @endphp
-            @if($pendingCount > 0)
-                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-sky-400">
-                    {{ $pendingCount }}
-                </span>
-            @endif
-        </a>
-
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
             </svg>
@@ -219,7 +206,6 @@
             @foreach([
                 ['label'=>'Total SRU Alumni',       'value'=> $totalCount,    'change'=> $totalChange,      'changeColor'=>'#4caf7d', 'icon'=>'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75 circle cx=9 cy=7 r=4'],
                 ['label'=>'Active SRU Members',     'value'=> $activeCount,   'change'=> $activeChange,     'changeColor'=>'#4caf7d', 'icon'=>'polyline points=9 11 12 14 22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
-                ['label'=>'Pending Approval',   'value'=> $pendingCount,  'change'=>'Needs review',        'changeColor'=>'#e8c97a', 'icon'=>'circle cx=12 cy=12 r=10 polyline points=12 6 12 12 16 14'],
                 ['label'=>'Graduation Batches', 'value'=> $yearsCount,    'change'=>'Across all years',    'changeColor'=>'#7a7f90', 'icon'=>'rect x=3 y=4 width=18 height=18 rx=2 M16 2v4 M8 2v4 M3 10h18'],
             ] as $stat)
             <div class="stat-card relative rounded-xl p-6 transition-transform duration-200 hover:-translate-y-0.5 bg-slate-50 border border-slate-300">
@@ -327,10 +313,6 @@
             <button onclick="closeModal()"
                     class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 bg-white text-slate-500 border border-slate-300 hover:bg-slate-100 hover:text-slate-900">
                 Close
-            </button>
-            <button id="modalApproveBtn"
-                    class="px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-150 hover:-translate-y-0.5 bg-blue-500 text-white" style="display:none;">
-                ✓ Approve
             </button>
         </div>
     </div>
@@ -543,17 +525,17 @@ function renderTable() {
                             </svg>
                         </button>
 
-                        ${a.status === 'Pending' ? `
-                        <button title="Approve" onclick="approveAlumni(${a.id})"
-                                style="width:30px;height:30px;border-radius:7px;background:rgba(76,175,125,.15);
+                        <a href="/admin/alumni/${a.id}/edit" title="Edit Details"
+                                style="width:30px;height:30px;border-radius:7px;background:#ffffff;
                                        border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
-                                       transition:all .15s;"
-                                onmouseover="this.style.background='rgba(76,175,125,.3)'"
-                                onmouseout="this.style.background='rgba(76,175,125,.15)'">
-                            <svg width="13" height="13" fill="none" stroke="#4caf7d" stroke-width="2.5" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
+                                       transition:all .15s;text-decoration:none;"
+                                onmouseover="this.style.background='#fef3c7'"
+                                onmouseout="this.style.background='#ffffff'">
+                            <svg width="13" height="13" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                             </svg>
-                        </button>` : ''}
+                        </a>
 
                         <button title="Remove" onclick="removeAlumni(${a.id})"
                                 style="width:30px;height:30px;border-radius:7px;background:rgba(224,92,92,.12);
@@ -657,14 +639,6 @@ function openModal(id) {
         </div>
     `;
 
-    const approveBtn = document.getElementById('modalApproveBtn');
-    if (a.status === 'Pending') {
-        approveBtn.style.display = '';
-        approveBtn.onclick = () => { approveAlumni(id); closeModal(); };
-    } else {
-        approveBtn.style.display = 'none';
-    }
-
     document.getElementById('modalOverlay').classList.add('open');
 }
 
@@ -677,35 +651,6 @@ function closeModal() {
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────────
-function approveAlumni(id) {
-    const a = alumni.find(x => x.id === id);
-    if (!a) return;
-
-    // Send to Laravel backend via AJAX
-    fetch(`/admin/alumni/${id}/approve`, {
-        method: 'PUT',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            a.status = 'Active';
-            filterTable();
-            showToast(`✓ ${a.name} approved successfully`);
-        } else {
-            showToast(`✗ Failed to approve ${a.name}: ${data.message}`);
-        }
-    })
-    .catch(err => {
-        console.warn('Backend error:', err);
-        showToast(`✗ Failed to approve ${a.name}`);
-    });
-}
-
 function removeAlumni(id) {
     const a = alumni.find(x => x.id === id);
     if (!a || !confirm(`Remove ${a.name} from the SRU registry? This cannot be undone.`)) return;
