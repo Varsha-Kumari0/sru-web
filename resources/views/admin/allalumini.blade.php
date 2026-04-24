@@ -110,14 +110,12 @@
 							<th class="px-4 py-3 text-left">Organization</th>
 							<th class="px-4 py-3 text-left">Role</th>
 							<th class="px-4 py-3 text-left">Location</th>
-							<th class="px-4 py-3 text-left">Status</th>
 							<th class="px-4 py-3 text-left">Action</th>
 						</tr>
 					</thead>
 					<tbody>
 						@forelse($users as $user)
 							@php
-								$status = ucfirst($user->profile?->status ?? 'pending');
 								$displayName = $user->profile?->full_name ?? $user->name;
 								$detailPayload = [
 									'user_name' => $user->name,
@@ -137,7 +135,6 @@
 									'work_from' => $user->professional?->from ?? '-',
 									'work_to' => $user->professional?->to ?? '-',
 									'work_location' => $user->professional?->location ?? '-',
-									'status' => $status,
 									'registered' => $user->created_at?->format('d M Y') ?? '-',
 								];
 							@endphp
@@ -150,11 +147,6 @@
 								<td class="px-4 py-3 text-slate-700">{{ $user->professional?->organization ?? '-' }}</td>
 								<td class="px-4 py-3 text-slate-700">{{ $user->professional?->role ?? '-' }}</td>
 								<td class="px-4 py-3 text-slate-700">{{ $user->professional?->location ?? '-' }}</td>
-								<td class="px-4 py-3">
-									<span class="px-2 py-1 rounded-full text-xs font-semibold {{ $status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
-										{{ $status }}
-									</span>
-								</td>
 								<td class="px-4 py-3">
 									<div class="flex items-center gap-2">
 										<button type="button"
@@ -194,7 +186,7 @@
 							</tr>
 						@empty
 							<tr>
-								<td colspan="10" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
+								<td colspan="9" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
 							</tr>
 						@endforelse
 					</tbody>
@@ -240,7 +232,6 @@
 			['Work From', data.work_from],
 			['Work To', data.work_to],
 			['Work Location', data.work_location],
-			['Status', data.status],
 			['Registered', data.registered],
 		];
 

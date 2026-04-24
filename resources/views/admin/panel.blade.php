@@ -13,8 +13,8 @@
         .font-display { font-family: 'Playfair Display', serif; }
 
         .nav-active {
-            background: rgba(59,130,246,.14);
-            color: #1d4ed8 !important;
+            background: #e8f0fe;
+            color: #1a73e8 !important;
         }
 
         .stat-card::before {
@@ -29,7 +29,7 @@
         th.sort-asc::after  { content: ' ↑'; color: #3b82f6; }
         th.sort-desc::after { content: ' ↓'; color: #3b82f6; }
 
-        .search-wrap:focus-within { border-color: #3b82f6 !important; }
+        .search-wrap:focus-within { border-color: #1a73e8 !important; }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -63,15 +63,10 @@
             transition: transform 0.25s ease;
         }
 
-        .badge-pending { animation: pendingPulse 2.5s ease-in-out infinite; }
-        @keyframes pendingPulse {
-            0%, 100% { opacity: 1; }
-            50%       { opacity: 0.65; }
-        }
     </style>
 </head>
 
-<body class="min-h-screen flex bg-slate-50 text-slate-900 [background-image:radial-gradient(ellipse_at_10%_20%,rgba(59,130,246,.08)_0%,transparent_60%),radial-gradient(ellipse_at_90%_80%,rgba(148,163,184,.12)_0%,transparent_60%)]">
+<body class="min-h-screen flex bg-[#f8f9fc] text-[#1a1a2e]">
 
 {{-- ══════════════════════════════════════
      SIDEBAR
@@ -197,37 +192,45 @@
     </header>
 
     {{-- Content --}}
-    <div class="p-9 flex-1">
+    <div class="p-9 flex-1 grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-        {{-- ── Stats Row ── --}}
-        <div class="grid grid-cols-4 gap-5 mb-8">
+        <section class="xl:col-span-2 space-y-6">
 
-            {{-- Stat Card helper macro (inline) --}}
-            @foreach([
-                ['label'=>'Total SRU Alumni',       'value'=> $totalCount,    'change'=> $totalChange,      'changeColor'=>'#4caf7d', 'icon'=>'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75 circle cx=9 cy=7 r=4'],
-                ['label'=>'Active SRU Members',     'value'=> $activeCount,   'change'=> $activeChange,     'changeColor'=>'#4caf7d', 'icon'=>'polyline points=9 11 12 14 22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
-                ['label'=>'Graduation Batches', 'value'=> $yearsCount,    'change'=>'Across all years',    'changeColor'=>'#7a7f90', 'icon'=>'rect x=3 y=4 width=18 height=18 rx=2 M16 2v4 M8 2v4 M3 10h18'],
-            ] as $stat)
-            <div class="stat-card relative rounded-xl p-6 transition-transform duration-200 hover:-translate-y-0.5 bg-slate-50 border border-slate-300">
-                <p class="text-xs font-semibold tracking-widest uppercase text-slate-500 tracking-[0.1em]">
-                    {{ $stat['label'] }}
-                </p>
-                <p class="font-display text-4xl font-bold my-2 text-slate-900">{{ $stat['value'] }}</p>
-                <p class="text-xs font-medium" style="color:{{ $stat['changeColor'] }}">{{ $stat['change'] }}</p>
+            {{-- ── Stats Row ── --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                    <p class="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#555]">Total Alumni</p>
+                    <p class="font-display text-4xl leading-tight mt-2 text-[#1a1a2e]">{{ $totalCount }}</p>
+                    <span class="inline-flex items-center mt-3 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#e6f4ea] text-[#137333]">{{ $totalChipText }}</span>
+                </div>
+
+                <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                    <p class="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#555]">Graduation Batches</p>
+                    <p class="font-display text-4xl leading-tight mt-2 text-[#1a1a2e]">{{ $yearsCount }}</p>
+                    <span class="inline-flex items-center mt-3 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#e8f0fe] text-[#1a73e8]">{{ $batchChipText }}</span>
+                </div>
+
+                <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                    <p class="text-[11px] font-semibold tracking-[0.08em] uppercase text-[#555]">Unread Messages</p>
+                    <div class="mt-2 flex items-center gap-2">
+                        <p class="font-display text-4xl leading-tight text-[#1a1a2e]">{{ $unreadMessagesCount }}</p>
+                        @if($unreadMessagesCount > 0)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#e8f0fe] text-[#1a73e8]">new</span>
+                        @endif
+                    </div>
+                    <span class="inline-flex items-center mt-3 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#e8f0fe] text-[#1a73e8]">{{ $messagesChipText }}</span>
+                </div>
             </div>
-            @endforeach
 
-        </div>
-
-        {{-- ── Alumni Table ── --}}
-        <div class="rounded-xl overflow-hidden bg-slate-50 border border-slate-300">
+            {{-- ── Alumni Table ── --}}
+            <div class="rounded-xl overflow-hidden bg-[#ffffff] border border-[#dde3ec]">
 
             {{-- Table Header / Controls --}}
-              <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border-b border-slate-300">
+              <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border-b border-[#dde3ec]">
                 <h3 class="font-display text-lg font-semibold">All Registered SRU Alumni</h3>
                 <div class="flex items-center gap-3 flex-wrap">
                     {{-- Search --}}
-                    <div class="search-wrap flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-150 bg-white border border-slate-300">
+                  <div class="search-wrap flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-150 bg-[#ffffff] border border-[#dde3ec]">
                         <svg width="13" height="13" fill="none" stroke="#7a7f90" stroke-width="2" viewBox="0 0 24 24">
                             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                         </svg>
@@ -236,17 +239,9 @@
                                class="bg-transparent outline-none text-sm w-48 h-5 border-none text-slate-900"
                                placeholder-style="color:#7a7f90">
                     </div>
-                    {{-- Status Filter --}}
-                    <select id="statusFilter" onchange="filterTable()"
-                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150 bg-white border border-slate-300 text-slate-500">
-                        <option value="">All Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
                     {{-- Year Filter --}}
                     <select id="yearFilter" onchange="filterTable()"
-                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150 bg-white border border-slate-300 text-slate-500">
+                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150 bg-[#ffffff] border border-[#dde3ec] text-[#555]">
                         <option value="">All Years</option>
                     </select>
                 </div>
@@ -262,11 +257,10 @@
                                 ['department',      'Department'],
                                 ['graduation_year', 'Graduation Year'],
                                 ['email',           'Email'],
-                                ['status',          'Status'],
                                 ['created_at',      'Registered'],
                                 [null,              'Actions'],
                             ] as [$key, $label])
-                            <th class="text-left px-5 py-3.5 text-xs font-semibold tracking-widest uppercase select-none whitespace-nowrap text-slate-500 border-b border-slate-300 {{ $key ? 'cursor-pointer hover:text-slate-900' : '' }}"
+                            <th class="text-left px-5 py-3.5 text-xs font-semibold tracking-widest uppercase select-none whitespace-nowrap text-[#555] border-b border-[#dde3ec] {{ $key ? 'cursor-pointer hover:text-[#1a1a2e]' : '' }}"
                                 {{ $key ? "onclick=sortTable('$key')" : '' }}>
                                 {{ $label }}
                             </th>
@@ -275,7 +269,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="7" class="py-16 text-center text-slate-500">
+                            <td colspan="6" class="py-16 text-center text-[#555]">
                                 <svg class="mx-auto mb-3" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                     <circle cx="9" cy="7" r="4"/>
@@ -288,11 +282,59 @@
             </div>
 
             {{-- Pagination --}}
-            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-300">
-                <span class="text-sm text-slate-500" id="paginationInfo">Showing 0 of 0 alumni</span>
+            <div class="flex items-center justify-between px-6 py-4 border-t border-[#dde3ec]">
+                <span class="text-sm text-[#555]" id="paginationInfo">Showing 0 of 0 alumni</span>
                 <div class="flex items-center gap-1" id="paginationControls"></div>
             </div>
         </div>
+
+        </section>
+
+        <aside class="space-y-6">
+            <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-display text-lg font-semibold text-[#1a1a2e]">Department Breakdown</h3>
+                    <span class="text-xs text-[#aaa]">Top 6</span>
+                </div>
+
+                <div class="space-y-4">
+                    @forelse($departmentBreakdown as $dept)
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <p class="text-sm font-medium text-[#1a1a2e] truncate pr-3">{{ $dept['department'] }}</p>
+                                <p class="text-xs text-[#555]">{{ $dept['count'] }} ({{ $dept['percent'] }}%)</p>
+                            </div>
+                            <div class="h-2 w-full rounded-full bg-[#eef0f5] overflow-hidden">
+                                <div class="h-full rounded-full bg-[#1a73e8]" style="width: {{ $dept['percent'] }}%"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-[#aaa]">No department data available.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-display text-lg font-semibold text-[#1a1a2e]">Recent Activity</h3>
+                    <span class="text-xs text-[#aaa]">Latest updates</span>
+                </div>
+
+                <div class="space-y-3">
+                    @forelse($recentActivity as $activity)
+                        <div class="flex items-start gap-3">
+                            <span class="mt-1.5 h-2 w-2 rounded-full {{ $activity['type'] === 'registered' ? 'bg-[#137333]' : 'bg-[#1a73e8]' }}"></span>
+                            <div class="min-w-0">
+                                <p class="text-sm text-[#1a1a2e] leading-5">{{ $activity['text'] }}</p>
+                                <p class="text-xs text-[#aaa] mt-1">{{ $activity['time'] }}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-[#aaa]">No recent activity yet.</p>
+                    @endforelse
+                </div>
+            </div>
+        </aside>
 
     </div>{{-- /content --}}
 </main>
@@ -343,7 +385,6 @@ const alumni = {!! json_encode($users->map(function($u) {
         'department'      => $u->profile?->branch ?? '—',
         'graduation_year' => $u->profile?->passing_year ?? '—',
         'location'        => $u->professional?->location ?? '—',
-        'status'          => ucfirst($u->profile?->status ?? 'pending'),
         'created_at'      => $u->created_at,
         // Profile fields
         'city'            => $u->profile?->city ?? '—',
@@ -401,7 +442,6 @@ function populateYearFilter() {
 // ── Filter ───────────────────────────────────────────────────────────────────
 function filterTable() {
     const q      = document.getElementById('searchInput').value.toLowerCase();
-    const status = document.getElementById('statusFilter').value;
     const year   = document.getElementById('yearFilter').value;
 
     filtered = alumni.filter(a => {
@@ -410,9 +450,8 @@ function filterTable() {
             a.email.toLowerCase().includes(q) ||
             (a.department && a.department.toLowerCase().includes(q)) ||
             String(a.graduation_year).includes(q);
-        const matchS = !status || a.status === status;
         const matchY = !year   || a.graduation_year == year;
-        return matchQ && matchS && matchY;
+        return matchQ && matchY;
     });
 
     currentPage = 1;
@@ -428,7 +467,7 @@ function sortTable(key) {
         th.classList.remove('sort-asc', 'sort-desc');
     });
 
-    const headers = ['name', 'department', 'graduation_year', 'email', 'status', 'created_at'];
+    const headers = ['name', 'department', 'graduation_year', 'email', 'created_at'];
     const idx = headers.indexOf(key);
     if (idx >= 0) {
         const ths = document.querySelectorAll('thead th');
@@ -455,7 +494,7 @@ function renderTable() {
     const slice = filtered.slice(start, start + perPage);
 
     if (slice.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="padding:60px 0; text-align:center; color:#7a7f90;">
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:60px 0; text-align:center; color:#555;">
             <svg style="margin:0 auto 12px" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
             </svg>
@@ -465,12 +504,6 @@ function renderTable() {
         tbody.innerHTML = slice.map(a => {
             const initials  = (a.full_name && a.full_name !== '—' ? a.full_name : a.name).split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
             const color     = getColor(a.id);
-            const badgeStyles = {
-                Active:   'background:rgba(76,175,125,.15); color:#4caf7d;',
-                Pending:  'background:rgba(201,168,76,.15);  color:#e8c97a;',
-                Inactive: 'background:rgba(122,127,144,.12); color:#7a7f90;',
-            };
-            const badge = badgeStyles[a.status] || badgeStyles.Inactive;
             const date  = a.created_at
                 ? new Date(a.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })
                 : '—';
@@ -479,8 +512,8 @@ function renderTable() {
             const displayName = (a.full_name && a.full_name !== '—') ? a.full_name : a.name;
 
             return `
-            <tr style="border-bottom:1px solid #252a38; cursor:default; transition:background .12s;"
-                onmouseover="this.style.background='rgba(255,255,255,.025)'"
+            <tr style="border-bottom:1px solid #eef0f5; cursor:default; transition:background .12s;"
+                onmouseover="this.style.background='#f8f9fc'"
                 onmouseout="this.style.background='transparent'">
 
                 <td style="padding:16px 20px; vertical-align:middle;">
@@ -492,24 +525,16 @@ function renderTable() {
                         </div>
                         <div>
                             <div style="font-weight:600;font-size:14px;">${displayName}</div>
-                            <div style="font-size:11px;color:#7a7f90;">#SRU-${String(a.id).padStart(4,'0')}</div>
+                            <div style="font-size:11px;color:#aaa;">#SRU-${String(a.id).padStart(4,'0')}</div>
                         </div>
                     </div>
                 </td>
 
                 <td style="padding:16px 20px;font-size:13.5px;vertical-align:middle;">${a.department}</td>
                 <td style="padding:16px 20px;font-size:13.5px;vertical-align:middle;">${a.graduation_year}</td>
-                <td style="padding:16px 20px;font-size:13.5px;vertical-align:middle;color:#7a7f90;">${a.email}</td>
+                <td style="padding:16px 20px;font-size:13.5px;vertical-align:middle;color:#555;">${a.email}</td>
 
-                <td style="padding:16px 20px;vertical-align:middle;">
-                    <span class="${a.status === 'Pending' ? 'badge-pending' : ''}"
-                          style="${badge} display:inline-flex;align-items:center;padding:3px 10px;
-                                 border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.04em;">
-                        ${a.status}
-                    </span>
-                </td>
-
-                <td style="padding:16px 20px;font-size:13px;color:#7a7f90;vertical-align:middle;">${date}</td>
+                <td style="padding:16px 20px;font-size:13px;color:#aaa;vertical-align:middle;">${date}</td>
 
                 <td style="padding:16px 20px;vertical-align:middle;">
                     <div class="row-actions" style="display:flex;align-items:center;gap:8px;opacity:1;">
@@ -565,14 +590,14 @@ function renderTable() {
         const btn = document.createElement('button');
         btn.textContent = label;
         btn.style.cssText = `
-            min-width:32px; height:32px; padding:0 10px; border-radius:7px; border:none; cursor:pointer;
+            min-width:32px; height:32px; padding:0 10px; border-radius:7px; border:1px solid #dde3ec; cursor:pointer;
             font-size:13px; font-weight:600; font-family:'DM Sans',sans-serif;
-            background:${active ? 'rgba(201,168,76,.2)' : '#252a38'};
-            color:${active ? '#e8c97a' : '#7a7f90'};
+            background:${active ? '#e8f0fe' : '#ffffff'};
+            color:${active ? '#1a73e8' : '#555'};
             transition:all .15s;
         `;
-        btn.onmouseover = () => { if (!active) btn.style.background = '#35394a'; };
-        btn.onmouseout  = () => { if (!active) btn.style.background = '#252a38'; };
+        btn.onmouseover = () => { if (!active) btn.style.background = '#f8f9fc'; };
+        btn.onmouseout  = () => { if (!active) btn.style.background = '#ffffff'; };
         btn.onclick = () => { currentPage = page; renderTable(); };
         ctrl.appendChild(btn);
     };
@@ -589,12 +614,6 @@ function openModal(id) {
     const displayName = (a.full_name && a.full_name !== '—') ? a.full_name : a.name;
     const color    = getColor(a.id);
     const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-    const badgeStyles = {
-        Active:   'background:rgba(76,175,125,.15); color:#4caf7d;',
-        Pending:  'background:rgba(201,168,76,.15);  color:#e8c97a;',
-        Inactive: 'background:rgba(122,127,144,.12); color:#7a7f90;',
-    };
-    const badge = badgeStyles[a.status] || badgeStyles.Inactive;
 
     document.getElementById('modalContent').innerHTML = `
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
@@ -627,7 +646,6 @@ function openModal(id) {
                 ['Work From',       a.from],
                 ['Work To',         a.to],
                 ['Work Location',   a.pro_location],
-                ['Status',          `<span style="${badge};display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">${a.status}</span>`],
                 ['Registered',      a.created_at ? new Date(a.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : '—'],
               ].map(([label, val]) => `
                                 <div style="background:#e4e5e6;border-radius:10px;padding:14px 16px;">
@@ -682,10 +700,10 @@ function removeAlumni(id) {
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV() {
-    const headers = ['ID','Name','Email','Phone','Department','Graduation Year','Status','Location','Registered'];
+    const headers = ['ID','Name','Email','Phone','Department','Graduation Year','Location','Registered'];
     const rows = alumni.map(a => [
         a.id, a.name, a.email, a.phone, a.department,
-        a.graduation_year, a.status, a.location, a.created_at
+        a.graduation_year, a.location, a.created_at
     ]);
     const csv  = [headers, ...rows].map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });

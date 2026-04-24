@@ -73,25 +73,79 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->get();
 
         $totalCount = $users->count();
-        $activeCount = $users->filter(function ($user) {
-            return strtolower($user->profile?->status ?? '') === 'active';
-        })->count();
+        $weeklyNewCount = $users->filter(fn ($user) => $user->created_at?->isCurrentWeek())->count();
         $yearsCount = $users
             ->pluck('profile.passing_year')
             ->filter(fn ($year) => !empty($year) && $year !== '—')
             ->unique()
             ->count();
 
+        // Placeholder until a dedicated messages module is connected.
+        $unreadMessagesCount = 0;
+
+        $departmentBreakdown = $users
+            ->groupBy(fn ($user) => $user->profile?->branch ?: 'Unspecified')
+            ->map(function ($group, $department) use ($totalCount) {
+                $count = $group->count();
+
+                return [
+                    'department' => $department,
+                    'count' => $count,
+                    'percent' => $totalCount > 0 ? (int) round(($count / $totalCount) * 100) : 0,
+                ];
+            })
+            ->sortByDesc('count')
+            ->take(6)
+            ->values();
+
+        $recentActivity = $users
+            ->flatMap(function ($user) {
+                $name = $user->profile?->full_name ?: $user->name;
+                $activities = collect();
+
+                if ($user->created_at) {
+                    $activities->push([
+                        'type' => 'registered',
+                        'text' => $name . ' registered',
+                        'at' => $user->created_at,
+                    ]);
+                }
+
+                if ($user->profile && $user->profile->updated_at && $user->profile->created_at && $user->profile->updated_at->gt($user->profile->created_at)) {
+                    $activities->push([
+                        'type' => 'updated',
+                        'text' => $name . ' profile updated',
+                        'at' => $user->profile->updated_at,
+                    ]);
+                }
+
+                return $activities;
+            })
+            ->sortByDesc('at')
+            ->take(8)
+            ->values()
+            ->map(fn ($item) => [
+                'type' => $item['type'],
+                'text' => $item['text'],
+                'time' => $item['at']?->diffForHumans() ?? 'just now',
+            ]);
+
         $totalChange = 'All time';
-        $activeChange = 'Verified members';
+        $totalChipText = $weeklyNewCount > 0 ? ('↑ ' . $weeklyNewCount . ' this week') : 'No new this week';
+        $batchChipText = $yearsCount > 0 ? ($yearsCount . ' recorded batches') : 'No batch data';
+        $messagesChipText = 'View inbox';
 
         return view('admin.panel', compact(
             'users',
             'totalCount',
-            'activeCount',
             'yearsCount',
             'totalChange',
-            'activeChange'
+            'unreadMessagesCount',
+            'departmentBreakdown',
+            'recentActivity',
+            'totalChipText',
+            'batchChipText',
+            'messagesChipText'
         ));
 
     })->name('admin.dashboard');
