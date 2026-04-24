@@ -29,8 +29,6 @@
         th.sort-asc::after  { content: ' ↑'; color: #3b82f6; }
         th.sort-desc::after { content: ' ↓'; color: #3b82f6; }
 
-        tr:hover .row-actions { opacity: 1 !important; }
-
         .search-wrap:focus-within { border-color: #3b82f6 !important; }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -104,7 +102,7 @@
             Dashboard
         </a>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+        <a href="{{ route('admin.allalumini') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -532,14 +530,14 @@ function renderTable() {
                 <td style="padding:16px 20px;font-size:13px;color:#7a7f90;vertical-align:middle;">${date}</td>
 
                 <td style="padding:16px 20px;vertical-align:middle;">
-                    <div class="row-actions" style="display:flex;align-items:center;gap:8px;opacity:0;transition:opacity .15s;">
+                    <div class="row-actions" style="display:flex;align-items:center;gap:8px;opacity:1;">
                         <button title="View Details" onclick="openModal(${a.id})"
-                                style="width:30px;height:30px;border-radius:7px;background:#252a38;
+                                style="width:30px;height:30px;border-radius:7px;background:#ffffff;
                                        border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
                                        transition:all .15s;"
-                                onmouseover="this.style.background='#35394a'"
-                                onmouseout="this.style.background='#252a38'">
-                            <svg width="13" height="13" fill="none" stroke="#7a7f90" stroke-width="2" viewBox="0 0 24 24">
+                                onmouseover="this.style.background='#dbeafe'"
+                                onmouseout="this.style.background='#ffffff'">
+                            <svg width="13" height="13" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                             </svg>
@@ -606,8 +604,9 @@ function openModal(id) {
     const a = alumni.find(x => x.id === id);
     if (!a) return;
 
+    const displayName = (a.full_name && a.full_name !== '—') ? a.full_name : a.name;
     const color    = getColor(a.id);
-    const initials = a.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     const badgeStyles = {
         Active:   'background:rgba(76,175,125,.15); color:#4caf7d;',
         Pending:  'background:rgba(201,168,76,.15);  color:#e8c97a;',
@@ -623,7 +622,7 @@ function openModal(id) {
                 ${initials}
             </div>
             <div>
-                <div style="font-size:20px;font-weight:700;font-family:'Playfair Display',serif;">${a.name}</div>
+                <div style="font-size:20px;font-weight:700;font-family:'Playfair Display',serif;">${displayName}</div>
                 <div style="font-size:12px;color:#7a7f90;margin-top:3px;">#SRU-${String(a.id).padStart(4,'0')}</div>
             </div>
         </div>
@@ -648,9 +647,9 @@ function openModal(id) {
                 ['Work Location',   a.pro_location],
                 ['Status',          `<span style="${badge};display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">${a.status}</span>`],
                 ['Registered',      a.created_at ? new Date(a.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : '—'],
-              ].filter(([_, val]) => val !== '—').map(([label, val]) => `
-                <div style="background:#0d0f14;border-radius:10px;padding:14px 16px;">
-                    <p style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#7a7f90;margin-bottom:5px;">${label}</p>
+              ].map(([label, val]) => `
+                                <div style="background:#e4e5e6;border-radius:10px;padding:14px 16px;">
+                                        <p style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#27282b;margin-bottom:5px;">${label}</p>
                     <p style="font-size:14px;font-weight:500;">${val}</p>
                 </div>
               `).join('')
