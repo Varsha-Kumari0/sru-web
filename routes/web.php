@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
+use App\Http\Controllers\NewsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,9 @@ Route::get('/profile', function () {
     return view('profile.profile', compact('profile', 'experiences'));
 
 })->middleware(['auth'])->name('profile');
+
+Route::get('/newsroom', [NewsController::class, 'index'])->name('newsroom');
+Route::get('/newsroom/{id}', [NewsController::class, 'show'])->name('news.show');
 
 // 🔐 AUTH REQUIRED ROUTES
 Route::middleware(['auth'])->group(function () {
