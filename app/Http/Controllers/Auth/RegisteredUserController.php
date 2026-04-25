@@ -32,7 +32,7 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    
+
 
     public function store(Request $request)
     {

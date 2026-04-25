@@ -10,9 +10,8 @@
 
             @if(!$profile)
                 <div class="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
-                    <p>You haven't created a profile yet. Please create your profile first.</p>
-                    <a href="/profile/create"
-                        class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create Profile</a>
+                    <p>You haven't created a profile yet. Please visit the dashboard to create your profile first.</p>
+                    <a href="/dashboard" class="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Go to Dashboard</a>
                 </div>
             @endif
 
