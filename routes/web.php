@@ -130,6 +130,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     })->name('admin.dashboard');
 
+    // Admin list page for all registered alumni records.
     Route::get('/admin/allalumini', function () {
         $users = User::where('role', 'user')
             ->with(['profile', 'professional'])
@@ -138,6 +139,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         return view('admin.allalumini', compact('users'));
     })->name('admin.allalumini');
+    // Persistent audit logs (view + filtered CSV export).
     Route::get('/admin/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');
     Route::get('/admin/activity-logs/export', [AdminController::class, 'exportActivityLogsCsv'])->name('admin.activity-logs.export');
     Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
+    // Reusable query builder for activity logs list and export endpoints.
     private function buildActivityLogsQuery(Request $request)
     {
         $query = ActivityLog::query()->with(['actor', 'subject']);
@@ -34,6 +35,7 @@ class AdminController extends Controller
 
     public function activityLogs(Request $request)
     {
+        // Validate filter parameters before building the query.
         $request->validate([
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date',
@@ -46,6 +48,7 @@ class AdminController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        // Actor dropdown includes only users who have produced logs.
         $actors = User::query()
             ->whereIn(
                 'id',
@@ -65,6 +68,7 @@ class AdminController extends Controller
 
     public function exportActivityLogsCsv(Request $request)
     {
+        // Keep CSV export filters identical to on-screen filter rules.
         $request->validate([
             'from_date' => 'nullable|date',
             'to_date' => 'nullable|date',
@@ -91,6 +95,7 @@ class AdminController extends Controller
 
         $filename = 'activity_logs_' . now()->format('Y-m-d') . '.csv';
 
+        // Stream rows to avoid high memory usage on larger exports.
         return response()->streamDownload(function () use ($logs) {
             $handle = fopen('php://output', 'w');
 

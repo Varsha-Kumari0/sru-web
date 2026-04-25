@@ -143,7 +143,7 @@
 
 <body class="min-h-screen flex bg-slate-50 text-slate-900">
 
-{{-- Sidebar --}}
+{{-- Sidebar: shared admin navigation --}}
 <aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
     <div class="px-7 py-8 border-b border-slate-300">
         <h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">
@@ -220,7 +220,7 @@
     </div>
 </aside>
 
-{{-- Main Content --}}
+{{-- Main Content: admin edit form for selected alumni --}}
 <main class="ml-64 flex-1 flex flex-col min-h-screen">
     <header class="sticky top-0 z-40 flex items-center justify-between px-9 py-5 bg-white border-b border-slate-300">
         <div>
@@ -422,6 +422,7 @@
 </main>
 
 <script>
+// Show a local preview when admin selects a new profile image.
 function previewPhoto(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -442,6 +443,7 @@ function previewPhoto(event) {
     reader.readAsDataURL(file);
 }
 
+// Disable "to" date when currently working is checked.
 function toggleToField() {
     const checkbox = document.getElementById('is_current');
     const toField = document.getElementById('to');

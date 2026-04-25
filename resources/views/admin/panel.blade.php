@@ -413,7 +413,7 @@ const alumni = {!! json_encode($users->map(function($u) {
     ];
 })) !!};
 
-// ── State ────────────────────────────────────────────────────────────────────
+// ── State (dashboard table controls) ─────────────────────────────────────────
 let filtered    = [...alumni];
 let sortKey     = 'name';
 let sortDir     = 1;

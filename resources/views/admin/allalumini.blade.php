@@ -18,6 +18,7 @@
 </head>
 <body class="min-h-screen flex bg-slate-50 text-slate-900 [background-image:radial-gradient(ellipse_at_10%_20%,rgba(59,130,246,.08)_0%,transparent_60%),radial-gradient(ellipse_at_90%_80%,rgba(148,163,184,.12)_0%,transparent_60%)]">
 
+{{-- Admin sidebar navigation --}}
 <aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
 	<div class="px-7 py-8 border-b border-slate-300">
 		<h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">SRU<br>Alumni</h1>
@@ -85,6 +86,7 @@
 	</div>
 </aside>
 
+{{-- Main content: alumni listing and row actions --}}
 <main class="ml-64 flex-1 flex flex-col min-h-screen">
 	<header class="sticky top-0 z-40 flex items-center justify-between px-9 py-5 bg-white border-b border-slate-300">
 		<div>
@@ -218,6 +220,7 @@
 	</div>
 </main>
 
+{{-- Alumni quick-view modal --}}
 <div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
 	<div class="w-full max-w-xl rounded-xl bg-white border border-slate-300 shadow-xl">
 		<div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
@@ -231,6 +234,7 @@
 </div>
 
 <script>
+	// Render selected alumni details inside modal.
 	function openDetails(data) {
 		const modal = document.getElementById('detailsModal');
 		const title = document.getElementById('detailsTitle');
@@ -273,6 +277,7 @@
 		modal.classList.add('flex');
 	}
 
+	// Close modal and clear visual state.
 	function closeDetails() {
 		const modal = document.getElementById('detailsModal');
 		modal.classList.add('hidden');
