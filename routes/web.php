@@ -130,8 +130,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     })->name('admin.dashboard');
 
+    // Backward-compatible redirect from old alumni URL.
+    Route::redirect('/admin/allalumini', '/admin/all-alumini', 301);
+
     // Admin list page for all registered alumni records.
-    Route::get('/admin/allalumini', function () {
+    Route::get('/admin/all-alumini', function () {
         $users = User::where('role', 'user')
             ->with(['profile', 'professional'])
             ->orderByDesc('id')
