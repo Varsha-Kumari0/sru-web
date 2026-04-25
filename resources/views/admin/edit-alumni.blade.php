@@ -243,7 +243,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.alumni.update', $user->id) }}" class="max-w-4xl">
+        <form method="POST" action="{{ route('admin.alumni.update', $user->id) }}" class="max-w-4xl" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -267,6 +267,26 @@
             {{-- Profile Information Section --}}
             <div class="form-section">
                 <h3>📋 Profile Information</h3>
+
+                {{-- Profile Photo --}}
+                <div class="form-group">
+                    <label>Profile Photo</label>
+                    <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:0.75rem;">
+                        @if($user->profile?->profile_photo)
+                            <img id="currentPhotoPreview" src="{{ asset('storage/' . $user->profile->profile_photo) }}" alt="Current photo" style="width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f8f9fc;border:2px solid #e2e8f0;">
+                        @else
+                            <div id="currentPhotoPreview" style="width:80px;height:80px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#94a3b8;">
+                                {{ strtoupper(substr($user->profile?->full_name ?? $user->name, 0, 1)) }}
+                            </div>
+                        @endif
+                        <div>
+                            <input type="file" id="profile_photo" name="profile_photo" accept="image/jpeg,image/png,image/jpg" style="font-size:13px;" onchange="previewPhoto(event)">
+                            <p style="margin-top:0.4rem;font-size:12px;color:#94a3b8;">JPG or PNG, max 2MB. Leave empty to keep current photo.</p>
+                        </div>
+                    </div>
+                    @error('profile_photo')<span class="error-text">{{ $message }}</span>@enderror
+                </div>
+
                 <div class="grid-2">
                     <div class="form-group">
                         <label for="full_name">Full Name</label>
@@ -394,6 +414,26 @@
 </main>
 
 <script>
+function previewPhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById('currentPhotoPreview');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (preview.tagName === 'IMG') {
+            preview.src = e.target.result;
+        } else {
+            const img = document.createElement('img');
+            img.id = 'currentPhotoPreview';
+            img.src = e.target.result;
+            img.alt = 'New photo';
+            img.style = 'width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f8f9fc;border:2px solid #e2e8f0;';
+            preview.replaceWith(img);
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
 function toggleToField() {
     const checkbox = document.getElementById('is_current');
     const toField = document.getElementById('to');

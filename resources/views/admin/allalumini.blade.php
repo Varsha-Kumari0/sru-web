@@ -117,9 +117,14 @@
 						@forelse($users as $user)
 							@php
 								$displayName = $user->profile?->full_name ?? $user->name;
-								$detailPayload = [
-									'user_name' => $user->name,
-									'full_name' => $displayName,
+							$profilePhotoUrl = $user->profile?->profile_photo ? asset('storage/' . $user->profile->profile_photo) : null;
+							$initials = strtoupper(substr($displayName, 0, 1));
+							$avatarColors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'];
+							$avatarColor = $avatarColors[crc32($displayName) % count($avatarColors)];
+							$detailPayload = [
+								'user_name' => $user->name,
+								'full_name' => $displayName,
+								'profile_photo' => $profilePhotoUrl,
 									'email' => $user->email,
 									'phone' => $user->profile?->mobile ?? '-',
 									'city' => $user->profile?->city ?? '-',
@@ -139,7 +144,16 @@
 								];
 							@endphp
 							<tr class="border-t border-slate-200 hover:bg-slate-50">
-								<td class="px-4 py-3 font-medium text-slate-900">{{ $displayName }}</td>
+							<td class="px-4 py-3">
+								<div class="flex items-center gap-2.5">
+									@if($profilePhotoUrl)
+										<img src="{{ $profilePhotoUrl }}" alt="{{ $displayName }}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;background:#f8f9fc;flex-shrink:0;">
+									@else
+										<div style="width:36px;height:36px;border-radius:8px;background:{{ $avatarColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;">{{ $initials }}</div>
+									@endif
+									<span class="font-medium text-slate-900">{{ $displayName }}</span>
+								</div>
+							</td>
 								<td class="px-4 py-3 text-slate-700">{{ $user->email }}</td>
 								<td class="px-4 py-3 text-slate-700">{{ $user->profile?->mobile ?? '-' }}</td>
 								<td class="px-4 py-3 text-slate-700">{{ $user->profile?->branch ?? '-' }}</td>
@@ -235,7 +249,12 @@
 			['Registered', data.registered],
 		];
 
-		body.innerHTML = entries.map(([label, value]) => `
+		let photoHtml = '';
+		if (data.profile_photo) {
+			photoHtml = `<div class="col-span-2 flex justify-center mb-2"><img src="${data.profile_photo}" alt="Profile" style="width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f8f9fc;border:2px solid #e2e8f0;"></div>`;
+		}
+
+		body.innerHTML = photoHtml + entries.map(([label, value]) => `
 			<div class="rounded-lg bg-slate-100 p-3">
 				<p class="mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-700">${label}</p>
 				<p class="text-sm text-slate-900">${value ?? '-'}</p>

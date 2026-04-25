@@ -80,6 +80,7 @@ class AdminController extends Controller
             'to' => 'sometimes|nullable|string|max:255',
             'location' => 'sometimes|string|max:255',
             'is_current' => 'sometimes|boolean',
+            'profile_photo' => 'sometimes|nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         // Update user information
@@ -96,6 +97,12 @@ class AdminController extends Controller
             if (isset($validated[$field])) {
                 $profileData[$field] = $validated[$field];
             }
+        }
+
+        // Handle profile photo upload
+        if ($request->hasFile('profile_photo')) {
+            $imagePath = $request->file('profile_photo')->store('profiles', 'public');
+            $profileData['profile_photo'] = $imagePath;
         }
         
         if (!empty($profileData)) {

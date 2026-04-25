@@ -380,6 +380,7 @@ const alumni = {!! json_encode($users->map(function($u) {
         'id'              => $u->id,
         'name'            => $u->name,
         'email'           => $u->email,
+        'profile_photo'   => $u->profile?->profile_photo ? asset('storage/' . $u->profile->profile_photo) : null,
         'phone'           => $u->profile?->mobile ?? '—',
         'full_name'       => $u->profile?->full_name ?? $u->name,
         'department'      => $u->profile?->branch ?? '—',
@@ -518,11 +519,14 @@ function renderTable() {
 
                 <td style="padding:16px 20px; vertical-align:middle;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:36px;height:36px;border-radius:50%;background:${color};
+                        ${a.profile_photo
+                            ? `<img src="${a.profile_photo}" alt="${displayName}"
+                                style="width:36px;height:36px;border-radius:8px;object-fit:contain;object-position:center;background:#f8f9fc;flex-shrink:0;border:1px solid #dde3ec;"/>`
+                            : `<div style="width:36px;height:36px;border-radius:8px;background:${color};
                                     display:flex;align-items:center;justify-content:center;
                                     font-weight:700;font-size:13px;color:#fff;flex-shrink:0;">
-                            ${initials}
-                        </div>
+                                    ${initials}
+                               </div>`}
                         <div>
                             <div style="font-weight:600;font-size:14px;">${displayName}</div>
                             <div style="font-size:11px;color:#aaa;">#SRU-${String(a.id).padStart(4,'0')}</div>
@@ -617,11 +621,14 @@ function openModal(id) {
 
     document.getElementById('modalContent').innerHTML = `
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
-            <div style="width:52px;height:52px;border-radius:50%;background:${color};
+            ${a.profile_photo
+                ? `<img src="${a.profile_photo}" alt="${displayName}"
+                    style="width:52px;height:52px;border-radius:10px;object-fit:contain;object-position:center;background:#f8f9fc;flex-shrink:0;border:1px solid #dde3ec;"/>`
+                : `<div style="width:52px;height:52px;border-radius:10px;background:${color};
                         display:flex;align-items:center;justify-content:center;
                         font-weight:700;font-size:18px;color:#fff;flex-shrink:0;">
-                ${initials}
-            </div>
+                        ${initials}
+                    </div>`}
             <div>
                 <div style="font-size:20px;font-weight:700;font-family:'Playfair Display',serif;">${displayName}</div>
                 <div style="font-size:12px;color:#7a7f90;margin-top:3px;">#SRU-${String(a.id).padStart(4,'0')}</div>
