@@ -21,7 +21,14 @@
 {{-- Admin sidebar navigation --}}
 <aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
 	<div class="px-7 py-8 border-b border-slate-300">
-		<h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">SRU<br>Alumni</h1>
+		@php($dashboardLogoPath = 'images/logos/sru_logo_new.png')
+
+		@if(file_exists(public_path($dashboardLogoPath)))
+			<img src="{{ asset($dashboardLogoPath) }}" alt="SRU Alumni Logo" class="h-12 w-auto object-contain">
+		@else
+			<h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">SRU<br>Alumni</h1>
+		@endif
+
 		<span class="text-xs font-semibold tracking-widest uppercase mt-1 block text-slate-500">Admin Control</span>
 	</div>
 
@@ -134,95 +141,97 @@
 						</tr>
 					</thead>
 					<tbody>
-						@forelse($users as $user)
-							@php
-								$displayName = $user->profile?->full_name ?? $user->name;
-							$profilePhotoUrl = $user->profile?->profile_photo ? asset('storage/' . $user->profile->profile_photo) : null;
-							$initials = strtoupper(substr($displayName, 0, 1));
-							$avatarColors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'];
-							$avatarColor = $avatarColors[crc32($displayName) % count($avatarColors)];
-							$detailPayload = [
-								'user_name' => $user->name,
-								'full_name' => $displayName,
-								'profile_photo' => $profilePhotoUrl,
-									'email' => $user->email,
-									'phone' => $user->profile?->mobile ?? '-',
-									'city' => $user->profile?->city ?? '-',
-									'country' => $user->profile?->country ?? '-',
-									'degree' => $user->profile?->degree ?? '-',
-									'branch' => $user->profile?->branch ?? '-',
-									'passing_year' => $user->profile?->passing_year ?? '-',
-									'current_status' => $user->profile?->current_status ?? '-',
-									'company' => $user->profile?->company ?? '-',
-									'organization' => $user->professional?->organization ?? '-',
-									'industry' => $user->professional?->industry ?? '-',
-									'role' => $user->professional?->role ?? '-',
-									'work_from' => $user->professional?->from ?? '-',
-									'work_to' => $user->professional?->to ?? '-',
-									'work_location' => $user->professional?->location ?? '-',
-									'registered' => $user->created_at?->format('d M Y') ?? '-',
-								];
-							@endphp
-							<tr class="border-t border-slate-200 hover:bg-slate-50">
-							<td class="px-4 py-3">
-								<div class="flex items-center gap-2.5">
-									@if($profilePhotoUrl)
-										<img src="{{ $profilePhotoUrl }}" alt="{{ $displayName }}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;background:#f8f9fc;flex-shrink:0;">
-									@else
-										<div style="width:36px;height:36px;border-radius:8px;background:{{ $avatarColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;">{{ $initials }}</div>
-									@endif
-									<span class="font-medium text-slate-900">{{ $displayName }}</span>
-								</div>
-							</td>
-								<td class="px-4 py-3 text-slate-700">{{ $user->email }}</td>
-								<td class="px-4 py-3 text-slate-700">{{ $user->profile?->mobile ?? '-' }}</td>
-								<td class="px-4 py-3 text-slate-700">{{ $user->profile?->branch ?? '-' }}</td>
-								<td class="px-4 py-3 text-slate-700">{{ $user->profile?->passing_year ?? '-' }}</td>
-								<td class="px-4 py-3 text-slate-700">{{ $user->professional?->organization ?? '-' }}</td>
-								<td class="px-4 py-3 text-slate-700">{{ $user->professional?->role ?? '-' }}</td>
-								<td class="px-4 py-3 text-slate-700">{{ $user->professional?->location ?? '-' }}</td>
-								<td class="px-4 py-3">
-									<div class="flex items-center gap-2">
-										<button type="button"
-											title="View Details"
-											class="h-[30px] w-[30px] rounded-[7px] border-none flex items-center justify-center"
-											style="background:#ffffff;"
-											onmouseover="this.style.background='#dbeafe'"
-											onmouseout="this.style.background='#ffffff'"
-											onclick='openDetails(@json($detailPayload))'>
-											<svg width="13" height="13" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
-												<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-												<circle cx="12" cy="12" r="3"/>
-											</svg>
-										</button>
-
-										<a href="{{ route('admin.alumni.edit', $user->id) }}"
-											title="Edit Details"
-											class="h-[30px] w-[30px] rounded-[7px] border-none flex items-center justify-center transition-all"
-											style="background:#ffffff; display:inline-flex;"
-											onmouseover="this.style.background='#fef3c7'"
-											onmouseout="this.style.background='#ffffff'">
-											<svg width="13" height="13" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24">
-												<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-												<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-											</svg>
-										</a>
-
-										<form method="POST" action="{{ route('admin.alumni.delete', $user->id) }}" onsubmit="return confirm('Delete this alumni record?');">
-											@csrf
-											@method('DELETE')
-											<button type="submit" class="px-2.5 py-1.5 text-xs font-medium rounded-md bg-red-100 text-red-700 hover:bg-red-200">
-												Delete
-											</button>
-										</form>
-									</div>
-								</td>
-							</tr>
-						@empty
+						<?php if ($users->isEmpty()): ?>
 							<tr>
 								<td colspan="9" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
 							</tr>
-						@endforelse
+						<?php else: ?>
+							<?php foreach ($users as $user): ?>
+								<?php
+									$displayName = $user->profile?->full_name ?? $user->name;
+									$profilePhotoUrl = $user->profile?->profile_photo ? asset('storage/' . $user->profile->profile_photo) : null;
+									$initials = strtoupper(substr($displayName, 0, 1));
+									$avatarColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899'];
+									$avatarColor = $avatarColors[crc32($displayName) % count($avatarColors)];
+									$detailPayload = [
+										'user_name' => $user->name,
+										'full_name' => $displayName,
+										'profile_photo' => $profilePhotoUrl,
+										'email' => $user->email,
+										'phone' => $user->profile?->mobile ?? '-',
+										'city' => $user->profile?->city ?? '-',
+										'country' => $user->profile?->country ?? '-',
+										'degree' => $user->profile?->degree ?? '-',
+										'branch' => $user->profile?->branch ?? '-',
+										'passing_year' => $user->profile?->passing_year ?? '-',
+										'current_status' => $user->profile?->current_status ?? '-',
+										'company' => $user->profile?->company ?? '-',
+										'organization' => $user->professional?->organization ?? '-',
+										'industry' => $user->professional?->industry ?? '-',
+										'role' => $user->professional?->role ?? '-',
+										'work_from' => $user->professional?->from ?? '-',
+										'work_to' => $user->professional?->to ?? '-',
+										'work_location' => $user->professional?->location ?? '-',
+										'registered' => $user->created_at?->format('d M Y') ?? '-',
+									];
+								?>
+								<tr class="border-t border-slate-200 hover:bg-slate-50">
+									<td class="px-4 py-3">
+										<div class="flex items-center gap-2.5">
+											@if($profilePhotoUrl)
+												<img src="{{ $profilePhotoUrl }}" alt="{{ $displayName }}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;background:#f8f9fc;flex-shrink:0;">
+											@else
+												<div style="width:36px;height:36px;border-radius:8px;background:{{ $avatarColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;">{{ $initials }}</div>
+											@endif
+											<span class="font-medium text-slate-900">{{ $displayName }}</span>
+										</div>
+									</td>
+									<td class="px-4 py-3 text-slate-700">{{ $user->email }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->mobile ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->branch ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->passing_year ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->organization ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->role ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->location ?? '-' }}</td>
+									<td class="px-4 py-3">
+										<div class="flex items-center gap-2">
+											<button type="button"
+												title="View Details"
+												class="h-[30px] w-[30px] rounded-[7px] border-none flex items-center justify-center"
+												style="background:#ffffff;"
+												onmouseover="this.style.background='#dbeafe'"
+												onmouseout="this.style.background='#ffffff'"
+												onclick='openDetails(@json($detailPayload))'>
+												<svg width="13" height="13" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+													<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+													<circle cx="12" cy="12" r="3"/>
+												</svg>
+											</button>
+
+											<a href="{{ route('admin.alumni.edit', $user->id) }}"
+												title="Edit Details"
+												class="h-[30px] w-[30px] rounded-[7px] border-none flex items-center justify-center transition-all"
+												style="background:#ffffff; display:inline-flex;"
+												onmouseover="this.style.background='#fef3c7'"
+												onmouseout="this.style.background='#ffffff'">
+												<svg width="13" height="13" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24">
+													<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+													<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+												</svg>
+											</a>
+
+											<form method="POST" action="{{ route('admin.alumni.delete', $user->id) }}" onsubmit="return confirm('Delete this alumni record?');">
+												@csrf
+												@method('DELETE')
+												<button type="submit" class="px-2.5 py-1.5 text-xs font-medium rounded-md bg-red-100 text-red-700 hover:bg-red-200">
+													Delete
+												</button>
+											</form>
+										</div>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						<?php endif; ?>
 					</tbody>
 				</table>
 			</div>

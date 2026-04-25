@@ -75,9 +75,16 @@
 
     {{-- Logo --}}
     <div class="px-7 py-8 border-b border-slate-300">
-        <h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">
-            SRU<br>Alumni
-        </h1>
+        @php($dashboardLogoPath = 'images/logos/sru_logo_new.png')
+
+        @if(file_exists(public_path($dashboardLogoPath)))
+            <img src="{{ asset($dashboardLogoPath) }}" alt="SRU Alumni Logo" class="h-12 w-auto object-contain">
+        @else
+            <h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">
+                SRU<br>Alumni
+            </h1>
+        @endif
+
         <span class="text-xs font-semibold tracking-widest uppercase mt-1 block text-slate-500">
             Admin Control
         </span>
