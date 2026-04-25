@@ -106,7 +106,6 @@ Current mapped degrees:
 - Auth required
 
 ### 4.2 Editable Fields
-- Father's Name
 - City
 - Country
 - LinkedIn URL
@@ -116,9 +115,11 @@ Current mapped degrees:
 - Profile photo
 - Professional experience rows
 
+Read-only on edit page:
+- Father's Name
+
 ### 4.3 Mandatory Fields at Edit
 Required fields:
-- Father's Name
 - City
 - Country
 - LinkedIn URL
