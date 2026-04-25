@@ -5,6 +5,7 @@ The admin module provides a complete SRU alumni management interface with:
 - dashboard analytics
 - alumni profile and professional data management
 - permanent activity auditing
+- admin profile photo management in sidebar
 - filtered export support
 
 Primary data comes from:
@@ -105,6 +106,17 @@ The profile record currently includes additional personal/social fields such as:
 - Description column for alumni_updated action shows a point-wise bullet list of every changed field with old and new values, e.g. "Degree: — to B.Tech".
 - New log rows include a changes array in the properties JSON column. Existing older rows show only the summary sentence.
 
+### 2.6 Admin Sidebar Profile Photo
+- Upload route: POST /admin/profile/avatar (name: admin.profile.avatar)
+- The sidebar avatar (bottom-left user card) is now clickable on all admin pages.
+- Clicking the avatar opens file selection and auto-submits the upload form.
+- Saved file path is stored in users.avatar.
+- Uploaded images are stored on the public disk under avatars/.
+- Display style now matches alumni dashboard/photo fit behavior: object-fit:contain, centered image, white background, and subtle border.
+- Allowed file types: jpg, jpeg, png
+- Max file size: 2 MB
+- Changes reflect across all admin pages because the sidebar reads auth()->user()->avatar.
+
 ## 3. Permanent Activity Audit
 
 ### 3.1 activity_logs Table
@@ -131,6 +143,7 @@ Current events include:
 - profile_created
 - profile_updated
 - alumni_updated (properties.changes array records per-field old/new values)
+- admin_avatar_updated
 - alumni_deleted
 - activity_logs_exported
 
@@ -141,6 +154,7 @@ Current events include:
   - Activity Logs
   - Reports
   - System -> Settings
+- Admin sidebar profile avatar uses a consistent fit style across all admin pages (contain + center + white background + border).
 - Logout hover visibility was normalized for icon-style sidebar variants.
 - The same shared logo is rendered across all admin pages using the file public/images/logos/sru_logo_new.png.
 
@@ -151,9 +165,11 @@ Current events include:
 - app/Http/Controllers/AdminController.php
 - app/Http/Controllers/ProfileController.php
 - app/Http/Controllers/Auth/RegisteredUserController.php
+- app/Models/User.php
 - app/Models/Profile.php
 - app/Models/ActivityLog.php
 - database/migrations/2026_04_25_090000_create_activity_logs_table.php
+- database/migrations/2026_04_25_120000_add_avatar_to_users_table.php
 
 ### Admin Views
 - resources/views/admin/panel.blade.php
@@ -163,9 +179,11 @@ Current events include:
 
 ## 6. Data and Validation Notes
 - father_name is now part of the profile data model.
+- users.avatar stores the admin sidebar profile photo path.
 - passing_year is treated as a 4-digit year string.
 - professional from/to fields are stored as strings to support "Present".
 - profile photo uploads are validated as jpg/jpeg/png with size limit.
+- admin sidebar avatar uploads are validated as jpg/jpeg/png with 2MB limit.
 - activity log filter inputs are validated before query execution.
 - Admin detail modals now expose stored profile social links when present.
 - Admin edit form treats optional text inputs as nullable and preserves clearer required-field validation for name and email.
@@ -195,7 +213,9 @@ Recommended checks:
 6. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
 7. After editing an alumni record, open Activity Logs and verify the description shows a point-wise bullet list of changed fields.
 8. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
-9. Open Activity Logs, apply filters, and export CSV; verify exported rows match filters.
+9. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
+  Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
+10. Open Activity Logs, apply filters, and export CSV; verify exported rows match filters.
 
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.

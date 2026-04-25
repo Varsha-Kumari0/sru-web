@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\Professional;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -438,5 +439,36 @@ class AdminController extends Controller
         }
 
         return redirect()->route('admin.allalumini')->with('success', 'Alumni details updated successfully.');
+    }
+
+    /**
+     * Upload and save the admin's own profile photo (avatar).
+     */
+    public function updateAdminAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $admin = auth()->user();
+
+        // Delete old avatar file if it exists.
+        if ($admin->avatar) {
+            Storage::disk('public')->delete($admin->avatar);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+
+        $admin->update(['avatar' => $path]);
+
+        ActivityLog::record(
+            $admin->id,
+            $admin->id,
+            'admin_avatar_updated',
+            ($admin->name ?? 'Admin') . ' updated their profile photo',
+            []
+        );
+
+        return back()->with('success', 'Profile photo updated.');
     }
 }

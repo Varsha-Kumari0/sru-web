@@ -209,9 +209,27 @@
 
     <div class="px-4 py-5 border-t border-slate-300">
         <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-            <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white flex-shrink-0 bg-blue-600">
-                {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
-            </div>
+            {{-- Clickable admin avatar: click to change photo --}}
+            <form method="POST" action="{{ route('admin.profile.avatar') }}" enctype="multipart/form-data" id="adminAvatarForm">
+                @csrf
+                <label for="adminAvatarInput" title="Click to change profile photo"
+                       onmouseover="this.querySelector('.av-overlay').style.opacity='1'"
+                       onmouseout="this.querySelector('.av-overlay').style.opacity='0'"
+                       style="cursor:pointer;position:relative;display:block;width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">
+                    @if(auth()->user()->avatar)
+                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Admin"
+                             style="width:36px;height:36px;border-radius:50%;object-fit:contain;object-position:center;background:#fff;border:1px solid #dde3ec;">
+                    @else
+                        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;">
+                            {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                        </div>
+                    @endif
+                    <div class="av-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,.45);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;">
+                        <svg width="13" height="13" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    </div>
+                </label>
+                <input type="file" id="adminAvatarInput" name="avatar" accept="image/jpg,image/jpeg,image/png" class="hidden" onchange="this.form.submit()">
+            </form>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold truncate text-slate-900">{{ auth()->user()->name ?? 'Administrator' }}</p>
                 <p class="text-xs text-slate-500">Super Admin</p>

@@ -148,6 +148,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
     Route::get('/admin/alumni/{id}/edit', [AdminController::class, 'editAlumni'])->name('admin.alumni.edit');
     Route::put('/admin/alumni/{id}', [AdminController::class, 'updateAlumni'])->name('admin.alumni.update');
+    Route::post('/admin/profile/avatar', [AdminController::class, 'updateAdminAvatar'])->name('admin.profile.avatar');
 
 });
 
