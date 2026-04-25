@@ -399,6 +399,7 @@ const alumni = {!! json_encode($users->map(function($u) {
         'profile_photo'   => $u->profile?->profile_photo ? asset('storage/' . $u->profile->profile_photo) : null,
         'phone'           => $u->profile?->mobile ?? '—',
         'full_name'       => $u->profile?->full_name ?? $u->name,
+        'father_name'     => $u->profile?->father_name ?? '—',
         'department'      => $u->profile?->branch ?? '—',
         'graduation_year' => $u->profile?->passing_year ?? '—',
         'location'        => $u->professional?->location ?? '—',
@@ -658,6 +659,7 @@ function openModal(id) {
             ${
               [
                 ['Full Name',       a.full_name],
+                ['Father Name',     a.father_name],
                 ['Email',           a.email],
                 ['Phone',           a.phone],
                 ['City',            a.city],

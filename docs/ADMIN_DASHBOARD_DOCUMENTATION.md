@@ -15,6 +15,13 @@ Primary data comes from:
 
 Common relationship key across profile/professional records: user_id.
 
+The profile record currently includes additional personal/social fields such as:
+- father_name
+- linkedin
+- facebook
+- instagram
+- twitter
+
 ## 2. Current Admin Features
 
 ### 2.1 Admin Dashboard
@@ -41,6 +48,7 @@ Common relationship key across profile/professional records: user_id.
   - avatar shown in table (photo or initials fallback)
   - photo shown in details modal
 - View details modal includes social profile values from the profile table:
+  - father_name
   - linkedin
   - facebook
   - instagram
@@ -61,8 +69,30 @@ Common relationship key across profile/professional records: user_id.
 - Validation behavior:
   - name and email are required
   - optional text fields are nullable, so empty values no longer trigger "must be a string" messages
+- Academic input behavior:
+  - Degree is now a dropdown select.
+  - Branch/Specialization is a dependent dropdown populated from the selected Degree.
+  - When Degree is not selected, Branch/Specialization stays blank and disabled.
 
-### 2.4 Activity Logs Page
+### 2.4 Alumni Self-Service Profile Flow
+- Profile model fillable fields now include father_name.
+- Profile creation requires:
+  - full_name
+  - father_name
+  - mobile
+  - city
+  - country
+  - degree
+  - branch
+  - passing_year
+  - linkedin
+  - instagram
+  - facebook
+  - twitter
+- Profile creation validates social links against their expected domains.
+- Profile update also requires father_name and preserves social URL validation rules.
+
+### 2.5 Activity Logs Page
 - Route: GET /admin/activity-logs (name: admin.activity-logs)
 - CSV export route: GET /admin/activity-logs/export (name: admin.activity-logs.export)
 - Includes filters:
@@ -118,6 +148,7 @@ Current events include:
 - app/Http/Controllers/AdminController.php
 - app/Http/Controllers/ProfileController.php
 - app/Http/Controllers/Auth/RegisteredUserController.php
+- app/Models/Profile.php
 - app/Models/ActivityLog.php
 - database/migrations/2026_04_25_090000_create_activity_logs_table.php
 
@@ -128,12 +159,14 @@ Current events include:
 - resources/views/admin/activity-logs.blade.php
 
 ## 6. Data and Validation Notes
+- father_name is now part of the profile data model.
 - passing_year is treated as a 4-digit year string.
 - professional from/to fields are stored as strings to support "Present".
 - profile photo uploads are validated as jpg/jpeg/png with size limit.
 - activity log filter inputs are validated before query execution.
 - Admin detail modals now expose stored profile social links when present.
 - Admin edit form treats optional text inputs as nullable and preserves clearer required-field validation for name and email.
+- Profile create/update validation includes stricter social-link URL checks for LinkedIn, Instagram, Facebook, and X/Twitter.
 
 ## 7. Verification Checklist
 Recommended checks:
@@ -143,8 +176,9 @@ Recommended checks:
 3. Open dashboard and verify the shared logo renders in the sidebar.
 4. Open All SRU Alumni and verify photo avatars, social links, and details modal.
 5. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
-6. Open Activity Logs and verify entries are present.
-7. Apply filters and export CSV; verify exported rows match filters.
+6. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
+7. Open Activity Logs and verify entries are present.
+8. Apply filters and export CSV; verify exported rows match filters.
 
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.

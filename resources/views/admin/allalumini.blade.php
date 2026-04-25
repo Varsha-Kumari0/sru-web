@@ -159,6 +159,7 @@
 										'profile_photo' => $profilePhotoUrl,
 										'email' => $user->email,
 										'phone' => $user->profile?->mobile ?? '-',
+										'father_name' => $user->profile?->father_name ?? '-',
 										'city' => $user->profile?->city ?? '-',
 										'country' => $user->profile?->country ?? '-',
 										'linkedin' => $user->profile?->linkedin ?? '-',
@@ -266,6 +267,7 @@
 
 		const entries = [
 			['Full Name', data.full_name],
+			['Father Name', data.father_name],
 			['Email', data.email],
 			['Phone', data.phone],
 			['City', data.city],

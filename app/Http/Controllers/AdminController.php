@@ -179,7 +179,36 @@ class AdminController extends Controller
             return back()->with('error', 'User not found.');
         }
 
-        return view('admin.edit-alumni', compact('user'));
+        $selectDegree = [
+            'B.Tech' => [
+                'CSE (AI & ML)',
+                'CSE (Cybersecurity)',
+                'CSE (Data Science)',
+                'ECE (VLSI)',
+                'EEE (Renewable Energy)',
+                'Mechanical (Smart Manufacturing)',
+                'Civil (Robotics and Automation)',
+            ],
+            'Business' => [
+                'BBA (Marketing)',
+                'BBA (Finance)',
+                'BBA (Operations)',
+                'BBA (International Business)',
+                'BBA (Business Analytics)',
+            ],
+            'Agriculture' => ['B.Sc (Hons) Agriculture'],
+            'B.Sc' => [
+                'B.Sc (Computer Science)',
+                'B.Sc (Physics)',
+                'B.Sc (Chemistry)',
+                'B.Sc (Mathematics)',
+                'B.Sc (Forensic Science)',
+            ],
+            'B.Com' => ['B.Com (Computer Applications)'],
+            'BCA' => ['BCA General', 'BCA (Cloud Computing)'],
+        ];
+
+        return view('admin.edit-alumni', compact('user', 'selectDegree'));
     }
 
     /**
