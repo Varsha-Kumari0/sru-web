@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -41,11 +42,18 @@ class RegisteredUserController extends Controller
 
         $password = Str::random(8);
 
-        User::create([
+        $user = User::create([
             'name' => 'Alumni User',
             'email' => $request->email,
             'password' => Hash::make($password),
         ]);
+
+        ActivityLog::record(
+            $user->id,
+            $user->id,
+            'user_registered',
+            $user->email . ' registered as alumni user'
+        );
 
         Mail::to($request->email)->send(new SendPasswordMail($password));
 

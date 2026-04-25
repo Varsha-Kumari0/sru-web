@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
 
@@ -70,6 +71,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         $users = User::where('role', 'user')
             ->with(['profile', 'professional'])
+            ->orderByDesc('created_at')
             ->get();
 
         $totalCount = $users->count();
@@ -98,36 +100,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->take(6)
             ->values();
 
-        $recentActivity = $users
-            ->flatMap(function ($user) {
-                $name = $user->profile?->full_name ?: $user->name;
-                $activities = collect();
-
-                if ($user->created_at) {
-                    $activities->push([
-                        'type' => 'registered',
-                        'text' => $name . ' registered',
-                        'at' => $user->created_at,
-                    ]);
-                }
-
-                if ($user->profile && $user->profile->updated_at && $user->profile->created_at && $user->profile->updated_at->gt($user->profile->created_at)) {
-                    $activities->push([
-                        'type' => 'updated',
-                        'text' => $name . ' profile updated',
-                        'at' => $user->profile->updated_at,
-                    ]);
-                }
-
-                return $activities;
-            })
-            ->sortByDesc('at')
+        $recentActivity = ActivityLog::query()
+            ->latest('created_at')
             ->take(8)
-            ->values()
+            ->get()
             ->map(fn ($item) => [
-                'type' => $item['type'],
-                'text' => $item['text'],
-                'time' => $item['at']?->diffForHumans() ?? 'just now',
+                'type' => in_array($item->action, ['user_registered', 'profile_created'], true) ? 'registered' : 'updated',
+                'text' => $item->description,
+                'time' => $item->created_at?->diffForHumans() ?? 'just now',
             ]);
 
         $totalChange = 'All time';
@@ -158,6 +138,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         return view('admin.allalumini', compact('users'));
     })->name('admin.allalumini');
+    Route::get('/admin/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');
+    Route::get('/admin/activity-logs/export', [AdminController::class, 'exportActivityLogsCsv'])->name('admin.activity-logs.export');
     Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
     Route::get('/admin/alumni/{id}/edit', [AdminController::class, 'editAlumni'])->name('admin.alumni.edit');
     Route::put('/admin/alumni/{id}', [AdminController::class, 'updateAlumni'])->name('admin.alumni.update');
