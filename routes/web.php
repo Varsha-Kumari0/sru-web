@@ -81,7 +81,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->filter(fn ($year) => !empty($year) && $year !== '—')
             ->unique()
             ->count();
-
+ 
         // Placeholder until a dedicated messages module is connected.
         $unreadMessagesCount = 0;
 
