@@ -19,8 +19,8 @@
 <nav class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow">
 
     <div class="flex items-center gap-3">
-        <img src="/images/sru-logo.png" class="w-10 h-10">
-        <h1 class="text-lg font-semibold">SRU Alumni</h1>
+        <img src="/images/logos/sru_logo_white.png" class="w-48 h-10">
+        <!-- <h1 class="text-lg font-semibold">Alumni</h1> -->
     </div>
 
     <div class="space-x-4">
