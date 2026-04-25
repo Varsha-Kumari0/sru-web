@@ -230,18 +230,23 @@ class ProfileController extends Controller
             'country' => 'required',
             'father_name' => 'required|string|max:255',
 
-            'linkedin' => 'nullable|url',
-            'instagram' => ['nullable', 'url', 'regex:/^(https?:\/\/)?(www\.)?(instagram\.com)\/.+/i'],
-            'facebook' => ['nullable', 'url', 'regex:/^(https?:\/\/)?(www\.)?(facebook\.com)\/.+/i'],
-            'twitter' => ['nullable', 'url', 'regex:/^(https?:\/\/)?(www\.)?((x\.com)|(twitter\.com))\/.+/i'],
+            'linkedin' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(linkedin\.com)\/.+/i'],
+            'instagram' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(instagram\.com)\/.+/i'],
+            'facebook' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(facebook\.com)\/.+/i'],
+            'twitter' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?((x\.com)|(twitter\.com))\/.+/i'],
 
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ], [
+            'linkedin.required' => 'LinkedIn link is required.',
             'linkedin.url' => 'Please enter a valid LinkedIn URL (example: https://linkedin.com/in/username).',
+            'linkedin.regex' => 'LinkedIn link must be from linkedin.com.',
+            'instagram.required' => 'Instagram link is required.',
             'instagram.url' => 'Please enter a valid Instagram URL (example: https://instagram.com/username).',
             'instagram.regex' => 'Instagram link must be from instagram.com.',
+            'facebook.required' => 'Facebook link is required.',
             'facebook.url' => 'Please enter a valid Facebook URL (example: https://facebook.com/username).',
             'facebook.regex' => 'Facebook link must be from facebook.com.',
+            'twitter.required' => 'X link is required.',
             'twitter.url' => 'Please enter a valid X URL (example: https://x.com/username).',
             'twitter.regex' => 'X link must be from x.com or twitter.com.',
         ]);

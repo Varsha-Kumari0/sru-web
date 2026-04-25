@@ -102,32 +102,32 @@
                         </div>
 
                         <div>
-                            <label class="label">LinkedIn URL</label>
-                            <input type="url" name="linkedin" value="{{ old('linkedin', $profile->linkedin ?? '') }}" class="input" placeholder="https://linkedin.com/in/username">
+                            <label class="label">LinkedIn URL <span class="text-red-500">*</span></label>
+                            <input type="url" name="linkedin" value="{{ old('linkedin', $profile->linkedin ?? '') }}" class="input" placeholder="https://linkedin.com/in/username" required>
                             @error('linkedin')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label class="label">Instagram URL</label>
-                            <input type="url" name="instagram" value="{{ old('instagram', $profile->instagram ?? '') }}" class="input" placeholder="https://instagram.com/username">
+                            <label class="label">Instagram URL <span class="text-red-500">*</span></label>
+                            <input type="url" name="instagram" value="{{ old('instagram', $profile->instagram ?? '') }}" class="input" placeholder="https://instagram.com/username" required>
                             @error('instagram')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label class="label">Facebook URL</label>
-                            <input type="url" name="facebook" value="{{ old('facebook', $profile->facebook ?? '') }}" class="input" placeholder="https://facebook.com/username">
+                            <label class="label">Facebook URL <span class="text-red-500">*</span></label>
+                            <input type="url" name="facebook" value="{{ old('facebook', $profile->facebook ?? '') }}" class="input" placeholder="https://facebook.com/username" required>
                             @error('facebook')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label class="label">Twitter / X URL</label>
-                            <input type="url" name="twitter" value="{{ old('twitter', $profile->twitter ?? '') }}" class="input" placeholder="https://x.com/username">
+                            <label class="label">Twitter / X URL <span class="text-red-500">*</span></label>
+                            <input type="url" name="twitter" value="{{ old('twitter', $profile->twitter ?? '') }}" class="input" placeholder="https://x.com/username" required>
                             @error('twitter')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
