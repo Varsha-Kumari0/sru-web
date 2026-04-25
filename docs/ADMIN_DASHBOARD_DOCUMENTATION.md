@@ -1,120 +1,135 @@
 # Admin Dashboard Documentation
 
 ## 1. Objective
-This module provides an admin interface for managing SRU alumni records with data combined from:
-- `users`
-- `profiles`
-- `professionals`
+The admin module provides a complete SRU alumni management interface with:
+- dashboard analytics
+- alumni profile and professional data management
+- permanent activity auditing
+- filtered export support
 
-The common key used across all three tables is `user_id`.
+Primary data comes from:
+- users
+- profiles
+- professionals
+- activity_logs
 
-## 2. What Has Been Implemented
+Common relationship key across profile/professional records: user_id.
 
-### 2.1 Authentication Across Databases
-- Added support for multiple DB connections and fallback login behavior.
-- Login can validate users across both primary and shared database connections.
+## 2. Current Admin Features
 
-### 2.2 Admin Dashboard Data Integration
-- Admin dashboard now loads users with related profile and professional data using Eloquent relations.
-- Dashboard statistics are computed from related records (for example profile status and passing year).
+### 2.1 Admin Dashboard
+- Route: GET /admin/dashboard (name: admin.dashboard)
+- Displays key stats:
+  - total alumni
+  - graduation batches
+  - unread messages placeholder
+- Includes:
+  - department breakdown panel
+  - recent activity panel (now backed by activity_logs table)
+- Alumni list defaults to latest registered first by created_at descending.
 
-### 2.3 Dedicated All Alumni Page
-- Added a dedicated page: `admin/allalumini`.
-- Sidebar item "All SRU Alumni" now navigates to this page.
-- Page includes the same left admin options (sidebar) for consistent navigation.
+### 2.2 All SRU Alumni Page
+- Route: GET /admin/allalumini (name: admin.allalumini)
+- Table includes alumni data from users + profiles + professionals.
+- Row actions:
+  - View details modal
+  - Edit alumni record
+  - Delete alumni record
+- Profile photo support:
+  - avatar shown in table (photo or initials fallback)
+  - photo shown in details modal
 
-### 2.4 Alumni Actions
-On the All Alumni page, Action options are now available per row:
-- `View` (opens details modal)
-- `Delete` (with confirmation)
+### 2.3 Edit Alumni Page
+- Route: GET /admin/alumni/{id}/edit (name: admin.alumni.edit)
+- Update route: PUT /admin/alumni/{id} (name: admin.alumni.update)
+- Supports updating:
+  - user account fields
+  - profile fields
+  - professional fields
+  - profile photo upload
+- Work experience end-date behavior:
+  - "Currently Working" checkbox sets professional.to to "Present".
 
-### 2.5 Controller Behavior Improvement
-`AdminController` now supports both:
-- JSON responses (for API/AJAX style calls)
-- Redirect + flash message responses (for normal form submissions)
+### 2.4 Activity Logs Page
+- Route: GET /admin/activity-logs (name: admin.activity-logs)
+- CSV export route: GET /admin/activity-logs/export (name: admin.activity-logs.export)
+- Includes filters:
+  - from date
+  - to date
+  - actor user
+  - action type
+- CSV export respects the current filter query.
 
-This ensures actions work correctly in both dashboard-style JS calls and form-based pages.
+## 3. Permanent Activity Audit
 
-### 2.6 View Details Modal Enhancements (Dashboard + All Alumni)
-- In both pages, modal header now prioritizes alumni full name (profile name) instead of username.
-- The modal now displays full detail fields, including:
-  - Full name, email, phone
-  - City, country
-  - Degree, branch, passing year
-  - Current status, company
-  - Organization, industry, role
-  - Work from, work to, work location
-  - Account status, registration date
-- Dashboard modal now always shows the full detail structure (no hidden fields).
-- All Alumni modal keeps a fixed-height scrollable body for long detail lists.
+### 3.1 activity_logs Table
+Migration: 2026_04_25_090000_create_activity_logs_table.php
 
-### 2.7 UI Consistency Improvements
-- All Alumni `View` action button now matches dashboard icon style.
-- Dashboard row actions are always visible (not hover-only).
+Columns:
+- id
+- actor_user_id (nullable FK -> users.id)
+- subject_user_id (nullable FK -> users.id)
+- action
+- description
+- properties (json, nullable)
+- created_at, updated_at
 
-## 3. Files Updated
+### 3.2 ActivityLog Model
+File: app/Models/ActivityLog.php
 
-### Routes
-- `routes/web.php`
-  - Added `admin.allalumini` route (`GET /admin/allalumini`)
-  - Added delete route (`DELETE /admin/alumni/{id}`)
+Provides a helper:
+- ActivityLog::record(actorUserId, subjectUserId, action, description, properties)
 
-### Controller
-- `app/Http/Controllers/AdminController.php`
-  - `deleteAlumni()` updated for JSON + web responses
+### 3.3 Logged Events
+Current events include:
+- user_registered
+- profile_created
+- profile_updated
+- alumni_updated
+- alumni_deleted
+- activity_logs_exported
 
-### Views
-- `resources/views/admin/panel.blade.php`
-  - Sidebar link to All Alumni page added
-  - Action buttons adjusted to be visible always in dashboard table
-  - Modal detail card styling updated to requested light style
-  - View modal title updated to show alumni full name first
-  - View modal configured to always display complete detail list
+## 4. Sidebar and UI Consistency
+- Sidebar links are present across admin pages:
+  - Dashboard
+  - All SRU Alumni
+  - Activity Logs
+  - Reports
+  - System -> Settings
+- Logout hover visibility was normalized for icon-style sidebar variants.
 
-- `resources/views/admin/allalumini.blade.php`
-  - Created full page layout with sidebar
-  - Added complete alumni table from users + profiles + professionals
-  - Added Action column (View/Edit/Delete)
-  - Updated View button to dashboard-style icon action
-  - Added details modal with alumni full name in title
-  - Expanded details modal fields to dashboard-style full profile/professional data
-  - Added scrollable details body for better readability on long content
-  - Added success/error flash alert sections
+## 5. Files Involved
 
-## 4. Data Mapping Used
-For each alumni row:
-- User base: `users.name`, `users.email`
-- Profile: `full_name`, `mobile`, `city`, `country`, `degree`, `branch`, `passing_year`, `current_status`, `company`, `status`
-- Professional: `organization`, `industry`, `role`, `from`, `to`, `location`
-- Meta: `users.created_at` (shown as registration date in modal)
+### Backend
+- routes/web.php
+- app/Http/Controllers/AdminController.php
+- app/Http/Controllers/ProfileController.php
+- app/Http/Controllers/Auth/RegisteredUserController.php
+- app/Models/ActivityLog.php
+- database/migrations/2026_04_25_090000_create_activity_logs_table.php
 
-Fallback values are used when optional profile/professional records are missing.
+### Admin Views
+- resources/views/admin/panel.blade.php
+- resources/views/admin/allalumini.blade.php
+- resources/views/admin/edit-alumni.blade.php
+- resources/views/admin/activity-logs.blade.php
 
-## 5. Validation Performed
-Commands executed to validate changes:
+## 6. Data and Validation Notes
+- passing_year is treated as a 4-digit year string.
+- professional from/to fields are stored as strings to support "Present".
+- profile photo uploads are validated as jpg/jpeg/png with size limit.
+- activity log filter inputs are validated before query execution.
 
-```bash
-php -l routes/web.php
-php -l app/Http/Controllers/AdminController.php
-php artisan view:clear
-php artisan view:cache
-```
+## 7. Verification Checklist
+Recommended checks:
 
-Result:
-- No PHP syntax errors in updated files.
-- Blade views compiled successfully.
+1. Run migrations.
+2. Open dashboard and verify newest alumni appear first.
+3. Open All SRU Alumni and verify photo avatars and details modal.
+4. Edit an alumni record and verify updates + photo upload.
+5. Open Activity Logs and verify entries are present.
+6. Apply filters and export CSV; verify exported rows match filters.
 
-## 6. Current Behavior (Confirmed)
-1. Admin can open dashboard.
-2. Clicking "All SRU Alumni" opens the dedicated page.
-3. All alumni records display with joined related data.
-4. Action buttons are available:
-   - View opens details modal
-  - View modal title shows selected alumni full name
-  - View modal includes full profile + professional details on both pages
-   - Delete removes user and related profile/professional records
-5. Success/error feedback is shown after form actions.
-
-## 7. Notes
-- File name uses `allalumini.blade.php` as currently present in the project.
-- If desired, this can be renamed later to `allalumni.blade.php` for spelling consistency (requires route/view reference updates).
+## 8. Notes
+- The route and view naming currently uses allalumini for compatibility with existing references.
+- If renamed to allalumni in future, route names and view references must be updated together.
