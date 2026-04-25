@@ -68,15 +68,35 @@ class ProfileController extends Controller
     public function createProfile()
     {
         $selectDegree = [
-        "BTech" => ["CSE", "ECE", "Mechanical", "Civil"],
-        "BSc" => ["Physics", "Chemistry", "Maths"],
-        "BCom" => ["General", "Honours"],
-        "BCA" => ["Computer Applications"],
-        "Business" => ["MBA Finance", "MBA Marketing"],
-        "Agriculture" => ["Agri Science"]
-    ];
+            "B.Tech" => [
+                "CSE (AI & ML)",
+                "CSE (Cybersecurity)",
+                "CSE (Data Science)",
+                "ECE (VLSI)",
+                "EEE (Renewable Energy)",
+                "Mechanical (Smart Manufacturing)",
+                "Civil (Robotics and Automation)",
+            ],
+            "Business" => [
+                "BBA (Marketing)",
+                "BBA (Finance)",
+                "BBA (Operations)",
+                "BBA (International Business)",
+                "BBA (Business Analytics)",
+            ],
+            "Agriculture" => ["B.Sc (Hons) Agriculture"],
+            "B.Sc" => [
+                "B.Sc (Computer Science)",
+                "B.Sc (Physics)",
+                "B.Sc (Chemistry)",
+                "B.Sc (Mathematics)",
+                "B.Sc (Forensic Science)",
+            ],
+            "B.Com" => ["B.Com (Computer Applications)"],
+            "BCA" => ["BCA General", "BCA (Cloud Computing)"],
+        ];
 
-    return view('profile.create', compact('selectDegree'));
+        return view('profile.create', compact('selectDegree'));
     }
 
     /**
@@ -92,7 +112,8 @@ class ProfileController extends Controller
         // ✅ VALIDATION
         $request->validate([
             'full_name' => 'required',
-            'mobile' => 'required',
+            'father_name' => 'required|string|max:255',
+            'mobile' => ['required', 'regex:/^[0-9]{10,15}$/'],
             'city' => 'required',
             'country' => 'required',
             'degree' => 'required',
@@ -100,13 +121,27 @@ class ProfileController extends Controller
             'passing_year' => 'required',
 
             // social links
-            'linkedin' => 'nullable|url',
-            'instagram' => 'nullable|url',
-            'facebook' => 'nullable|url',
-            'twitter' => 'nullable|url',
+            'linkedin' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(linkedin\.com)\/.+/i'],
+            'instagram' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(instagram\.com)\/.+/i'],
+            'facebook' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(facebook\.com)\/.+/i'],
+            'twitter' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?((x\.com)|(twitter\.com))\/.+/i'],
 
             // image
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'linkedin.required' => 'LinkedIn link is required.',
+            'linkedin.url' => 'Please enter a valid LinkedIn URL (example: https://linkedin.com/in/username).',
+            'linkedin.regex' => 'LinkedIn link must be from linkedin.com.',
+            'instagram.required' => 'Instagram link is required.',
+            'instagram.url' => 'Please enter a valid Instagram URL (example: https://instagram.com/username).',
+            'instagram.regex' => 'Instagram link must be from instagram.com.',
+            'facebook.required' => 'Facebook link is required.',
+            'facebook.url' => 'Please enter a valid Facebook URL (example: https://facebook.com/username).',
+            'facebook.regex' => 'Facebook link must be from facebook.com.',
+            'twitter.required' => 'X link is required.',
+            'twitter.url' => 'Please enter a valid X URL (example: https://x.com/username).',
+            'twitter.regex' => 'X link must be from x.com or twitter.com.',
+            'mobile.regex' => 'Mobile number must contain only digits and be 10 to 15 characters long.',
         ]);
 
         // ✅ IMAGE UPLOAD
@@ -123,6 +158,7 @@ class ProfileController extends Controller
             'profile_photo' => $imagePath,
 
             'full_name' => $request->full_name,
+            'father_name' => $request->father_name,
             'mobile' => $request->mobile,
 
             'city' => $request->city,
@@ -192,13 +228,22 @@ class ProfileController extends Controller
         $request->validate([
             'city' => 'required',
             'country' => 'required',
+            'father_name' => 'required|string|max:255',
 
             'linkedin' => 'nullable|url',
-            'instagram' => 'nullable|url',
-            'facebook' => 'nullable|url',
-            'twitter' => 'nullable|url',
+            'instagram' => ['nullable', 'url', 'regex:/^(https?:\/\/)?(www\.)?(instagram\.com)\/.+/i'],
+            'facebook' => ['nullable', 'url', 'regex:/^(https?:\/\/)?(www\.)?(facebook\.com)\/.+/i'],
+            'twitter' => ['nullable', 'url', 'regex:/^(https?:\/\/)?(www\.)?((x\.com)|(twitter\.com))\/.+/i'],
 
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'linkedin.url' => 'Please enter a valid LinkedIn URL (example: https://linkedin.com/in/username).',
+            'instagram.url' => 'Please enter a valid Instagram URL (example: https://instagram.com/username).',
+            'instagram.regex' => 'Instagram link must be from instagram.com.',
+            'facebook.url' => 'Please enter a valid Facebook URL (example: https://facebook.com/username).',
+            'facebook.regex' => 'Facebook link must be from facebook.com.',
+            'twitter.url' => 'Please enter a valid X URL (example: https://x.com/username).',
+            'twitter.regex' => 'X link must be from x.com or twitter.com.',
         ]);
 
         // ✅ IMAGE UPDATE
@@ -208,6 +253,7 @@ class ProfileController extends Controller
 
         // ✅ UPDATE PROFILE
         $profile->update([
+            'father_name' => $request->father_name,
             'city' => $request->city,
             'country' => $request->country,
 

@@ -88,33 +88,50 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <div>
-                            <label class="label">City</label>
+                            <label class="label">Father's Name <span class="text-red-500">*</span></label>
+                            <input name="father_name" value="{{ old('father_name', $profile->father_name ?? '') }}" class="input">
+                        </div>
+
+                        <div>
+                            <label class="label">City <span class="text-red-500">*</span></label>
                             <input name="city" value="{{ old('city', $profile->city ?? '') }}" class="input">
                         </div>
 
                         <div>
-                            <label class="label">Country</label>
+                            <label class="label">Country <span class="text-red-500">*</span></label>
                             <input name="country" value="{{ old('country', $profile->country ?? '') }}" class="input">
                         </div>
 
                         <div>
                             <label class="label">LinkedIn URL</label>
-                            <input name="linkedin" value="{{ old('linkedin', $profile->linkedin ?? '') }}" class="input">
+                            <input type="url" name="linkedin" value="{{ old('linkedin', $profile->linkedin ?? '') }}" class="input" placeholder="https://linkedin.com/in/username">
+                            @error('linkedin')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="label">Instagram URL</label>
-                            <input name="instagram" value="{{ old('instagram', $profile->instagram ?? '') }}" class="input">
+                            <input type="url" name="instagram" value="{{ old('instagram', $profile->instagram ?? '') }}" class="input" placeholder="https://instagram.com/username">
+                            @error('instagram')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="label">Facebook URL</label>
-                            <input name="facebook" value="{{ old('facebook', $profile->facebook ?? '') }}" class="input">
+                            <input type="url" name="facebook" value="{{ old('facebook', $profile->facebook ?? '') }}" class="input" placeholder="https://facebook.com/username">
+                            @error('facebook')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="label">Twitter / X URL</label>
-                            <input name="twitter" value="{{ old('twitter', $profile->twitter ?? '') }}" class="input">
+                            <input type="url" name="twitter" value="{{ old('twitter', $profile->twitter ?? '') }}" class="input" placeholder="https://x.com/username">
+                            @error('twitter')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                     </div>

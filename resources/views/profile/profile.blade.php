@@ -49,6 +49,8 @@
 
                     <p><span class="font-semibold text-gray-800">Mobile:</span> {{ $profile->mobile }}</p>
 
+                    <p><span class="font-semibold text-gray-800">Father's Name:</span> {{ $profile->father_name ?? '-' }}</p>
+
                     <p><span class="font-semibold text-gray-800">Location:</span> 
                         {{ $profile->city }}, {{ $profile->country }}
                     </p>
@@ -89,6 +91,13 @@
                                 <a href="{{ $profile->facebook }}" target="_blank"
                                    class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm hover:bg-blue-200">
                                    Facebook
+                                </a>
+                            @endif
+
+                            @if($profile->twitter)
+                                <a href="{{ $profile->twitter }}" target="_blank"
+                                   class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">
+                                   X
                                 </a>
                             @endif
 
