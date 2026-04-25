@@ -79,17 +79,17 @@
                             <input value="{{ $profile->passing_year }}" class="input bg-gray-100" disabled>
                         </div>
 
+                        <div>
+                            <label class="label">Father's Name</label>
+                            <input value="{{ $profile->father_name ?? '-' }}" class="input bg-gray-100" disabled>
+                        </div>
+
                     </div>
                 @endif
 
                 <!-- ✏️ EDITABLE -->
                 @if($profile)
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <div>
-                            <label class="label">Father's Name <span class="text-red-500">*</span></label>
-                            <input name="father_name" value="{{ old('father_name', $profile->father_name ?? '') }}" class="input">
-                        </div>
 
                         <div>
                             <label class="label">City <span class="text-red-500">*</span></label>

@@ -228,7 +228,6 @@ class ProfileController extends Controller
         $request->validate([
             'city' => 'required',
             'country' => 'required',
-            'father_name' => 'required|string|max:255',
 
             'linkedin' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(linkedin\.com)\/.+/i'],
             'instagram' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(instagram\.com)\/.+/i'],
@@ -258,7 +257,6 @@ class ProfileController extends Controller
 
         // ✅ UPDATE PROFILE
         $profile->update([
-            'father_name' => $request->father_name,
             'city' => $request->city,
             'country' => $request->country,
 
