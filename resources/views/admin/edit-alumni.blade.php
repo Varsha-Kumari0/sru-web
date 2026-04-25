@@ -265,10 +265,11 @@
             {{-- User Information Section --}}
             <div class="form-section">
                 <h3>👤 User Account Information</h3>
+                @php($defaultAccountName = ($user->name === 'Alumni User' && !empty($user->profile?->full_name)) ? $user->profile->full_name : $user->name)
                 <div class="grid-2">
                     <div class="form-group">
                         <label for="name">Username / Full Name *</label>
-                        <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                        <input type="text" id="name" name="name" value="{{ old('name', $defaultAccountName) }}" required>
                         @error('name')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                     <div class="form-group">
