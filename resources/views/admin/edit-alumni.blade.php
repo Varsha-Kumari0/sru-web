@@ -330,12 +330,19 @@
                 <div class="grid-2">
                     <div class="form-group">
                         <label for="degree">Degree</label>
-                        <input type="text" id="degree" name="degree" value="{{ old('degree', $user->profile?->degree ?? '') }}">
+                        <select id="degree" name="degree" onchange="populateBranchOptions()">
+                            <option value="">Select Degree</option>
+                            @foreach($selectDegree as $degreeName => $branches)
+                                <option value="{{ $degreeName }}" {{ old('degree', $user->profile?->degree ?? '') === $degreeName ? 'selected' : '' }}>{{ $degreeName }}</option>
+                            @endforeach
+                        </select>
                         @error('degree')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                     <div class="form-group">
                         <label for="branch">Branch / Department</label>
-                        <input type="text" id="branch" name="branch" value="{{ old('branch', $user->profile?->branch ?? '') }}">
+                        <select id="branch" name="branch">
+                            <option value="">Select Branch / Department</option>
+                        </select>
                         @error('branch')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                     <div class="form-group">
@@ -430,6 +437,39 @@
 </main>
 
 <script>
+const degreeBranchMap = @json($selectDegree);
+const initialBranchValue = @json(old('branch', $user->profile?->branch ?? ''));
+
+function populateBranchOptions() {
+    const degreeSelect = document.getElementById('degree');
+    const branchSelect = document.getElementById('branch');
+    const selectedDegree = degreeSelect.value;
+
+    branchSelect.innerHTML = '';
+
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = '';
+    placeholderOption.textContent = 'Select Branch / Department';
+    branchSelect.appendChild(placeholderOption);
+
+    if (!selectedDegree || !degreeBranchMap[selectedDegree]) {
+        branchSelect.disabled = true;
+        return;
+    }
+
+    branchSelect.disabled = false;
+
+    degreeBranchMap[selectedDegree].forEach((branchName) => {
+        const option = document.createElement('option');
+        option.value = branchName;
+        option.textContent = branchName;
+        if (branchName === initialBranchValue) {
+            option.selected = true;
+        }
+        branchSelect.appendChild(option);
+    });
+}
+
 // Show a local preview when admin selects a new profile image.
 function previewPhoto(event) {
     const file = event.target.files[0];
@@ -470,6 +510,7 @@ function toggleToField() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    populateBranchOptions();
     toggleToField();
 });
 </script>
