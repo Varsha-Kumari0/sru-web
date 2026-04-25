@@ -146,9 +146,16 @@
 {{-- Sidebar: shared admin navigation --}}
 <aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
     <div class="px-7 py-8 border-b border-slate-300">
-        <h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">
-            SRU<br>Alumni
-        </h1>
+        @php($dashboardLogoPath = 'images/logos/sru_logo_new.png')
+
+        @if(file_exists(public_path($dashboardLogoPath)))
+            <img src="{{ asset($dashboardLogoPath) }}" alt="SRU Alumni Logo" class="h-12 w-auto object-contain">
+        @else
+            <h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">
+                SRU<br>Alumni
+            </h1>
+        @endif
+
         <span class="text-xs font-semibold tracking-widest uppercase mt-1 block text-slate-500">
             Admin Control
         </span>
@@ -258,10 +265,11 @@
             {{-- User Information Section --}}
             <div class="form-section">
                 <h3>👤 User Account Information</h3>
+                @php($defaultAccountName = ($user->name === 'Alumni User' && !empty($user->profile?->full_name)) ? $user->profile->full_name : $user->name)
                 <div class="grid-2">
                     <div class="form-group">
                         <label for="name">Username / Full Name *</label>
-                        <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                        <input type="text" id="name" name="name" value="{{ old('name', $defaultAccountName) }}" required>
                         @error('name')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                     <div class="form-group">

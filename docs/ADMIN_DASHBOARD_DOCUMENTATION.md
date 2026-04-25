@@ -27,6 +27,7 @@ Common relationship key across profile/professional records: user_id.
   - department breakdown panel
   - recent activity panel (now backed by activity_logs table)
 - Alumni list defaults to latest registered first by created_at descending.
+- Shared admin branding logo is loaded from public/images/logos/sru_logo_new.png with text fallback if the file is missing.
 
 ### 2.2 All SRU Alumni Page
 - Route: GET /admin/all-alumini (name: admin.allalumini)
@@ -39,6 +40,11 @@ Common relationship key across profile/professional records: user_id.
 - Profile photo support:
   - avatar shown in table (photo or initials fallback)
   - photo shown in details modal
+- View details modal includes social profile values from the profile table:
+  - linkedin
+  - facebook
+  - instagram
+  - twitter
 
 ### 2.3 Edit Alumni Page
 - Route: GET /admin/alumni/{id}/edit (name: admin.alumni.edit)
@@ -50,6 +56,11 @@ Common relationship key across profile/professional records: user_id.
   - profile photo upload
 - Work experience end-date behavior:
   - "Currently Working" checkbox sets professional.to to "Present".
+- Name field behavior:
+  - if the stored account name is the generic placeholder "Alumni User", the form shows profile.full_name as the default editable value instead.
+- Validation behavior:
+  - name and email are required
+  - optional text fields are nullable, so empty values no longer trigger "must be a string" messages
 
 ### 2.4 Activity Logs Page
 - Route: GET /admin/activity-logs (name: admin.activity-logs)
@@ -98,6 +109,7 @@ Current events include:
   - Reports
   - System -> Settings
 - Logout hover visibility was normalized for icon-style sidebar variants.
+- The same shared logo is rendered across all admin pages using the file public/images/logos/sru_logo_new.png.
 
 ## 5. Files Involved
 
@@ -120,16 +132,19 @@ Current events include:
 - professional from/to fields are stored as strings to support "Present".
 - profile photo uploads are validated as jpg/jpeg/png with size limit.
 - activity log filter inputs are validated before query execution.
+- Admin detail modals now expose stored profile social links when present.
+- Admin edit form treats optional text inputs as nullable and preserves clearer required-field validation for name and email.
 
 ## 7. Verification Checklist
 Recommended checks:
 
 1. Run migrations.
 2. Open dashboard and verify newest alumni appear first.
-3. Open All SRU Alumni and verify photo avatars and details modal.
-4. Edit an alumni record and verify updates + photo upload.
-5. Open Activity Logs and verify entries are present.
-6. Apply filters and export CSV; verify exported rows match filters.
+3. Open dashboard and verify the shared logo renders in the sidebar.
+4. Open All SRU Alumni and verify photo avatars, social links, and details modal.
+5. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
+6. Open Activity Logs and verify entries are present.
+7. Apply filters and export CSV; verify exported rows match filters.
 
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.
