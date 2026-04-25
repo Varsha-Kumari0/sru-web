@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\ActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -155,6 +156,13 @@ class ProfileController extends Controller
             }
         }
 
+        ActivityLog::record(
+            auth()->id(),
+            auth()->id(),
+            'profile_created',
+            (auth()->user()?->name ?? 'User') . ' created profile'
+        );
+
         return redirect()->route('profile')->with('success', 'Profile created successfully');
     }
 
@@ -228,6 +236,13 @@ class ProfileController extends Controller
                 ]);
             }
         }
+
+        ActivityLog::record(
+            auth()->id(),
+            auth()->id(),
+            'profile_updated',
+            (auth()->user()?->name ?? 'User') . ' updated profile'
+        );
 
         return redirect()->route('profile')->with('success', 'Profile updated successfully');
     }

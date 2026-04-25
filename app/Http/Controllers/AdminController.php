@@ -2,11 +2,128 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Professional;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
+    private function buildActivityLogsQuery(Request $request)
+    {
+        $query = ActivityLog::query()->with(['actor', 'subject']);
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->string('from_date'));
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->string('to_date'));
+        }
+
+        if ($request->filled('actor_user_id')) {
+            $query->where('actor_user_id', (int) $request->input('actor_user_id'));
+        }
+
+        if ($request->filled('action')) {
+            $query->where('action', $request->string('action'));
+        }
+
+        return $query;
+    }
+
+    public function activityLogs(Request $request)
+    {
+        $request->validate([
+            'from_date' => 'nullable|date',
+            'to_date' => 'nullable|date',
+            'actor_user_id' => 'nullable|integer|exists:users,id',
+            'action' => 'nullable|string|max:100',
+        ]);
+
+        $logs = $this->buildActivityLogsQuery($request)
+            ->latest('created_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        $actors = User::query()
+            ->whereIn(
+                'id',
+                ActivityLog::query()->whereNotNull('actor_user_id')->distinct()->pluck('actor_user_id')
+            )
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
+        $actions = ActivityLog::query()
+            ->select('action')
+            ->distinct()
+            ->orderBy('action')
+            ->pluck('action');
+
+        return view('admin.activity-logs', compact('logs', 'actors', 'actions'));
+    }
+
+    public function exportActivityLogsCsv(Request $request)
+    {
+        $request->validate([
+            'from_date' => 'nullable|date',
+            'to_date' => 'nullable|date',
+            'actor_user_id' => 'nullable|integer|exists:users,id',
+            'action' => 'nullable|string|max:100',
+        ]);
+
+        $logs = $this->buildActivityLogsQuery($request)
+            ->latest('created_at')
+            ->get();
+
+        ActivityLog::record(
+            auth()->id(),
+            auth()->id(),
+            'activity_logs_exported',
+            (auth()->user()?->name ?? 'Admin') . ' exported activity logs CSV',
+            [
+                'from_date' => $request->input('from_date'),
+                'to_date' => $request->input('to_date'),
+                'actor_user_id' => $request->input('actor_user_id'),
+                'action' => $request->input('action'),
+            ]
+        );
+
+        $filename = 'activity_logs_' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($logs) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, [
+                'ID',
+                'Date Time',
+                'Action',
+                'Description',
+                'Actor Name',
+                'Actor Email',
+                'Subject Name',
+                'Subject Email',
+            ]);
+
+            foreach ($logs as $log) {
+                fputcsv($handle, [
+                    $log->id,
+                    $log->created_at?->format('Y-m-d H:i:s'),
+                    $log->action,
+                    $log->description,
+                    $log->actor?->name ?? '-',
+                    $log->actor?->email ?? '-',
+                    $log->subject?->name ?? '-',
+                    $log->subject?->email ?? '-',
+                ]);
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
     /**
      * Remove an alumni user and all related data (profile, professional).
      */
@@ -20,6 +137,20 @@ class AdminController extends Controller
 
             return back()->with('error', 'User not found.');
         }
+        $actorName = auth()->user()?->name ?? 'System';
+        $targetName = $user->profile?->full_name ?: $user->name;
+
+        ActivityLog::record(
+            auth()->id(),
+            $user->id,
+            'alumni_deleted',
+            $actorName . ' deleted alumni record for ' . $targetName,
+            [
+                'email' => $user->email,
+                'subject_name' => $targetName,
+            ]
+        );
+
         // Delete related profile and professional records
         $user->profile()?->delete();
         $user->professional()?->delete();
@@ -83,12 +214,16 @@ class AdminController extends Controller
             'profile_photo' => 'sometimes|nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
+        $userChanged = false;
+
         // Update user information
         if (isset($validated['name'])) {
             $user->update(['name' => $validated['name']]);
+            $userChanged = true;
         }
         if (isset($validated['email'])) {
             $user->update(['email' => $validated['email']]);
+            $userChanged = true;
         }
 
         // Update or create profile
@@ -105,6 +240,8 @@ class AdminController extends Controller
             $profileData['profile_photo'] = $imagePath;
         }
         
+        $profileChanged = !empty($profileData);
+
         if (!empty($profileData)) {
             if ($user->profile) {
                 $user->profile->update($profileData);
@@ -129,6 +266,8 @@ class AdminController extends Controller
             $professionalData['to'] = $validated['to'];
         }
         
+        $professionalChanged = !empty($professionalData);
+
         if (!empty($professionalData)) {
             if ($user->professional) {
                 $user->professional->update($professionalData);
@@ -136,6 +275,23 @@ class AdminController extends Controller
                 $professionalData['user_id'] = $user->id;
                 \App\Models\Professional::create($professionalData);
             }
+        }
+
+        if ($userChanged || $profileChanged || $professionalChanged) {
+            $actorName = auth()->user()?->name ?? 'System';
+            $targetName = $user->profile?->full_name ?: $user->name;
+
+            ActivityLog::record(
+                auth()->id(),
+                $user->id,
+                'alumni_updated',
+                $actorName . ' updated alumni record for ' . $targetName,
+                [
+                    'user_fields_updated' => $userChanged,
+                    'profile_fields_updated' => $profileChanged,
+                    'professional_fields_updated' => $professionalChanged,
+                ]
+            );
         }
 
         if (request()->expectsJson()) {
