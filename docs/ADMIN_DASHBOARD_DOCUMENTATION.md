@@ -34,7 +34,8 @@ The profile record currently includes additional personal/social fields such as:
 - Includes:
   - department breakdown panel
   - recent activity panel (now backed by activity_logs table)
-- Alumni list defaults to latest registered first by created_at descending.
+- The previous "All Registered SRU Alumni" dashboard table section is intentionally removed.
+- The same area is left as a blank reserved space for future dashboard modules/widgets.
 - Shared admin branding logo is loaded from public/images/logos/sru_logo_new.png with text fallback if the file is missing.
 
 ### 2.2 All SRU Alumni Page
@@ -104,7 +105,7 @@ The profile record currently includes additional personal/social fields such as:
   - action type
 - CSV export respects the current filter query.
 - Description column for alumni_updated action shows only the summary line in the table.
-- On hover, the same description cell shows the full per-field change details, e.g. "Degree: Empty to B.Tech".
+- On hover, the same table row expands and shows full per-field change details under the summary, e.g. "Degree: Empty to B.Tech".
 - New log rows include a changes array in the properties JSON column. Existing older rows show only the summary sentence.
 
 ### 2.6 Admin Sidebar Profile Photo
@@ -207,12 +208,12 @@ Export notes:
 Recommended checks:
 
 1. Run migrations.
-2. Open dashboard and verify newest alumni appear first.
+2. Open dashboard and verify the alumni table section is removed and the reserved blank space is visible.
 3. Open dashboard and verify the shared logo renders in the sidebar.
 4. Open All SRU Alumni and verify photo avatars match dashboard style (contain + border), social links, and details modal.
 5. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
 6. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
-7. After editing an alumni record, open Activity Logs and verify the table shows only the summary line; hover the description and verify the per-field change details appear.
+7. After editing an alumni record, open Activity Logs and verify the table shows only the summary line by default; hover the row and verify it expands to show per-field change details.
 8. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
 9. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.

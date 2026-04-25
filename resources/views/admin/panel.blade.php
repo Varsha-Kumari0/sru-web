@@ -255,71 +255,8 @@
                 </div>
             </div>
 
-            {{-- ── Alumni Table ── --}}
-            <div class="rounded-xl overflow-hidden bg-[#ffffff] border border-[#dde3ec]">
-
-            {{-- Table Header / Controls --}}
-              <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border-b border-[#dde3ec]">
-                <h3 class="font-display text-lg font-semibold">All Registered SRU Alumni</h3>
-                <div class="flex items-center gap-3 flex-wrap">
-                    {{-- Search --}}
-                  <div class="search-wrap flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-150 bg-[#ffffff] border border-[#dde3ec]">
-                        <svg width="13" height="13" fill="none" stroke="#7a7f90" stroke-width="2" viewBox="0 0 24 24">
-                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
-                        <input type="text" id="searchInput" placeholder="Search SRU alumni…"
-                               oninput="filterTable()"
-                               class="bg-transparent outline-none text-sm w-48 h-5 border-none text-slate-900"
-                               placeholder-style="color:#7a7f90">
-                    </div>
-                    {{-- Year Filter --}}
-                    <select id="yearFilter" onchange="filterTable()"
-                            class="px-4 py-2 rounded-lg text-sm outline-none cursor-pointer transition-colors duration-150 bg-[#ffffff] border border-[#dde3ec] text-[#555]">
-                        <option value="">All Years</option>
-                    </select>
-                </div>
-            </div>
-
-            {{-- Table --}}
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse" id="alumniTable">
-                    <thead>
-                        <tr>
-                            @foreach([
-                                ['name',            'SRU Alumni'],
-                                ['department',      'Department'],
-                                ['graduation_year', 'Graduation Year'],
-                                ['email',           'Email'],
-                                ['created_at',      'Registered'],
-                                [null,              'Actions'],
-                            ] as [$key, $label])
-                            <th class="text-left px-5 py-3.5 text-xs font-semibold tracking-widest uppercase select-none whitespace-nowrap text-[#555] border-b border-[#dde3ec] {{ $key ? 'cursor-pointer hover:text-[#1a1a2e]' : '' }}"
-                                {{ $key ? "onclick=sortTable('$key')" : '' }}>
-                                {{ $label }}
-                            </th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr>
-                            <td colspan="6" class="py-16 text-center text-[#555]">
-                                <svg class="mx-auto mb-3" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="9" cy="7" r="4"/>
-                                </svg>
-                                <p class="text-sm">Loading SRU alumni data…</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            {{-- Pagination --}}
-            <div class="flex items-center justify-between px-6 py-4 border-t border-[#dde3ec]">
-                <span class="text-sm text-[#555]" id="paginationInfo">Showing 0 of 0 alumni</span>
-                <div class="flex items-center gap-1" id="paginationControls"></div>
-            </div>
-        </div>
+            {{-- Reserved blank dashboard space for future widgets --}}
+            <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] min-h-[420px]"></div>
 
         </section>
 
@@ -454,8 +391,10 @@ const getColor  = (i) => COLORS[i % COLORS.length];
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-    populateYearFilter();
-    filterTable();
+    if (document.getElementById('yearFilter') && document.getElementById('searchInput') && document.getElementById('tableBody')) {
+        populateYearFilter();
+        filterTable();
+    }
 
     // Keep the admin dashboard on-screen when the browser back button is used.
     // This prevents going back to the login page from the protected dashboard.
@@ -468,8 +407,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ── Year filter dropdown ──────────────────────────────────────────────────────
 function populateYearFilter() {
-    const years = [...new Set(alumni.map(a => a.graduation_year))].sort((a, b) => b - a);
     const sel = document.getElementById('yearFilter');
+    if (!sel) return;
+
+    const years = [...new Set(alumni.map(a => a.graduation_year))].sort((a, b) => b - a);
     years.forEach(y => {
         if (y === '—') return;
         const o = document.createElement('option');
@@ -480,8 +421,13 @@ function populateYearFilter() {
 
 // ── Filter ───────────────────────────────────────────────────────────────────
 function filterTable() {
-    const q      = document.getElementById('searchInput').value.toLowerCase();
-    const year   = document.getElementById('yearFilter').value;
+    const searchInput = document.getElementById('searchInput');
+    const yearFilter = document.getElementById('yearFilter');
+    const tableBody = document.getElementById('tableBody');
+    if (!searchInput || !yearFilter || !tableBody) return;
+
+    const q = searchInput.value.toLowerCase();
+    const year = yearFilter.value;
 
     filtered = alumni.filter(a => {
         const matchQ = !q ||
@@ -526,6 +472,10 @@ function sortTable(key) {
 // ── Render table ─────────────────────────────────────────────────────────────
 function renderTable() {
     const tbody = document.getElementById('tableBody');
+    const paginationInfo = document.getElementById('paginationInfo');
+    const ctrl = document.getElementById('paginationControls');
+    if (!tbody || !paginationInfo || !ctrl) return;
+
     const total = filtered.length;
     const pages = Math.max(1, Math.ceil(total / perPage));
     currentPage = Math.min(currentPage, pages);
@@ -622,11 +572,10 @@ function renderTable() {
         }).join('');
     }
 
-    document.getElementById('paginationInfo').textContent =
+    paginationInfo.textContent =
         `Showing ${Math.min(start + 1, total)}–${Math.min(start + perPage, total)} of ${total} SRU alumni`;
 
     // Pagination buttons
-    const ctrl = document.getElementById('paginationControls');
     ctrl.innerHTML = '';
     const addBtn = (label, page, active) => {
         const btn = document.createElement('button');
