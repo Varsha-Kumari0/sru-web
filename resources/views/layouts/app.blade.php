@@ -15,7 +15,8 @@
     </div>
 
     <div class="space-x-6 text-sm">
-        <!-- <a href="/dashboard" class="hover:underline">Dashboard</a> -->
+        <a href="{{ route('newsroom') }}" class="hover:underline">Newsroom</a>
+        <a href="{{ route('events.index') }}" class="hover:underline">Events</a>
         <a href="/profile" class="hover:underline">Profile</a>
 
         <form method="POST" action="/logout" class="inline">

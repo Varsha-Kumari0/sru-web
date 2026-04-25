@@ -34,6 +34,8 @@ Route::get('/profile', function () {
 
 Route::get('/newsroom', [NewsController::class, 'index'])->name('newsroom');
 Route::get('/newsroom/{id}', [NewsController::class, 'show'])->name('news.show');
+Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+Route::get('/events/{id}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
 
 // 🔐 AUTH REQUIRED ROUTES
 Route::middleware(['auth'])->group(function () {
