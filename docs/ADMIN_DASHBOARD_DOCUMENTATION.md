@@ -29,7 +29,8 @@ Common relationship key across profile/professional records: user_id.
 - Alumni list defaults to latest registered first by created_at descending.
 
 ### 2.2 All SRU Alumni Page
-- Route: GET /admin/allalumini (name: admin.allalumini)
+- Route: GET /admin/all-alumini (name: admin.allalumini)
+- Legacy URL redirect: /admin/allalumini -> /admin/all-alumini
 - Table includes alumni data from users + profiles + professionals.
 - Row actions:
   - View details modal
@@ -131,5 +132,6 @@ Recommended checks:
 6. Apply filters and export CSV; verify exported rows match filters.
 
 ## 8. Notes
-- The route and view naming currently uses allalumini for compatibility with existing references.
+- The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.
+- The older URL /admin/allalumini is preserved as a redirect.
 - If renamed to allalumni in future, route names and view references must be updated together.
