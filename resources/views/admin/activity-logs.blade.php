@@ -19,9 +19,11 @@
 <body class="min-h-screen flex bg-slate-50 text-slate-900 [background-image:radial-gradient(ellipse_at_10%_20%,rgba(59,130,246,.08)_0%,transparent_60%),radial-gradient(ellipse_at_90%_80%,rgba(148,163,184,.12)_0%,transparent_60%)]">
 
 {{-- Shared admin sidebar --}}
-<aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
+<aside class="w-64 fixed inset-y-0 left-0 bg-white border-r border-slate-300 flex flex-col shadow-sm">
     <div class="px-7 py-8 border-b border-slate-300">
-        @php($dashboardLogoPath = 'images/logos/sru_logo_new.png')
+        @php
+            $dashboardLogoPath = 'images/logos/sru_logo_new.png';
+        @endphp
 
         @if(file_exists(public_path($dashboardLogoPath)))
             <img src="{{ asset($dashboardLogoPath) }}" alt="SRU Alumni Logo" class="h-12 w-auto object-contain">
@@ -182,7 +184,7 @@
         </form>
 
         {{-- Audit table: newest first, paginated on backend --}}
-        <div class="overflow-hidden rounded-xl border border-slate-300 bg-white">
+        <div class="overflow-hidden rounded-xl border border-slate-300 bg-white cursor-pointer">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead class="bg-slate-100 text-slate-700">
@@ -196,7 +198,7 @@
                     </thead>
                     <tbody>
                         @forelse($logs as $log)
-                            <tr class="border-t border-slate-200 hover:bg-slate-50">
+                            <tr class="group border-t border-slate-200 hover:bg-slate-50">
                                 <td class="px-4 py-3 text-slate-700">
                                     <div class="font-medium text-slate-900">{{ $log->created_at?->format('d M Y, h:i A') }}</div>
                                     <div class="text-xs text-slate-500">{{ $log->created_at?->diffForHumans() }}</div>
@@ -205,17 +207,41 @@
                                     <span class="inline-flex rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{{ $log->action }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-slate-900">
-                                    <div>{{ $log->description }}</div>
+                                    @php
+                                        $changeDetails = [];
 
-                                    @if($log->action === 'alumni_updated' && !empty($log->properties['changes']) && is_array($log->properties['changes']))
-                                        <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-600">
-                                            @foreach($log->properties['changes'] as $change)
-                                                <li>
-                                                    <span class="font-semibold">{{ $change['field'] ?? 'Field' }}</span>:
-                                                    {{ $change['from'] ?? 'Empty' }} to {{ $change['to'] ?? 'Empty' }}
-                                                </li>
-                                            @endforeach
-                                        </ul>
+                                        if ($log->action === 'alumni_updated' && !empty($log->properties['changes']) && is_array($log->properties['changes'])) {
+                                            foreach ($log->properties['changes'] as $change) {
+                                                $changeDetails[] = [
+                                                    'field' => $change['field'] ?? 'Field',
+                                                    'from' => $change['from'] ?? 'Empty',
+                                                    'to' => $change['to'] ?? 'Empty',
+                                                ];
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if(!empty($changeDetails))
+                                        <div>
+                                            <div class="cursor-help underline decoration-dotted underline-offset-4">
+                                                {{ $log->description }}
+                                            </div>
+                                            <div class="max-h-0 overflow-hidden opacity-0 transition-all duration-200 ease-out group-hover:mt-3 group-hover:max-h-40 group-hover:opacity-100">
+                                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-700">
+                                                    <div class="mb-2 font-semibold text-slate-900">Change Details</div>
+                                                    <ul class="space-y-2">
+                                                    @foreach($changeDetails as $detail)
+                                                        <li>
+                                                            <span class="font-semibold text-slate-900">{{ $detail['field'] }}:</span>
+                                                            {{ $detail['from'] }} to {{ $detail['to'] }}
+                                                        </li>
+                                                    @endforeach
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div>{{ $log->description }}</div>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-slate-700">

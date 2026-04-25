@@ -103,7 +103,8 @@ The profile record currently includes additional personal/social fields such as:
   - actor user
   - action type
 - CSV export respects the current filter query.
-- Description column for alumni_updated action shows a point-wise bullet list of every changed field with old and new values, e.g. "Degree: — to B.Tech".
+- Description column for alumni_updated action shows only the summary line in the table.
+- On hover, the same description cell shows the full per-field change details, e.g. "Degree: Empty to B.Tech".
 - New log rows include a changes array in the properties JSON column. Existing older rows show only the summary sentence.
 
 ### 2.6 Admin Sidebar Profile Photo
@@ -211,7 +212,7 @@ Recommended checks:
 4. Open All SRU Alumni and verify photo avatars match dashboard style (contain + border), social links, and details modal.
 5. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
 6. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
-7. After editing an alumni record, open Activity Logs and verify the description shows a point-wise bullet list of changed fields.
+7. After editing an alumni record, open Activity Logs and verify the table shows only the summary line; hover the description and verify the per-field change details appear.
 8. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
 9. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
