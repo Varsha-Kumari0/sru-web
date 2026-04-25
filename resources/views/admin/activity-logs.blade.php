@@ -18,6 +18,7 @@
 </head>
 <body class="min-h-screen flex bg-slate-50 text-slate-900 [background-image:radial-gradient(ellipse_at_10%_20%,rgba(59,130,246,.08)_0%,transparent_60%),radial-gradient(ellipse_at_90%_80%,rgba(148,163,184,.12)_0%,transparent_60%)]">
 
+{{-- Shared admin sidebar --}}
 <aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
     <div class="px-7 py-8 border-b border-slate-300">
         <h1 class="font-display text-xl font-bold text-sky-400 tracking-[0.02em] leading-tight">SRU<br>Alumni</h1>
@@ -78,6 +79,7 @@
     </div>
 </aside>
 
+{{-- Activity logs page with server-side filters --}}
 <main class="ml-64 flex-1 flex flex-col min-h-screen">
     <header class="sticky top-0 z-40 flex items-center justify-between px-9 py-5 bg-white border-b border-slate-300">
         <div>
@@ -95,6 +97,7 @@
     </header>
 
     <div class="p-9 flex-1 space-y-6">
+        {{-- Filter form keeps query params for list + CSV export --}}
         <form method="GET" action="{{ route('admin.activity-logs') }}" class="rounded-xl border border-slate-300 bg-white p-5">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <div>
@@ -136,6 +139,7 @@
             </div>
         </form>
 
+        {{-- Audit table: newest first, paginated on backend --}}
         <div class="overflow-hidden rounded-xl border border-slate-300 bg-white">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
