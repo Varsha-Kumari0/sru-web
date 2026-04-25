@@ -110,6 +110,13 @@
 			<h2 class="font-display text-2xl font-semibold">All SRU Alumni</h2>
 			<p class="text-xs mt-0.5 text-slate-500">{{ now()->format('l, d F Y') }} - Total records: {{ $users->count() }}</p>
 		</div>
+		<button onclick="exportCSV()" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+			<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+				<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+				<polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+			</svg>
+			Export CSV
+		</button>
 	</header>
 
 	<div class="p-9 flex-1">
@@ -184,7 +191,7 @@
 									<td class="px-4 py-3">
 										<div class="flex items-center gap-2.5">
 											@if($profilePhotoUrl)
-												<img src="{{ $profilePhotoUrl }}" alt="{{ $displayName }}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;background:#f8f9fc;flex-shrink:0;">
+												<img src="{{ $profilePhotoUrl }}" alt="{{ $displayName }}" style="width:36px;height:36px;border-radius:8px;object-fit:contain;object-position:center;background:#f8f9fc;flex-shrink:0;border:1px solid #dde3ec;">
 											@else
 												<div style="width:36px;height:36px;border-radius:8px;background:{{ $avatarColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;">{{ $initials }}</div>
 											@endif
@@ -258,6 +265,70 @@
 </div>
 
 <script>
+const alumniData = {!! json_encode($users->map(function($u) {
+    return [
+        'id'              => $u->id,
+        'name'            => $u->name,
+        'email'           => $u->email,
+        'full_name'       => $u->profile?->full_name ?? $u->name,
+        'father_name'     => $u->profile?->father_name ?? '—',
+        'phone'           => $u->profile?->mobile ?? '—',
+        'city'            => $u->profile?->city ?? '—',
+        'country'         => $u->profile?->country ?? '—',
+        'degree'          => $u->profile?->degree ?? '—',
+        'branch'          => $u->profile?->branch ?? '—',
+        'graduation_year' => $u->profile?->passing_year ?? '—',
+        'current_status'  => $u->profile?->current_status ?? '—',
+        'company'         => $u->profile?->company ?? '—',
+        'linkedin'        => $u->profile?->linkedin ?? '—',
+        'facebook'        => $u->profile?->facebook ?? '—',
+        'instagram'       => $u->profile?->instagram ?? '—',
+        'twitter'         => $u->profile?->twitter ?? '—',
+        'organization'    => $u->professional?->organization ?? '—',
+        'industry'        => $u->professional?->industry ?? '—',
+        'role'            => $u->professional?->role ?? '—',
+        'from'            => $u->professional?->from ?? '—',
+        'to'              => $u->professional?->to ?? '—',
+        'pro_location'    => $u->professional?->location ?? '—',
+        'created_at'      => $u->created_at?->format('d M Y') ?? '—',
+    ];
+})) !!};
+
+function exportCSV() {
+    const q = (v) => '"' + String(v ?? '—').replace(/"/g, '""') + '"';
+
+    const headers = [
+        'ID', 'Account Name', 'Email',
+        'Full Name', 'Father Name', 'Phone', 'City', 'Country',
+        'Degree', 'Branch / Specialization', 'Graduation Year',
+        'Current Status', 'Company',
+        'LinkedIn', 'Facebook', 'Instagram', 'Twitter',
+        'Organization', 'Industry', 'Role',
+        'Work From', 'Work To', 'Work Location',
+        'Registered'
+    ];
+
+    const rows = alumniData.map(a => [
+        q(a.id), q(a.name), q(a.email),
+        q(a.full_name), q(a.father_name), q(a.phone), q(a.city), q(a.country),
+        q(a.degree), q(a.branch), q(a.graduation_year),
+        q(a.current_status), q(a.company),
+        q(a.linkedin), q(a.facebook), q(a.instagram), q(a.twitter),
+        q(a.organization), q(a.industry), q(a.role),
+        q(a.from), q(a.to), q(a.pro_location),
+        q(a.created_at),
+    ]);
+
+    const csv  = [headers.map(q), ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `sru_alumni_export_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
 	// Render selected alumni details inside modal.
 	function openDetails(data) {
 		const modal = document.getElementById('detailsModal');

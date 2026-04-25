@@ -45,7 +45,7 @@ The profile record currently includes additional personal/social fields such as:
   - Edit alumni record
   - Delete alumni record
 - Profile photo support:
-  - avatar shown in table (photo or initials fallback)
+  - avatar shown in table using object-fit:contain with border, matching the dashboard style
   - photo shown in details modal
 - View details modal includes social profile values from the profile table:
   - father_name
@@ -53,6 +53,7 @@ The profile record currently includes additional personal/social fields such as:
   - facebook
   - instagram
   - twitter
+- Export CSV button in page header exports all alumni fields (same 24-column format as dashboard export).
 
 ### 2.3 Edit Alumni Page
 - Route: GET /admin/alumni/{id}/edit (name: admin.alumni.edit)
@@ -101,6 +102,8 @@ The profile record currently includes additional personal/social fields such as:
   - actor user
   - action type
 - CSV export respects the current filter query.
+- Description column for alumni_updated action shows a point-wise bullet list of every changed field with old and new values, e.g. "Degree: — to B.Tech".
+- New log rows include a changes array in the properties JSON column. Existing older rows show only the summary sentence.
 
 ## 3. Permanent Activity Audit
 
@@ -127,7 +130,7 @@ Current events include:
 - user_registered
 - profile_created
 - profile_updated
-- alumni_updated
+- alumni_updated (properties.changes array records per-field old/new values)
 - alumni_deleted
 - activity_logs_exported
 
@@ -168,17 +171,31 @@ Current events include:
 - Admin edit form treats optional text inputs as nullable and preserves clearer required-field validation for name and email.
 - Profile create/update validation includes stricter social-link URL checks for LinkedIn, Instagram, Facebook, and X/Twitter.
 
+## 6.1 CSV Export Columns
+Both the Dashboard and All SRU Alumni page export the same 24 columns:
+- ID, Account Name, Email
+- Full Name, Father Name, Phone, City, Country
+- Degree, Branch / Specialization, Graduation Year, Current Status, Company
+- LinkedIn, Facebook, Instagram, Twitter
+- Organization, Industry, Role, Work From, Work To, Work Location
+- Registered
+
+Export notes:
+- Values containing commas or quotes are properly escaped (RFC 4180).
+- File includes a UTF-8 BOM so Excel opens it without garbled characters.
+
 ## 7. Verification Checklist
 Recommended checks:
 
 1. Run migrations.
 2. Open dashboard and verify newest alumni appear first.
 3. Open dashboard and verify the shared logo renders in the sidebar.
-4. Open All SRU Alumni and verify photo avatars, social links, and details modal.
+4. Open All SRU Alumni and verify photo avatars match dashboard style (contain + border), social links, and details modal.
 5. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
 6. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
-7. Open Activity Logs and verify entries are present.
-8. Apply filters and export CSV; verify exported rows match filters.
+7. After editing an alumni record, open Activity Logs and verify the description shows a point-wise bullet list of changed fields.
+8. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
+9. Open Activity Logs, apply filters, and export CSV; verify exported rows match filters.
 
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.

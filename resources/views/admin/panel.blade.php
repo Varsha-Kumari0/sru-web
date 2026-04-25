@@ -733,13 +733,53 @@ function removeAlumni(id) {
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 function exportCSV() {
-    const headers = ['ID','Name','Email','Phone','Department','Graduation Year','Location','Registered'];
+    // Wrap value in quotes and escape any existing double-quotes.
+    const q = (v) => '"' + String(v ?? '—').replace(/"/g, '""') + '"';
+
+    const headers = [
+        'ID', 'Account Name', 'Email',
+        // Profile
+        'Full Name', 'Father Name', 'Phone', 'City', 'Country',
+        'Degree', 'Branch / Specialization', 'Graduation Year',
+        'Current Status', 'Company',
+        // Social
+        'LinkedIn', 'Facebook', 'Instagram', 'Twitter',
+        // Professional
+        'Organization', 'Industry', 'Role',
+        'Work From', 'Work To', 'Work Location',
+        // Meta
+        'Registered'
+    ];
+
     const rows = alumni.map(a => [
-        a.id, a.name, a.email, a.phone, a.department,
-        a.graduation_year, a.location, a.created_at
+        q(a.id),
+        q(a.name),
+        q(a.email),
+        q(a.full_name),
+        q(a.father_name),
+        q(a.phone),
+        q(a.city),
+        q(a.country),
+        q(a.degree),
+        q(a.branch),
+        q(a.graduation_year),
+        q(a.current_status),
+        q(a.company),
+        q(a.linkedin),
+        q(a.facebook),
+        q(a.instagram),
+        q(a.twitter),
+        q(a.organization),
+        q(a.industry),
+        q(a.role),
+        q(a.from),
+        q(a.to),
+        q(a.pro_location),
+        q(a.created_at),
     ]);
-    const csv  = [headers, ...rows].map(r => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+
+    const csv  = [headers.map(q), ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;

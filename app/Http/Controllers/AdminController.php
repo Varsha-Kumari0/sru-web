@@ -225,6 +225,19 @@ class AdminController extends Controller
             return back()->with('error', 'User not found.');
         }
 
+        $originalUserData = [
+            'name' => $user->name,
+            'email' => $user->email,
+        ];
+
+        $originalProfileData = $user->profile
+            ? $user->profile->only(['full_name', 'mobile', 'city', 'country', 'degree', 'branch', 'passing_year', 'current_status', 'company', 'profile_photo'])
+            : [];
+
+        $originalProfessionalData = $user->professional
+            ? $user->professional->only(['organization', 'industry', 'role', 'from', 'to', 'location'])
+            : [];
+
         // Validate input
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -312,18 +325,110 @@ class AdminController extends Controller
         }
 
         if ($userChanged || $profileChanged || $professionalChanged) {
+            $user->refresh();
+            $user->load(['profile', 'professional']);
+
+            $updatedUserData = [
+                'name' => $user->name,
+                'email' => $user->email,
+            ];
+
+            $updatedProfileData = $user->profile
+                ? $user->profile->only(['full_name', 'mobile', 'city', 'country', 'degree', 'branch', 'passing_year', 'current_status', 'company', 'profile_photo'])
+                : [];
+
+            $updatedProfessionalData = $user->professional
+                ? $user->professional->only(['organization', 'industry', 'role', 'from', 'to', 'location'])
+                : [];
+
+            $normalizeValue = static function ($value): string {
+                if (is_null($value) || $value === '') {
+                    return 'Empty';
+                }
+
+                if (is_bool($value)) {
+                    return $value ? 'Yes' : 'No';
+                }
+
+                return (string) $value;
+            };
+
+            $fieldChanges = [];
+
+            $collectChanges = static function (array $labels, array $before, array $after, string $group) use (&$fieldChanges, $normalizeValue): void {
+                foreach ($labels as $field => $label) {
+                    $oldRaw = $before[$field] ?? null;
+                    $newRaw = $after[$field] ?? null;
+
+                    if ((string) ($oldRaw ?? '') === (string) ($newRaw ?? '')) {
+                        continue;
+                    }
+
+                    $fieldChanges[] = [
+                        'group' => $group,
+                        'field' => $label,
+                        'from' => $normalizeValue($oldRaw),
+                        'to' => $normalizeValue($newRaw),
+                    ];
+                }
+            };
+
+            $collectChanges(
+                [
+                    'name' => 'Account Name',
+                    'email' => 'Email',
+                ],
+                $originalUserData,
+                $updatedUserData,
+                'Account'
+            );
+
+            $collectChanges(
+                [
+                    'full_name' => 'Full Name',
+                    'mobile' => 'Mobile',
+                    'city' => 'City',
+                    'country' => 'Country',
+                    'degree' => 'Degree',
+                    'branch' => 'Branch / Specialization',
+                    'passing_year' => 'Passing Year',
+                    'current_status' => 'Current Status',
+                    'company' => 'Company',
+                    'profile_photo' => 'Profile Photo',
+                ],
+                $originalProfileData,
+                $updatedProfileData,
+                'Profile'
+            );
+
+            $collectChanges(
+                [
+                    'organization' => 'Organization',
+                    'industry' => 'Industry',
+                    'role' => 'Role',
+                    'from' => 'Work From',
+                    'to' => 'Work To',
+                    'location' => 'Work Location',
+                ],
+                $originalProfessionalData,
+                $updatedProfessionalData,
+                'Professional'
+            );
+
             $actorName = auth()->user()?->name ?? 'System';
             $targetName = $user->profile?->full_name ?: $user->name;
+            $changeCount = count($fieldChanges);
 
             ActivityLog::record(
                 auth()->id(),
                 $user->id,
                 'alumni_updated',
-                $actorName . ' updated alumni record for ' . $targetName,
+                $actorName . ' updated alumni record for ' . $targetName . ($changeCount > 0 ? ' (' . $changeCount . ' changes)' : ''),
                 [
                     'user_fields_updated' => $userChanged,
                     'profile_fields_updated' => $profileChanged,
                     'professional_fields_updated' => $professionalChanged,
+                    'changes' => $fieldChanges,
                 ]
             );
         }

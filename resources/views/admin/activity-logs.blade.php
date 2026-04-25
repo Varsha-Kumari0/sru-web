@@ -186,7 +186,20 @@
                                 <td class="px-4 py-3 text-slate-700">
                                     <span class="inline-flex rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{{ $log->action }}</span>
                                 </td>
-                                <td class="px-4 py-3 text-slate-900">{{ $log->description }}</td>
+                                <td class="px-4 py-3 text-slate-900">
+                                    <div>{{ $log->description }}</div>
+
+                                    @if($log->action === 'alumni_updated' && !empty($log->properties['changes']) && is_array($log->properties['changes']))
+                                        <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-600">
+                                            @foreach($log->properties['changes'] as $change)
+                                                <li>
+                                                    <span class="font-semibold">{{ $change['field'] ?? 'Field' }}</span>:
+                                                    {{ $change['from'] ?? 'Empty' }} to {{ $change['to'] ?? 'Empty' }}
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3 text-slate-700">
                                     @if($log->actor)
                                         <div class="font-medium text-slate-900">{{ $log->actor->name }}</div>
