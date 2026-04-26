@@ -29,14 +29,9 @@ Route::get('/', function () {
 use App\Models\Profile;
 use App\Models\Professional;
 
-Route::get('/profile', function () {
-
-    $profile = Profile::where('user_id', Auth::id())->first();
-    $experiences = Professional::where('user_id', Auth::id())->get();
-
-    return view('profile.profile', compact('profile', 'experiences'));
-
-})->middleware(['auth'])->name('profile');
+Route::get('/profile', [ProfileController::class, 'showProfile'])
+    ->middleware(['auth'])
+    ->name('profile');
 
 Route::get('/newsroom', [NewsController::class, 'index'])->name('newsroom');
 Route::get('/newsroom/{id}', [NewsController::class, 'show'])->name('news.show');
