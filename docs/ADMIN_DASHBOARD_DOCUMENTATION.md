@@ -34,8 +34,11 @@ The profile record currently includes additional personal/social fields such as:
 - Includes:
   - department breakdown panel
   - recent activity panel (now backed by activity_logs table)
-- The previous "All Registered SRU Alumni" dashboard table section is intentionally removed.
-- The same area is left as a blank reserved space for future dashboard modules/widgets.
+- The previous legacy dashboard table/blank placeholder area has been replaced with two live content containers:
+  - Latest News (top recently updated news items)
+  - Upcoming Events (next scheduled events ordered by start date/time)
+- Dashboard News/Event cards now open public detail pages (news.show / events.show).
+- Dashboard "View All" links for News and Events open their public listing pages in a new tab.
 - Shared admin branding logo is loaded from public/images/logos/sru_logo_new.png with text fallback if the file is missing.
 
 ### 2.2 All SRU Alumni Page
@@ -241,7 +244,7 @@ Current events include:
   - Activity Logs
   - Reports
   - System -> Settings
-- The News and Events submenus on all admin pages use the same hover dropdown behavior, including their respective manage and edit pages.
+- The News and Events submenus on all admin pages use hover flyout menus that appear outside (to the right of) the sidebar.
 - Admin sidebar profile avatar uses a consistent fit style across all admin pages (contain + center + white background + border).
 - The bottom sidebar admin identity card is present across all admin pages, including News create, News manage, News edit, Events create, Events manage, and Events edit.
 - Logout hover visibility was normalized for icon-style sidebar variants.
@@ -306,20 +309,22 @@ Export notes:
 Recommended checks:
 
 1. Run migrations.
-2. Open dashboard and verify the alumni table section is removed and the reserved blank space is visible.
-3. Open dashboard and verify the shared logo renders in the sidebar.
-4. Open All SRU Alumni and verify photo avatars match dashboard style (contain + border), social links, and details modal.
-5. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
-6. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
-7. After editing an alumni record, open Activity Logs and verify the table shows only the summary line by default; hover the row and verify it expands to show per-field change details.
-8. Trigger the same non-change action multiple times (for example opening the same admin page repeatedly), then open Activity Logs and verify those repeated events are grouped into one row; hover the grouped row and verify the expanded panel shows "First in group" timestamp and every occurrence timestamp in the timeline.
-9. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
-10. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
+2. Open dashboard and verify the old blank placeholder area is replaced with two live containers: Latest News and Upcoming Events.
+3. In dashboard, click a News card and an Event card and verify each opens the corresponding public detail page.
+4. In dashboard, click News "View All" and Events "View All" and verify both open public listing pages in a new browser tab.
+5. Open dashboard and verify the shared logo renders in the sidebar.
+6. Open All SRU Alumni and verify photo avatars match dashboard style (contain + border), social links, and details modal.
+7. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
+8. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
+9. After editing an alumni record, open Activity Logs and verify the table shows only the summary line by default; hover the row and verify it expands to show per-field change details.
+10. Trigger the same non-change action multiple times (for example opening the same admin page repeatedly), then open Activity Logs and verify those repeated events are grouped into one row; hover the grouped row and verify the expanded panel shows "First in group" timestamp and every occurrence timestamp in the timeline.
+11. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
+12. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
-11. Open Activity Logs with various filters (date range, actor, action type); verify filters work correctly and Export CSV respects the filtered results.
-12. On Activity Logs page, verify the layout fits within a standard browser window without horizontal scroll; verify sidebar logo area aligns with top header.
-13. Open Events -> New and verify the right-side "Recent Events" panel is visible and ordered by latest update time.
-14. On Events -> Create form, verify all event fields are present:
+13. Open Activity Logs with various filters (date range, actor, action type); verify filters work correctly and Export CSV respects the filtered results.
+14. On Activity Logs page, verify the layout fits within a standard browser window without horizontal scroll; verify sidebar logo area aligns with top header.
+15. Open Events -> New and verify the right-side "Recent Events" panel is visible and ordered by latest update time.
+16. On Events -> Create form, verify all event fields are present:
     - title (required, text input)
     - excerpt (optional, textarea)
     - description (optional, large textarea)
@@ -329,8 +334,8 @@ Recommended checks:
     - end_at (optional, datetime-local input)
     - registration_link (optional, URL input)
     - image (optional, file input for jpg/jpeg/png/webp)
-15. Create a new event with all fields and verify it appears in Recent Events panel and can be viewed on the public events page.
-16. Open Events -> Update/Delete and verify the page lists events as cards with:
+17. Create a new event with all fields and verify it appears in Recent Events panel and can be viewed on the public events page.
+18. Open Events -> Update/Delete and verify the page lists events as cards with:
     - title (truncated if long)
     - excerpt (max 2 lines)
     - event type badge
@@ -338,25 +343,25 @@ Recommended checks:
     - end date/time or "No end date" if empty
     - location (if present)
     - Update and Delete buttons
-17. Edit an event and verify:
+19. Edit an event and verify:
     - all fields are pre-populated with current values
     - image replacement works and old image is deleted
     - Activity Logs records an event_updated entry
     - Changes appear immediately on public events page
-18. Delete an event and verify:
+20. Delete an event and verify:
     - the record is removed from manage page
     - any stored image file is deleted
     - Activity Logs records an event_deleted entry
     - event no longer appears on public events page
-19. On Events create/manage/edit pages, verify:
-    - the Events submenu appears on hover with View / New / Update/Delete options
+21. On Events create/manage/edit pages, verify:
+  - the Events submenu appears on hover as an outside-sidebar flyout with View / New / Update/Delete options
     - the submenu is not permanently expanded
     - the correct sub-link is highlighted based on current page
     - the bottom sidebar admin card is visible
-20. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
-21. On News create/manage/edit pages, verify the News submenu appears on hover and is not permanently expanded.
-22. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
-23. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
+22. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
+23. On News create/manage/edit pages, verify the News submenu appears on hover as an outside-sidebar flyout and is not permanently expanded.
+24. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
+25. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
 
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.
@@ -370,3 +375,5 @@ Recommended checks:
   - Image upload support with automatic cleanup on replacement/deletion
   - Activity log recording for all create/update/delete operations
 - Both modules are fully integrated into the admin sidebar with hover submenus on all admin pages.
+- News and Events flyout submenus are rendered outside the sidebar so they remain visible without shrinking/stacking inside the nav column.
+- Dashboard News and Events blocks are wired to live database data and link to public pages, while admin edit actions remain available through module manage pages.

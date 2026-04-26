@@ -5,6 +5,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestimonialController;
 use App\Models\ActivityLog;
+use App\Models\Event;
+use App\Models\News;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -119,6 +121,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
                 'time' => $item->created_at?->diffForHumans() ?? 'just now',
             ]);
 
+        $latestNews = News::query()
+            ->latest('updated_at')
+            ->take(5)
+            ->get(['id', 'title', 'excerpt', 'updated_at', 'published_at']);
+
+        $upcomingEvents = Event::query()
+            ->where('start_at', '>=', now())
+            ->orderBy('start_at', 'asc')
+            ->take(5)
+            ->get(['id', 'title', 'excerpt', 'event_type', 'start_at', 'location']);
+
         $totalChange = 'All time';
         $totalChipText = $weeklyNewCount > 0 ? ('↑ ' . $weeklyNewCount . ' this week') : 'No new this week';
         $batchChipText = $yearsCount > 0 ? ($yearsCount . ' recorded batches') : 'No batch data';
@@ -132,6 +145,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
             'unreadMessagesCount',
             'departmentBreakdown',
             'recentActivity',
+            'latestNews',
+            'upcomingEvents',
             'totalChipText',
             'batchChipText',
             'messagesChipText'
