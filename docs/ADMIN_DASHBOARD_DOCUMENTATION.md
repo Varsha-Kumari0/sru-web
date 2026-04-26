@@ -122,18 +122,31 @@ The profile record currently includes additional personal/social fields such as:
 ### 2.6 Activity Logs Page
 - Route: GET /admin/activity-logs (name: admin.activity-logs)
 - CSV export route: GET /admin/activity-logs/export (name: admin.activity-logs.export)
-- Includes filters:
+- Includes server-side filter form:
   - from date
   - to date
-  - actor user
-  - action type
-- CSV export respects the current filter query.
-- Repeated non-change events from the same actor/action/subject are grouped into a single summary row with an xN count badge.
-- Hovering a grouped repeated-event row expands a timeline panel showing each individual occurrence with its own timestamp.
-- Change-based actions such as alumni_updated and profile_updated remain as separate rows.
-- For change-based actions, the description column shows only the summary line by default.
-- Hovering a change row expands full per-field change details under the summary, e.g. "Degree: Empty to B.Tech".
-- Newer change log rows include a changes array in the properties JSON column. Older rows without structured changes continue to show summary-only text.
+  - actor user dropdown (all users who have performed actions)
+  - action type dropdown (all action types in logs)
+- Apply Filters and Reset buttons control the query and CSV export respects filters.
+- **Grouped Event Display:**
+  - Repeated non-change events from the same actor/action/subject are automatically grouped into a single row.
+  - Grouped row shows the latest event's timestamp and relative time (e.g., "20 minutes ago").
+  - Main row displays only the action badge and description.
+  - No entry count badge; grouped events appear as regular rows.
+  - Hovering a grouped row expands a timeline panel showing:
+    - "First in group: [timestamp]" header
+    - All individual event timestamps in chronological order
+- **Change-Based Actions:**
+  - Actions such as alumni_updated and profile_updated remain as separate rows (not grouped).
+  - For change-based actions, the description shows only the summary line by default.
+  - Hovering a change row expands full per-field change details under the summary, e.g., "Degree: Empty → B.Tech".
+  - Newer change log rows include a changes array in the properties JSON column.
+  - Older rows without structured changes continue to show summary-only text.
+- **Layout:**
+  - Sidebar and topbar are aligned with consistent spacing across all admin pages.
+  - Table uses fixed column sizing to fit within viewport on standard screen widths.
+  - Actor/Subject emails are truncated with full email available on hover tooltip.
+  - Table text is smaller on compact screens and scales up on wider viewports (`xl` breakpoint).
 
 ### 2.7 Admin Sidebar Profile Photo
 - Upload route: POST /admin/profile/avatar (name: admin.profile.avatar)
@@ -255,16 +268,17 @@ Recommended checks:
 5. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
 6. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
 7. After editing an alumni record, open Activity Logs and verify the table shows only the summary line by default; hover the row and verify it expands to show per-field change details.
-8. Trigger the same non-change action multiple times (for example opening the same admin page repeatedly), then open Activity Logs and verify those repeated events are grouped into one row with an xN badge; hover the grouped row and verify the expanded panel shows every occurrence timestamp.
+8. Trigger the same non-change action multiple times (for example opening the same admin page repeatedly), then open Activity Logs and verify those repeated events are grouped into one row; hover the grouped row and verify the expanded panel shows "First in group" timestamp and every occurrence timestamp in the timeline.
 9. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
 10. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
-11. Open Activity Logs, apply filters, and export CSV; verify exported rows match filters.
-12. Open News -> New and verify the right-side "Recent Updated News" panel is visible and ordered by latest update time.
-13. Open News -> Update/Delete and verify the page lists news items with separate Update and Delete action buttons.
-14. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
-15. On News create/manage/edit pages, verify the News submenu appears on hover and is not permanently expanded.
-16. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
+11. Open Activity Logs with various filters (date range, actor, action type); verify filters work correctly and Export CSV respects the filtered results.
+12. On Activity Logs page, verify the layout fits within a standard browser window without horizontal scroll; verify sidebar logo area aligns with top header.
+13. Open News -> New and verify the right-side "Recent Updated News" panel is visible and ordered by latest update time.
+14. Open News -> Update/Delete and verify the page lists news items with separate Update and Delete action buttons.
+15. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
+16. On News create/manage/edit pages, verify the News submenu appears on hover and is not permanently expanded.
+17. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
 17. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
 
 ## 8. Notes
