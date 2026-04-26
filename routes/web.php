@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Http\Controllers\NewsController;
 
@@ -25,8 +26,8 @@ use App\Models\Professional;
 
 Route::get('/profile', function () {
 
-    $profile = Profile::where('user_id', auth()->id())->first();
-    $experiences = Professional::where('user_id', auth()->id())->get();
+    $profile = Profile::where('user_id', Auth::id())->first();
+    $experiences = Professional::where('user_id', Auth::id())->get();
 
     return view('profile.profile', compact('profile', 'experiences'));
 
@@ -150,7 +151,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');
     Route::get('/admin/activity-logs/export', [AdminController::class, 'exportActivityLogsCsv'])->name('admin.activity-logs.export');
     Route::get('/admin/news/new', [NewsController::class, 'adminCreate'])->name('admin.news.create');
+    Route::get('/admin/news/manage', [NewsController::class, 'adminManage'])->name('admin.news.manage');
+    Route::get('/admin/news/{id}/edit', [NewsController::class, 'adminEdit'])->name('admin.news.edit');
     Route::post('/admin/news', [NewsController::class, 'adminStore'])->name('admin.news.store');
+    Route::put('/admin/news/{id}', [NewsController::class, 'adminUpdate'])->name('admin.news.update');
+    Route::delete('/admin/news/{id}', [NewsController::class, 'adminDestroy'])->name('admin.news.delete');
     Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
     Route::get('/admin/alumni/{id}/edit', [AdminController::class, 'editAlumni'])->name('admin.alumni.edit');
     Route::put('/admin/alumni/{id}', [AdminController::class, 'updateAlumni'])->name('admin.alumni.update');

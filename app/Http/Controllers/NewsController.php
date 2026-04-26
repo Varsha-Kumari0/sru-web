@@ -7,14 +7,51 @@ use Illuminate\Http\Request;
 use App\Models\News;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
 
 
 class NewsController extends Controller
 {
+    private function validateNews(Request $request): array
+    {
+        return $request->validate([
+            'title' => 'required|string|max:255',
+            'excerpt' => 'required|string',
+            'content' => 'nullable|string',
+            'published_at' => 'required|date',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+    }
+
+    private function storeNewsImage(Request $request, ?string $existingImage = null): ?string
+    {
+        if (!$request->hasFile('image')) {
+            return $existingImage;
+        }
+
+        if ($existingImage) {
+            $existingPath = public_path('images/' . $existingImage);
+            if (File::exists($existingPath)) {
+                File::delete($existingPath);
+            }
+        }
+
+        $imageFile = $request->file('image');
+        $imageName = time() . '_' . preg_replace('/[^A-Za-z0-9_.-]/', '_', $imageFile->getClientOriginalName());
+        $imageFile->move(public_path('images'), $imageName);
+
+        return $imageName;
+    }
+
     public function adminCreate()
     {
         $actor = Auth::user();
+
+        $recentUpdatedNews = News::query()
+            ->latest('updated_at')
+            ->limit(6)
+            ->get(['id', 'title', 'excerpt', 'published_at', 'updated_at']);
 
         ActivityLog::record(
             $actor?->id,
@@ -24,27 +61,34 @@ class NewsController extends Controller
             []
         );
 
-        return view('admin.news-create');
+        return view('admin.news-create', compact('recentUpdatedNews'));
+    }
+
+    public function adminManage(Request $request)
+    {
+        $mode = $request->query('mode', 'update');
+
+        $newsItems = News::query()
+            ->latest('updated_at')
+            ->get();
+
+        return view('admin.news-manage', compact('newsItems', 'mode'));
+    }
+
+    public function adminEdit($id)
+    {
+        $news = News::query()->findOrFail($id);
+
+        return view('admin.news-edit', compact('news'));
     }
 
     public function adminStore(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'excerpt' => 'required|string',
-            'content' => 'nullable|string',
-            'published_at' => 'required|date',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
+        $validated = $this->validateNews($request);
 
-        $imageName = null;
-        if ($request->hasFile('image')) {
-            $imageFile = $request->file('image');
-            $imageName = time() . '_' . preg_replace('/[^A-Za-z0-9_.-]/', '_', $imageFile->getClientOriginalName());
-            $imageFile->move(public_path('images'), $imageName);
-        }
+        $imageName = $this->storeNewsImage($request);
 
-        News::create([
+        $news = News::create([
             'title' => $validated['title'],
             'excerpt' => $validated['excerpt'],
             'content' => $validated['content'] ?? null,
@@ -60,6 +104,7 @@ class NewsController extends Controller
             'news_created',
             ($actor?->name ?? 'Admin') . ' created news: ' . $validated['title'],
             [
+                'news_id' => $news->id,
                 'title' => $validated['title'],
                 'published_at' => $validated['published_at'],
                 'has_image' => (bool) $imageName,
@@ -67,6 +112,83 @@ class NewsController extends Controller
         );
 
         return redirect()->route('admin.news.create')->with('success', 'News item created successfully.');
+    }
+
+    public function adminUpdate(Request $request, $id)
+    {
+        $news = News::query()->findOrFail($id);
+        $validated = $this->validateNews($request);
+        $imageName = $this->storeNewsImage($request, $news->image);
+
+        $originalData = $news->only(['title', 'excerpt', 'content', 'published_at', 'image']);
+
+        $news->update([
+            'title' => $validated['title'],
+            'excerpt' => $validated['excerpt'],
+            'content' => $validated['content'] ?? null,
+            'published_at' => $validated['published_at'],
+            'image' => $imageName,
+        ]);
+
+        $actor = Auth::user();
+        $updatedData = $news->fresh()?->only(['title', 'excerpt', 'content', 'published_at', 'image']) ?? [];
+        $changes = [];
+
+        foreach (['title', 'excerpt', 'content', 'published_at', 'image'] as $field) {
+            $oldValue = (string) ($originalData[$field] ?? '');
+            $newValue = (string) ($updatedData[$field] ?? '');
+
+            if ($oldValue === $newValue) {
+                continue;
+            }
+
+            $changes[] = [
+                'field' => ucfirst(str_replace('_', ' ', $field)),
+                'from' => $oldValue === '' ? 'Empty' : $oldValue,
+                'to' => $newValue === '' ? 'Empty' : $newValue,
+            ];
+        }
+
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'news_updated',
+            ($actor?->name ?? 'Admin') . ' updated news: ' . $news->title,
+            [
+                'news_id' => $news->id,
+                'changes' => $changes,
+            ]
+        );
+
+        return redirect()->route('admin.news.manage', ['mode' => 'update'])->with('success', 'News item updated successfully.');
+    }
+
+    public function adminDestroy($id)
+    {
+        $news = News::query()->findOrFail($id);
+        $actor = Auth::user();
+
+        if ($news->image) {
+            $imagePath = public_path('images/' . $news->image);
+            if (File::exists($imagePath)) {
+                File::delete($imagePath);
+            }
+        }
+
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'news_deleted',
+            ($actor?->name ?? 'Admin') . ' deleted news: ' . $news->title,
+            [
+                'news_id' => $news->id,
+                'title' => $news->title,
+            ]
+        );
+
+        $news->delete();
+
+        return redirect()->route('admin.news.manage', ['mode' => 'delete'])->with('success', 'News item deleted successfully.');
     }
 
     
