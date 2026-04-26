@@ -4,6 +4,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\SkillController;
 use App\Models\ActivityLog;
 use App\Models\Event;
 use App\Models\News;
@@ -56,6 +58,21 @@ Route::middleware(['auth'])->group(function () {
 
     // ✅ UPDATE PROFILE (FIXED 🔥)
     Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
+
+    // 📨 MESSAGES
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
+    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
+    Route::get('/messages/unread/count', [MessageController::class, 'getUnreadCount'])->name('messages.unread.count');
+
+    // 🛠️ SKILLS
+    Route::resource('skills', SkillController::class)->except(['show']);
+    Route::post('/skills/{skill}/endorse', [SkillController::class, 'endorse'])->name('skills.endorse');
+    Route::delete('/skills/{skill}/endorse', [SkillController::class, 'removeEndorsement'])->name('skills.remove-endorsement');
+
+    // 📝 BIO EDITING
+    Route::get('/profile/edit-bio', [ProfileController::class, 'editBio'])->name('profile.edit-bio');
+    Route::put('/profile/update-bio', [ProfileController::class, 'updateBio'])->name('profile.update-bio');
 
     // ❌ REMOVE OLD DEFAULT PROFILE ROUTES (they cause confusion)
     // Route::get('/profile', ...)

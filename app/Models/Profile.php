@@ -23,6 +23,7 @@ class Profile extends Model
         'passing_year',
         'current_status',
         'company',
+        'description',
     ];
     /**
      * Get the user that owns the profile.

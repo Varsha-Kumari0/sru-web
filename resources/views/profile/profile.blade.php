@@ -100,12 +100,17 @@
 
                     <!-- ABOUT SECTION -->
                     <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">📋 About</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-gray-900">📋 About</h2>
+                            <a href="{{ route('profile.edit-bio') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                ✏️ Edit
+                            </a>
+                        </div>
                         <p class="text-gray-700 leading-relaxed">
                             @if($profile->description)
                                 {{ $profile->description }}
                             @else
-                                <span class="text-gray-500 italic">No bio added yet. <a href="/profile/edit" class="text-blue-600 hover:underline">Add one</a></span>
+                                <span class="text-gray-500 italic">No bio added yet. Click edit to add one.</span>
                             @endif
                         </p>
                     </div>
@@ -143,7 +148,12 @@
 
                     <!-- SKILLS SECTION -->
                     <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">🎯 Skills</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-gray-900">🎯 Skills</h2>
+                            <a href="{{ route('skills.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                ⚙️ Manage
+                            </a>
+                        </div>
                         @if($skills && count($skills) > 0)
                             <div class="flex flex-wrap gap-3">
                                 @foreach($skills as $skill)

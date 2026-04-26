@@ -239,7 +239,41 @@ class ProfileController extends Controller
 
         return redirect()->route('profile')->with('success', 'Profile created successfully');
     }
+    /**
+     * Update profile bio
+     */
+    public function updateBio(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'description' => 'required|string|max:1000',
+        ]);
 
+        $profile = Profile::where('user_id', Auth::id())->first();
+
+        if (!$profile) {
+            return redirect()->route('profile.create')->with('error', 'Please create your profile first');
+        }
+
+        $profile->update([
+            'description' => $request->description,
+        ]);
+
+        return redirect()->route('profile')->with('success', 'Bio updated successfully');
+    }
+
+    /**
+     * Show bio edit form
+     */
+    public function editBio(): View
+    {
+        $profile = Profile::where('user_id', Auth::id())->first();
+
+        if (!$profile) {
+            return redirect()->route('profile.create')->with('error', 'Please create your profile first');
+        }
+
+        return view('profile.edit-bio', compact('profile'));
+    }
     /**
      * EDIT PROFILE (your custom one)
      */
