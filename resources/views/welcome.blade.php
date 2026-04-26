@@ -69,6 +69,15 @@
             @endauth
         </div>
 
+        <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <a href="{{ route('newsroom') }}" class="inline-flex items-center justify-center rounded bg-white/90 px-5 py-3 text-sm font-semibold text-blue-900 shadow-sm hover:bg-white">
+                Browse Newsroom
+            </a>
+            <a href="{{ route('events.index') }}" class="inline-flex items-center justify-center rounded border border-white/80 bg-white/10 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-white/20">
+                Browse Events
+            </a>
+        </div>
+
     </section>
 
     <!-- 🔷 ABOUT SECTION -->
