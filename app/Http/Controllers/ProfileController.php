@@ -12,6 +12,10 @@ use Illuminate\View\View;
 
 use App\Models\Profile;
 use App\Models\Professional;
+use App\Models\Skill;
+use App\Models\Achievement;
+use App\Models\Connection;
+use App\Models\ProfileView;
 
 class ProfileController extends Controller
 {
@@ -60,6 +64,40 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Show user profile with all details
+     */
+    public function showProfile()
+    {
+        $profile = Profile::where('user_id', auth()->id())->first();
+        $experiences = Professional::where('user_id', auth()->id())->get();
+        $skills = Skill::where('user_id', auth()->id())->get();
+        $achievements = Achievement::where('user_id', auth()->id())->orderBy('earned_at', 'desc')->get();
+        
+        // Get connection count
+        $connectionCount = Connection::where('user_id', auth()->id())
+            ->where('status', 'connected')
+            ->count();
+        
+        // Get profile views count
+        $profileViewsCount = ProfileView::where('profile_user_id', auth()->id())->count();
+        
+        // Get counts for stats
+        $skillsCount = $skills->count();
+        $achievementsCount = $achievements->count();
+
+        return view('profile.profile', compact(
+            'profile',
+            'experiences',
+            'skills',
+            'achievements',
+            'connectionCount',
+            'profileViewsCount',
+            'skillsCount',
+            'achievementsCount'
+        ));
     }
 
     /**
