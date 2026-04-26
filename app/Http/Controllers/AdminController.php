@@ -66,7 +66,7 @@ class AdminController extends Controller
             ->orderBy('action')
             ->pluck('action');
 
-        return view('admin.activity-logs', compact('logs', 'actors', 'actions'));
+        return view('admin.logs.activity-logs', compact('logs', 'actors', 'actions'));
     }
 
     public function exportActivityLogsCsv(Request $request)
@@ -216,7 +216,7 @@ class AdminController extends Controller
             'BCA' => ['BCA General', 'BCA (Cloud Computing)'],
         ];
 
-        return view('admin.edit-alumni', compact('user', 'selectDegree'));
+        return view('admin.alumni.edit-alumni', compact('user', 'selectDegree'));
     }
 
     /**

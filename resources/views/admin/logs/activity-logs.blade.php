@@ -19,8 +19,8 @@
 <body class="min-h-screen flex bg-slate-50 text-slate-900 [background-image:radial-gradient(ellipse_at_10%_20%,rgba(59,130,246,.08)_0%,transparent_60%),radial-gradient(ellipse_at_90%_80%,rgba(148,163,184,.12)_0%,transparent_60%)]">
 
 {{-- Shared admin sidebar --}}
-<aside class="w-64 fixed inset-y-0 left-0 bg-white border-r border-slate-300 flex flex-col shadow-sm">
-    <div class="px-7 py-8 border-b border-slate-300">
+<aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
+    <div class="px-6 py-5 border-b border-slate-300 min-h-[89px] flex flex-col justify-center">
         @php
             $dashboardLogoPath = 'images/logos/sru_logo_new.png';
         @endphp
@@ -136,21 +136,29 @@
                 <p class="text-sm font-semibold truncate text-slate-900">{{ auth()->user()->name ?? 'Administrator' }}</p>
                 <p class="text-xs text-slate-500">Super Admin</p>
             </div>
-            <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" title="Logout" class="text-slate-500 hover:text-slate-900">Logout</a>
+            <a href="{{ route('logout') }}"
+               onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+               title="Logout"
+               class="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-all duration-150 hover:bg-slate-100 hover:text-slate-900">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="transition-colors duration-150">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </a>
         </div>
         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
     </div>
 </aside>
 
 {{-- Activity logs page with server-side filters --}}
-<main class="ml-64 flex-1 flex flex-col min-h-screen">
-    <header class="sticky top-0 z-40 flex items-center justify-between px-9 py-5 bg-white border-b border-slate-300">
+<main class="ml-64 flex-1 flex flex-col min-h-screen max-w-[calc(100vw-16rem)] overflow-x-hidden">
+    <header class="sticky top-0 z-40 flex items-center justify-between px-6 py-5 xl:px-9 bg-white border-b border-slate-300">
         <div>
-            <h2 class="font-display text-2xl font-semibold">Activity Logs</h2>
-            <p class="text-xs mt-0.5 text-slate-500">{{ now()->format('l, d F Y') }} - Permanent audit records</p>
+            <h2 class="font-display text-2xl font-semibold" style="letter-spacing:.01em;">Activity Logs</h2>
+            <p class="text-xs mt-0.5 text-slate-500">{{ now()->format('l, d F Y') }} &mdash; Permanent audit records</p>
         </div>
-        <a href="{{ route('admin.activity-logs.export', request()->query()) }}"
-           class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+          <a href="{{ route('admin.activity-logs.export', request()->query()) }}"
+              class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -159,9 +167,9 @@
         </a>
     </header>
 
-    <div class="p-9 flex-1 space-y-6">
+    <div class="px-6 py-7 xl:px-9 flex-1 space-y-6">
         {{-- Filter form keeps query params for list + CSV export --}}
-        <form method="GET" action="{{ route('admin.activity-logs') }}" class="rounded-xl border border-slate-300 bg-white p-5">
+        <form method="GET" action="{{ route('admin.activity-logs') }}" class="rounded-xl border border-slate-300 bg-white p-4 xl:p-5">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <div>
                     <label for="from_date" class="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500">From Date</label>
@@ -205,14 +213,21 @@
         {{-- Audit table: newest first, paginated on backend --}}
         <div class="overflow-hidden rounded-xl border border-slate-300 bg-white cursor-pointer">
             <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
+                <table class="min-w-full table-fixed text-[11px] xl:text-xs">
+                    <colgroup>
+                        <col class="w-[140px] xl:w-[150px]">
+                        <col class="w-[105px] xl:w-[115px]">
+                        <col>
+                        <col class="w-[145px] xl:w-[165px]">
+                        <col class="w-[145px] xl:w-[165px]">
+                    </colgroup>
                     <thead class="bg-slate-100 text-slate-700">
                         <tr>
-                            <th class="px-4 py-3 text-left">Date & Time</th>
-                            <th class="px-4 py-3 text-left">Action</th>
-                            <th class="px-4 py-3 text-left">Description</th>
-                            <th class="px-4 py-3 text-left">Actor</th>
-                            <th class="px-4 py-3 text-left">Subject</th>
+                            <th class="px-3 py-2 text-left whitespace-nowrap">Date & Time</th>
+                            <th class="px-3 py-2 text-left whitespace-nowrap">Action</th>
+                            <th class="px-3 py-2 text-left">Description</th>
+                            <th class="px-3 py-2 text-left whitespace-nowrap">Actor</th>
+                            <th class="px-3 py-2 text-left whitespace-nowrap">Subject</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -299,24 +314,20 @@
                                 $hasChangeDetails = $group['has_change_details'];
                                 $repeatCount = $group['count'];
                                 $groupEntries = $group['entries'] ?? [];
+                                $latestAt = $groupEntries[0]['created_at'] ?? $group['first_at'];
+                                $firstInGroupAt = $groupEntries[count($groupEntries) - 1]['created_at'] ?? $group['last_at'];
                             @endphp
                             <tr class="group border-t border-slate-200 hover:bg-slate-50">
-                                <td class="px-4 py-3 text-slate-700">
-                                    <div class="font-medium text-slate-900">{{ $group['first_at']?->format('d M Y, h:i A') }}</div>
-                                    <div class="text-xs text-slate-500">{{ $group['first_at']?->diffForHumans() }}</div>
-                                    @if($repeatCount > 1)
-                                        <div class="mt-1 text-xs text-slate-500">First in group: {{ $group['last_at']?->format('d M Y, h:i A') }}</div>
-                                    @endif
+                                <td class="px-3 py-2 align-top text-slate-700 whitespace-nowrap">
+                                    <div class="font-medium text-slate-900">{{ $latestAt?->format('d M y, h:i A') }}</div>
+                                    <div class="text-[10px] text-slate-500">{{ $latestAt?->diffForHumans() }}</div>
                                 </td>
-                                <td class="px-4 py-3 text-slate-700">
+                                <td class="px-3 py-2 align-top text-slate-700">
                                     <div class="flex items-center gap-2">
-                                        <span class="inline-flex rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{{ $log->action }}</span>
-                                        @if($repeatCount > 1)
-                                            <span class="inline-flex rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">x{{ $repeatCount }}</span>
-                                        @endif
+                                        <span class="inline-flex max-w-full break-all rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">{{ $log->action }}</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 text-slate-900">
+                                <td class="px-3 py-2 align-top text-slate-900 break-words">
                                     @if($hasChangeDetails)
                                         <div>
                                             <div class="cursor-help underline decoration-dotted underline-offset-4">
@@ -345,6 +356,7 @@
                                             <div class="max-h-0 overflow-hidden opacity-0 transition-all duration-200 ease-out group-hover:mt-3 group-hover:max-h-52 group-hover:opacity-100">
                                                 <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-700">
                                                     <div class="mb-2 font-semibold text-slate-900">Grouped Event Timeline</div>
+                                                    <div class="mb-2 text-slate-600">First in group: {{ $firstInGroupAt?->format('d M Y, h:i A') }}</div>
                                                     <ul class="space-y-2">
                                                         @foreach($groupEntries as $entry)
                                                             <li class="flex items-start justify-between gap-3">
@@ -360,18 +372,18 @@
                                         @endif
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-slate-700">
+                                <td class="px-3 py-2 align-top text-slate-700 break-words">
                                     @if($log->actor)
                                         <div class="font-medium text-slate-900">{{ $log->actor->name }}</div>
-                                        <div class="text-xs text-slate-500">{{ $log->actor->email }}</div>
+                                        <div class="text-[10px] text-slate-500 truncate" title="{{ $log->actor->email }}">{{ $log->actor->email }}</div>
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-slate-700">
+                                <td class="px-3 py-2 align-top text-slate-700 break-words">
                                     @if($log->subject)
                                         <div class="font-medium text-slate-900">{{ $log->subject->name }}</div>
-                                        <div class="text-xs text-slate-500">{{ $log->subject->email }}</div>
+                                        <div class="text-[10px] text-slate-500 truncate" title="{{ $log->subject->email }}">{{ $log->subject->email }}</div>
                                     @else
                                         {{ $log->properties['subject_name'] ?? '-' }}
                                     @endif

@@ -120,7 +120,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         $batchChipText = $yearsCount > 0 ? ($yearsCount . ' recorded batches') : 'No batch data';
         $messagesChipText = 'View inbox';
 
-        return view('admin.panel', compact(
+        return view('admin.dashboard.panel', compact(
             'users',
             'totalCount',
             'yearsCount',
@@ -145,7 +145,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->orderByDesc('id')
             ->get();
 
-        return view('admin.allalumini', compact('users'));
+        return view('admin.alumni.allalumini', compact('users'));
     })->name('admin.allalumini');
     // Persistent audit logs (view + filtered CSV export).
     Route::get('/admin/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');

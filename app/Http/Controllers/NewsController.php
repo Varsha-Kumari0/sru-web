@@ -61,7 +61,7 @@ class NewsController extends Controller
             []
         );
 
-        return view('admin.news-create', compact('recentUpdatedNews'));
+        return view('admin.news.news-create', compact('recentUpdatedNews'));
     }
 
     public function adminManage(Request $request)
@@ -72,14 +72,14 @@ class NewsController extends Controller
             ->latest('updated_at')
             ->get();
 
-        return view('admin.news-manage', compact('newsItems', 'mode'));
+        return view('admin.news.news-manage', compact('newsItems', 'mode'));
     }
 
     public function adminEdit($id)
     {
         $news = News::query()->findOrFail($id);
 
-        return view('admin.news-edit', compact('news'));
+        return view('admin.news.news-edit', compact('news'));
     }
 
     public function adminStore(Request $request)

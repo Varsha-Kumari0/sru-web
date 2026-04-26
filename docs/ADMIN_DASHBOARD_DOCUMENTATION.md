@@ -212,13 +212,13 @@ Current events include:
 - database/migrations/2026_04_25_120000_add_avatar_to_users_table.php
 
 ### Admin Views
-- resources/views/admin/panel.blade.php
-- resources/views/admin/allalumini.blade.php
-- resources/views/admin/edit-alumni.blade.php
-- resources/views/admin/activity-logs.blade.php
-- resources/views/admin/news-create.blade.php
-- resources/views/admin/news-manage.blade.php
-- resources/views/admin/news-edit.blade.php
+- resources/views/admin/dashboard/panel.blade.php (view: admin.dashboard.panel)
+- resources/views/admin/alumni/allalumini.blade.php (view: admin.alumni.allalumini)
+- resources/views/admin/alumni/edit-alumni.blade.php (view: admin.alumni.edit-alumni)
+- resources/views/admin/logs/activity-logs.blade.php (view: admin.logs.activity-logs)
+- resources/views/admin/news/news-create.blade.php (view: admin.news.news-create)
+- resources/views/admin/news/news-manage.blade.php (view: admin.news.news-manage)
+- resources/views/admin/news/news-edit.blade.php (view: admin.news.news-edit)
 
 ## 6. Data and Validation Notes
 - father_name is now part of the profile data model.
@@ -271,3 +271,4 @@ Recommended checks:
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.
 - The older URL /admin/allalumini is preserved as a redirect.
 - If renamed to allalumni in future, route names and view references must be updated together.
+- Admin Blade files are now grouped by module under resources/views/admin (dashboard, alumni, logs, news) instead of a single flat folder.
