@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Manage News - SRU Admin</title>
+    <title>Update Event - SRU Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -32,7 +32,7 @@
 
         <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-5 text-slate-500">Management</p>
         <div class="group relative">
-            <a href="#" class="nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
                 <span class="flex-1">News</span>
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="transition-transform duration-150 group-hover:rotate-180">
                     <polyline points="6 9 12 15 18 9"/>
@@ -41,12 +41,12 @@
             <div class="absolute left-full top-0 z-50 hidden min-w-[11rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-lg group-hover:flex">
                 <a href="{{ route('newsroom') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
                 <a href="{{ route('admin.news.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
-                <a href="{{ route('admin.news.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700">Update/Delete</a>
+                <a href="{{ route('admin.news.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
             </div>
         </div>
 
         <div class="group relative">
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+            <a href="#" class="nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150">
                 <span class="flex-1">Events</span>
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="transition-transform duration-150 group-hover:rotate-180">
                     <polyline points="6 9 12 15 18 9"/>
@@ -55,7 +55,7 @@
             <div class="absolute left-full top-0 z-50 hidden min-w-[11rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-lg group-hover:flex">
                 <a href="{{ route('events.index') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
                 <a href="{{ route('admin.events.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
-                <a href="{{ route('admin.events.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
+                <a href="{{ route('admin.events.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700">Update/Delete</a>
             </div>
         </div>
 
@@ -105,45 +105,110 @@
 <main class="ml-64 flex-1 flex flex-col min-h-screen">
     <header class="sticky top-0 z-40 flex items-center justify-between px-6 pt-[1.9rem] pb-[1.7em] xl:px-9 bg-white border-b border-slate-300">
         <div>
-            <h2 class="font-display text-2xl font-semibold">Manage News</h2>
-            <p class="text-xs mt-0.5 text-slate-500">Use update and delete actions from the latest updated news list.</p>
+            <h2 class="font-display text-2xl font-semibold">Update Event</h2>
+            <p class="text-xs mt-0.5 text-slate-500">Edit the selected event and save your changes.</p>
         </div>
-        <a href="{{ route('admin.news.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Create New</a>
+        <a href="{{ route('admin.events.manage') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Back to Manage</a>
     </header>
 
     <div class="p-9">
-        @if(session('success'))
-            <div class="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
-        @endif
+        <div class="max-w-4xl rounded-xl border border-slate-300 bg-white p-6">
+            @if($errors->any())
+                <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <p class="mb-1 font-semibold">Please fix the following:</p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-        <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-            @forelse($newsItems as $news)
-                <div class="rounded-xl border border-slate-300 bg-white p-5 shadow-sm">
-                    <div class="flex items-start justify-between gap-4">
-                        <div class="min-w-0 flex-1">
-                            <h3 class="truncate text-lg font-semibold text-slate-900">{{ $news->title }}</h3>
-                            <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $news->excerpt }}</p>
-                        </div>
-                        <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">{{ $news->updated_at?->diffForHumans() ?? '-' }}</span>
+            @if(session('success'))
+                <div class="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('admin.events.update', $event->id) }}" enctype="multipart/form-data" class="space-y-5">
+                @csrf
+                @method('PUT')
+
+                <div>
+                    <label for="title" class="mb-1.5 block text-sm font-semibold text-slate-700">Title</label>
+                    <input type="text" id="title" name="title" value="{{ old('title', $event->title) }}" required
+                           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label for="excerpt" class="mb-1.5 block text-sm font-semibold text-slate-700">Excerpt</label>
+                    <textarea id="excerpt" name="excerpt" rows="3"
+                              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('excerpt', $event->excerpt) }}</textarea>
+                </div>
+
+                <div>
+                    <label for="description" class="mb-1.5 block text-sm font-semibold text-slate-700">Description</label>
+                    <textarea id="description" name="description" rows="6"
+                              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('description', $event->description) }}</textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="event_type" class="mb-1.5 block text-sm font-semibold text-slate-700">Event Type</label>
+                        <select id="event_type" name="event_type" required
+                                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none bg-white">
+                            @php $currentType = old('event_type', $event->event_type); @endphp
+                            <option value="campus-events" {{ $currentType === 'campus-events' ? 'selected' : '' }}>Campus Events</option>
+                            <option value="hackathons"    {{ $currentType === 'hackathons'    ? 'selected' : '' }}>Hackathons</option>
+                            <option value="reunions"      {{ $currentType === 'reunions'      ? 'selected' : '' }}>Reunions</option>
+                            <option value="webinars"      {{ $currentType === 'webinars'      ? 'selected' : '' }}>Webinars</option>
+                        </select>
                     </div>
-
-                    <div class="mt-4 grid grid-cols-1 gap-2 text-xs text-slate-500 sm:grid-cols-2">
-                        <div>Updated: {{ $news->updated_at?->format('d M Y, h:i A') ?? '-' }}</div>
-                        <div>Published: {{ $news->published_at?->format('d M Y') ?? '-' }}</div>
-                    </div>
-
-                    <div class="mt-5 flex items-center justify-end gap-3">
-                        <a href="{{ route('admin.news.edit', $news->id) }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Update</a>
-                        <form method="POST" action="{{ route('admin.news.delete', $news->id) }}" onsubmit="return confirm('Delete this news item?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Delete</button>
-                        </form>
+                    <div>
+                        <label for="location" class="mb-1.5 block text-sm font-semibold text-slate-700">Location <span class="text-slate-400 font-normal">(optional)</span></label>
+                        <input type="text" id="location" name="location" value="{{ old('location', $event->location) }}"
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                     </div>
                 </div>
-            @empty
-                <div class="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500 xl:col-span-2">No news items available to manage.</div>
-            @endforelse
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="start_at" class="mb-1.5 block text-sm font-semibold text-slate-700">Start Date &amp; Time</label>
+                        <input type="datetime-local" id="start_at" name="start_at"
+                               value="{{ old('start_at', $event->start_at?->format('Y-m-d\TH:i')) }}" required
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label for="end_at" class="mb-1.5 block text-sm font-semibold text-slate-700">End Date &amp; Time <span class="text-slate-400 font-normal">(optional)</span></label>
+                        <input type="datetime-local" id="end_at" name="end_at"
+                               value="{{ old('end_at', $event->end_at?->format('Y-m-d\TH:i')) }}"
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="registration_link" class="mb-1.5 block text-sm font-semibold text-slate-700">Registration Link <span class="text-slate-400 font-normal">(optional)</span></label>
+                        <input type="url" id="registration_link" name="registration_link"
+                               value="{{ old('registration_link', $event->registration_link) }}"
+                               placeholder="https://..."
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">Image <span class="text-slate-400 font-normal">(optional – leave blank to keep current)</span></label>
+                        @if($event->image)
+                            <p class="mb-1.5 text-xs text-slate-500">Current: <span class="font-medium text-slate-700">{{ $event->image }}</span></p>
+                        @endif
+                        <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/jpg,image/webp"
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <a href="{{ route('admin.events.manage') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</a>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </main>

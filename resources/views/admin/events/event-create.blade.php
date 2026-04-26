@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Create News - SRU Admin</title>
+    <title>Create Event - SRU Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -62,7 +62,7 @@
         </a>
 
         <div class="group relative">
-            <a href="#" class="nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V5z"/>
                     <line x1="8" y1="8" x2="16" y2="8"/>
@@ -75,13 +75,13 @@
             </a>
             <div class="absolute left-full top-0 z-50 hidden min-w-[11rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-lg group-hover:flex">
                 <a href="{{ route('newsroom') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
-                <a href="{{ route('admin.news.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50">New</a>
+                <a href="{{ route('admin.news.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
                 <a href="{{ route('admin.news.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
             </div>
         </div>
 
         <div class="group relative">
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+            <a href="#" class="nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                     <line x1="16" y1="2" x2="16" y2="6"/>
@@ -95,7 +95,7 @@
             </a>
             <div class="absolute left-full top-0 z-50 hidden min-w-[11rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-lg group-hover:flex">
                 <a href="{{ route('events.index') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
-                <a href="{{ route('admin.events.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
+                <a href="{{ route('admin.events.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50">New</a>
                 <a href="{{ route('admin.events.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
             </div>
         </div>
@@ -152,100 +152,131 @@
 <main class="ml-64 flex-1 flex flex-col min-h-screen">
     <header class="sticky top-0 z-40 flex items-center justify-between px-6 pt-[1.9rem] pb-[1.7em] xl:px-9 bg-white border-b border-slate-300">
         <div>
-            <h2 class="font-display text-2xl font-semibold">Create News</h2>
-            <p class="text-xs mt-0.5 text-slate-500">Add a new news item to appear in the newsroom page.</p>
+            <h2 class="font-display text-2xl font-semibold">Create Event</h2>
+            <p class="text-xs mt-0.5 text-slate-500">Add a new event to appear on the events page.</p>
         </div>
     </header>
 
     <div class="p-9">
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
             <div class="rounded-xl border border-slate-300 bg-white p-6">
-            @if(session('success'))
-                <div class="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                    {{ session('success') }}
-                </div>
-            @endif
+                @if(session('success'))
+                    <div class="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-            @if($errors->any())
-                <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    <p class="font-semibold mb-1">Please fix the following:</p>
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+                @if($errors->any())
+                    <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <p class="font-semibold mb-1">Please fix the following:</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-            <form method="POST" action="{{ route('admin.news.store') }}" enctype="multipart/form-data" class="space-y-5">
-                @csrf
+                <form method="POST" action="{{ route('admin.events.store') }}" enctype="multipart/form-data" class="space-y-5">
+                    @csrf
 
-                <div>
-                    <label for="title" class="mb-1.5 block text-sm font-semibold text-slate-700">Title</label>
-                    <input type="text" id="title" name="title" value="{{ old('title') }}" required
-                           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
-                </div>
-
-                <div>
-                    <label for="excerpt" class="mb-1.5 block text-sm font-semibold text-slate-700">Excerpt</label>
-                    <textarea id="excerpt" name="excerpt" rows="3" required
-                              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('excerpt') }}</textarea>
-                </div>
-
-                <div>
-                    <label for="content" class="mb-1.5 block text-sm font-semibold text-slate-700">Content</label>
-                    <textarea id="content" name="content" rows="6"
-                              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('content') }}</textarea>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="published_at" class="mb-1.5 block text-sm font-semibold text-slate-700">Published Date</label>
-                        <input type="date" id="published_at" name="published_at" value="{{ old('published_at', now()->toDateString()) }}" required
+                        <label for="title" class="mb-1.5 block text-sm font-semibold text-slate-700">Title</label>
+                        <input type="text" id="title" name="title" value="{{ old('title') }}" required
                                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                     </div>
-                    <div>
-                        <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">Image (optional)</label>
-                        <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/jpg,image/webp"
-                               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
-                    </div>
-                </div>
 
-                <div class="flex items-center justify-end gap-3 pt-2">
-                    <a href="{{ route('admin.dashboard') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</a>
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Publish News</button>
-                </div>
-            </form>
+                    <div>
+                        <label for="excerpt" class="mb-1.5 block text-sm font-semibold text-slate-700">Excerpt</label>
+                        <textarea id="excerpt" name="excerpt" rows="3"
+                                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('excerpt') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="description" class="mb-1.5 block text-sm font-semibold text-slate-700">Description</label>
+                        <textarea id="description" name="description" rows="6"
+                                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('description') }}</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="event_type" class="mb-1.5 block text-sm font-semibold text-slate-700">Event Type</label>
+                            <select id="event_type" name="event_type" required
+                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none bg-white">
+                                <option value="campus-events" {{ old('event_type') === 'campus-events' ? 'selected' : '' }}>Campus Events</option>
+                                <option value="hackathons"    {{ old('event_type') === 'hackathons'    ? 'selected' : '' }}>Hackathons</option>
+                                <option value="reunions"      {{ old('event_type') === 'reunions'      ? 'selected' : '' }}>Reunions</option>
+                                <option value="webinars"      {{ old('event_type') === 'webinars'      ? 'selected' : '' }}>Webinars</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="location" class="mb-1.5 block text-sm font-semibold text-slate-700">Location <span class="text-slate-400 font-normal">(optional)</span></label>
+                            <input type="text" id="location" name="location" value="{{ old('location') }}"
+                                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="start_at" class="mb-1.5 block text-sm font-semibold text-slate-700">Start Date &amp; Time</label>
+                            <input type="datetime-local" id="start_at" name="start_at" value="{{ old('start_at') }}" required
+                                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label for="end_at" class="mb-1.5 block text-sm font-semibold text-slate-700">End Date &amp; Time <span class="text-slate-400 font-normal">(optional)</span></label>
+                            <input type="datetime-local" id="end_at" name="end_at" value="{{ old('end_at') }}"
+                                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="registration_link" class="mb-1.5 block text-sm font-semibold text-slate-700">Registration Link <span class="text-slate-400 font-normal">(optional)</span></label>
+                            <input type="url" id="registration_link" name="registration_link" value="{{ old('registration_link') }}"
+                                   placeholder="https://..."
+                                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">Image <span class="text-slate-400 font-normal">(optional)</span></label>
+                            <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/jpg,image/webp"
+                                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <a href="{{ route('admin.dashboard') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</a>
+                        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Publish Event</button>
+                    </div>
+                </form>
             </div>
 
             <aside class="rounded-xl border border-slate-300 bg-white p-6 xl:sticky xl:top-28">
                 <div class="mb-4 flex items-start justify-between gap-3">
                     <div>
-                        <h3 class="font-display text-xl font-semibold text-slate-900">Recent Updated News</h3>
-                        <p class="mt-1 text-xs text-slate-500">Latest news items ordered by most recent update time.</p>
+                        <h3 class="font-display text-xl font-semibold text-slate-900">Recent Events</h3>
+                        <p class="mt-1 text-xs text-slate-500">Latest events ordered by most recent update.</p>
                     </div>
-                    <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{{ $recentUpdatedNews->count() }}</span>
+                    <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{{ $recentEvents->count() }}</span>
                 </div>
 
                 <div class="space-y-3">
-                    @forelse($recentUpdatedNews as $recentNews)
+                    @forelse($recentEvents as $event)
                         <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-semibold text-slate-900">{{ $recentNews->title }}</p>
-                                    <p class="mt-1 line-clamp-2 text-xs text-slate-600">{{ $recentNews->excerpt }}</p>
+                                    <p class="truncate text-sm font-semibold text-slate-900">{{ $event->title }}</p>
+                                    <p class="mt-1 line-clamp-2 text-xs text-slate-600">{{ $event->excerpt }}</p>
                                 </div>
                                 <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">Updated</span>
                             </div>
-
                             <div class="mt-3 space-y-1 text-xs text-slate-500">
-                                <div>Updated: {{ $recentNews->updated_at?->format('d M Y, h:i A') ?? '-' }}</div>
-                                <div>Published: {{ $recentNews->published_at?->format('d M Y') ?? '-' }}</div>
+                                <div>Updated: {{ $event->updated_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                <div>Starts: {{ $event->start_at?->format('d M Y, h:i A') ?? '-' }}</div>
                             </div>
                         </div>
                     @empty
                         <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-                            No news items have been created yet.
+                            No events have been created yet.
                         </div>
                     @endforelse
                 </div>

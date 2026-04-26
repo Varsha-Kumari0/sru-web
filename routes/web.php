@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestimonialController;
 use App\Models\ActivityLog;
+use App\Models\Event;
+use App\Models\News;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -118,6 +121,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
                 'time' => $item->created_at?->diffForHumans() ?? 'just now',
             ]);
 
+        $latestNews = News::query()
+            ->latest('updated_at')
+            ->take(5)
+            ->get(['id', 'title', 'excerpt', 'updated_at', 'published_at']);
+
+        $upcomingEvents = Event::query()
+            ->where('start_at', '>=', now())
+            ->orderBy('start_at', 'asc')
+            ->take(5)
+            ->get(['id', 'title', 'excerpt', 'event_type', 'start_at', 'location']);
+
         $totalChange = 'All time';
         $totalChipText = $weeklyNewCount > 0 ? ('↑ ' . $weeklyNewCount . ' this week') : 'No new this week';
         $batchChipText = $yearsCount > 0 ? ($yearsCount . ' recorded batches') : 'No batch data';
@@ -131,6 +145,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
             'unreadMessagesCount',
             'departmentBreakdown',
             'recentActivity',
+            'latestNews',
+            'upcomingEvents',
             'totalChipText',
             'batchChipText',
             'messagesChipText'
@@ -159,6 +175,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/news', [NewsController::class, 'adminStore'])->name('admin.news.store');
     Route::put('/admin/news/{id}', [NewsController::class, 'adminUpdate'])->name('admin.news.update');
     Route::delete('/admin/news/{id}', [NewsController::class, 'adminDestroy'])->name('admin.news.delete');
+    Route::get('/admin/events/new', [EventController::class, 'adminCreate'])->name('admin.events.create');
+    Route::post('/admin/events', [EventController::class, 'adminStore'])->name('admin.events.store');
+    Route::get('/admin/events/manage', [EventController::class, 'adminManage'])->name('admin.events.manage');
+    Route::get('/admin/events/{id}/edit', [EventController::class, 'adminEdit'])->name('admin.events.edit');
+    Route::put('/admin/events/{id}', [EventController::class, 'adminUpdate'])->name('admin.events.update');
+    Route::delete('/admin/events/{id}', [EventController::class, 'adminDestroy'])->name('admin.events.delete');
     Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
     Route::get('/admin/alumni/{id}/edit', [AdminController::class, 'editAlumni'])->name('admin.alumni.edit');
     Route::put('/admin/alumni/{id}', [AdminController::class, 'updateAlumni'])->name('admin.alumni.update');

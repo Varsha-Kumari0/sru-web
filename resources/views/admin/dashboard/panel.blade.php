@@ -74,7 +74,7 @@
 <aside class="w-64 min-h-screen flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-white border-r border-slate-300">
 
     {{-- Logo --}}
-    <div class="px-7 py-8 border-b border-slate-300">
+    <div class="px-6 py-5 border-b border-slate-300 min-h-[89px] flex flex-col justify-center">
         @php($dashboardLogoPath = 'images/logos/sru_logo_new.png')
 
         @if(file_exists(public_path($dashboardLogoPath)))
@@ -123,7 +123,7 @@
             Messages
         </a>
 
-        <div class="group">
+        <div class="group relative">
             <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V5z"/>
@@ -135,10 +135,30 @@
                     <polyline points="6 9 12 15 18 9"/>
                 </svg>
             </a>
-            <div class="ml-9 hidden flex-col gap-1 pb-2 group-hover:flex">
+            <div class="absolute left-full top-0 z-50 hidden min-w-[11rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-lg group-hover:flex">
                 <a href="{{ route('newsroom') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
                 <a href="{{ route('admin.news.create') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
                 <a href="{{ route('admin.news.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
+            </div>
+        </div>
+
+        <div class="group relative">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span class="flex-1">Events</span>
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="transition-transform duration-150 group-hover:rotate-180">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </a>
+            <div class="absolute left-full top-0 z-50 hidden min-w-[11rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-lg group-hover:flex">
+                <a href="{{ route('events.index') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
+                <a href="{{ route('admin.events.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
+                <a href="{{ route('admin.events.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
             </div>
         </div>
 
@@ -217,7 +237,7 @@
 <main class="ml-64 flex-1 flex flex-col min-h-screen">
 
     {{-- Topbar --}}
-    <header class="sticky top-0 z-40 flex items-center justify-between px-9 py-5 bg-white border-b border-slate-300">
+    <header class="sticky top-0 z-40 flex items-center justify-between px-6 pt-[1.9rem] pb-[1.7em] xl:px-9 bg-white border-b border-slate-300">
         <div>
             <h2 class="font-display text-2xl font-semibold" style="letter-spacing:.01em;">SRU Alumni Dashboard</h2>
             <p class="text-xs mt-0.5 text-slate-500">
@@ -274,8 +294,59 @@
                 </div>
             </div>
 
-            {{-- Reserved blank dashboard space for future widgets --}}
-            <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] min-h-[420px]"></div>
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="font-display text-lg font-semibold text-[#1a1a2e]">Latest News</h3>
+                        <a href="{{ route('newsroom') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View All</a>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($latestNews as $news)
+                            <a href="{{ route('news.show', $news->id) }}" target="_blank" rel="noopener noreferrer" class="block rounded-lg border border-[#eef0f5] bg-[#f9fafc] px-4 py-3 transition-colors duration-150 hover:bg-[#f1f5fb]">
+                                <p class="truncate text-sm font-semibold text-[#1a1a2e]">{{ $news->title }}</p>
+                                <p class="mt-1 line-clamp-2 text-xs text-[#555]">{{ $news->excerpt }}</p>
+                                <p class="mt-2 text-[11px] text-[#888]">Updated {{ $news->updated_at?->diffForHumans() ?? 'just now' }}</p>
+                            </a>
+                        @empty
+                            <div class="rounded-lg border border-dashed border-[#dde3ec] bg-[#f9fafc] px-4 py-6 text-center text-sm text-[#888]">
+                                No news items yet.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="font-display text-lg font-semibold text-[#1a1a2e]">Upcoming Events</h3>
+                        <a href="{{ route('events.index') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View All</a>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($upcomingEvents as $event)
+                            <a href="{{ route('events.show', $event->id) }}" target="_blank" rel="noopener noreferrer" class="block rounded-lg border border-[#eef0f5] bg-[#f9fafc] px-4 py-3 transition-colors duration-150 hover:bg-[#f1f5fb]">
+                                <div class="flex items-start justify-between gap-3">
+                                    <p class="truncate text-sm font-semibold text-[#1a1a2e]">{{ $event->title }}</p>
+                                    <span class="flex-shrink-0 rounded-md bg-[#e8f0fe] px-2 py-0.5 text-[10px] font-semibold text-[#1a73e8]">
+                                        {{ ucfirst(str_replace('-', ' ', $event->event_type)) }}
+                                    </span>
+                                </div>
+                                <p class="mt-1 line-clamp-2 text-xs text-[#555]">{{ $event->excerpt }}</p>
+                                <p class="mt-2 text-[11px] text-[#888]">
+                                    {{ $event->start_at?->format('d M Y, h:i A') ?? '-' }}
+                                    @if($event->location)
+                                        • {{ $event->location }}
+                                    @endif
+                                </p>
+                            </a>
+                        @empty
+                            <div class="rounded-lg border border-dashed border-[#dde3ec] bg-[#f9fafc] px-4 py-6 text-center text-sm text-[#888]">
+                                No upcoming events found.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
 
         </section>
 
