@@ -151,6 +151,8 @@ Update behavior:
 ## 6. Activity Tracking
 User-side actions recorded in activity logs include:
 - user_registered
+- user_logged_in
+- user_logged_out
 - profile_created
 - profile_updated
 

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\Profile;
 use App\Models\Professional;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
@@ -64,7 +66,7 @@ class AdminController extends Controller
             ->orderBy('action')
             ->pluck('action');
 
-        return view('admin.activity-logs', compact('logs', 'actors', 'actions'));
+        return view('admin.logs.activity-logs', compact('logs', 'actors', 'actions'));
     }
 
     public function exportActivityLogsCsv(Request $request)
@@ -81,11 +83,13 @@ class AdminController extends Controller
             ->latest('created_at')
             ->get();
 
+        $actor = Auth::user();
+
         ActivityLog::record(
-            auth()->id(),
-            auth()->id(),
+            Auth::id(),
+            Auth::id(),
             'activity_logs_exported',
-            (auth()->user()?->name ?? 'Admin') . ' exported activity logs CSV',
+            ($actor?->name ?? 'Admin') . ' exported activity logs CSV',
             [
                 'from_date' => $request->input('from_date'),
                 'to_date' => $request->input('to_date'),
@@ -135,7 +139,8 @@ class AdminController extends Controller
      */
     public function deleteAlumni($id)
     {
-        $user = \App\Models\User::find($id);
+        /** @var User|null $user */
+        $user = User::query()->find($id);
         if (!$user) {
             if (request()->expectsJson()) {
                 return response()->json(['success' => false, 'message' => 'User not found'], 404);
@@ -143,11 +148,12 @@ class AdminController extends Controller
 
             return back()->with('error', 'User not found.');
         }
-        $actorName = auth()->user()?->name ?? 'System';
+
+        $actorName = Auth::user()?->name ?? 'System';
         $targetName = $user->profile?->full_name ?: $user->name;
 
         ActivityLog::record(
-            auth()->id(),
+            Auth::id(),
             $user->id,
             'alumni_deleted',
             $actorName . ' deleted alumni record for ' . $targetName,
@@ -174,7 +180,8 @@ class AdminController extends Controller
      */
     public function editAlumni($id)
     {
-        $user = \App\Models\User::with(['profile', 'professional'])->find($id);
+        /** @var User|null $user */
+        $user = User::query()->with(['profile', 'professional'])->find($id);
         
         if (!$user) {
             return back()->with('error', 'User not found.');
@@ -209,7 +216,7 @@ class AdminController extends Controller
             'BCA' => ['BCA General', 'BCA (Cloud Computing)'],
         ];
 
-        return view('admin.edit-alumni', compact('user', 'selectDegree'));
+        return view('admin.alumni.edit-alumni', compact('user', 'selectDegree'));
     }
 
     /**
@@ -217,7 +224,8 @@ class AdminController extends Controller
      */
     public function updateAlumni(Request $request, $id)
     {
-        $user = \App\Models\User::find($id);
+        /** @var User|null $user */
+        $user = User::query()->find($id);
 
         if (!$user) {
             if (request()->expectsJson()) {
@@ -295,7 +303,7 @@ class AdminController extends Controller
                 $user->profile->update($profileData);
             } else {
                 $profileData['user_id'] = $user->id;
-                \App\Models\Profile::create($profileData);
+                Profile::create($profileData);
             }
         }
 
@@ -321,7 +329,7 @@ class AdminController extends Controller
                 $user->professional->update($professionalData);
             } else {
                 $professionalData['user_id'] = $user->id;
-                \App\Models\Professional::create($professionalData);
+                Professional::create($professionalData);
             }
         }
 
@@ -416,12 +424,12 @@ class AdminController extends Controller
                 'Professional'
             );
 
-            $actorName = auth()->user()?->name ?? 'System';
+            $actorName = Auth::user()?->name ?? 'System';
             $targetName = $user->profile?->full_name ?: $user->name;
             $changeCount = count($fieldChanges);
 
             ActivityLog::record(
-                auth()->id(),
+                Auth::id(),
                 $user->id,
                 'alumni_updated',
                 $actorName . ' updated alumni record for ' . $targetName . ($changeCount > 0 ? ' (' . $changeCount . ' changes)' : ''),
@@ -450,7 +458,12 @@ class AdminController extends Controller
             'avatar' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $admin = auth()->user();
+        /** @var User|null $admin */
+        $admin = Auth::user();
+
+        if (!$admin) {
+            return back()->with('error', 'Admin user not found.');
+        }
 
         // Delete old avatar file if it exists.
         if ($admin->avatar) {

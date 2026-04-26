@@ -34,7 +34,8 @@ The profile record currently includes additional personal/social fields such as:
 - Includes:
   - department breakdown panel
   - recent activity panel (now backed by activity_logs table)
-- Alumni list defaults to latest registered first by created_at descending.
+- The previous "All Registered SRU Alumni" dashboard table section is intentionally removed.
+- The same area is left as a blank reserved space for future dashboard modules/widgets.
 - Shared admin branding logo is loaded from public/images/logos/sru_logo_new.png with text fallback if the file is missing.
 
 ### 2.2 All SRU Alumni Page
@@ -94,7 +95,31 @@ The profile record currently includes additional personal/social fields such as:
 - Profile creation validates social links against their expected domains.
 - Profile update also requires father_name and preserves social URL validation rules.
 
-### 2.5 Activity Logs Page
+### 2.5 Admin News Management
+- Create route: GET /admin/news/new (name: admin.news.create)
+- Store route: POST /admin/news (name: admin.news.store)
+- Manage route: GET /admin/news/manage (name: admin.news.manage)
+- Edit route: GET /admin/news/{id}/edit (name: admin.news.edit)
+- Update route: PUT /admin/news/{id} (name: admin.news.update)
+- Delete route: DELETE /admin/news/{id} (name: admin.news.delete)
+- The News sidebar submenu now uses a single shared management entry labeled Update/Delete.
+- On all admin pages, the News submenu remains hover-based rather than permanently expanded.
+- News create page includes a right-side "Recent Updated News" panel.
+- The panel is ordered by latest updated_at and shows:
+  - title
+  - excerpt
+  - updated timestamp
+  - published date
+- News manage page lists existing news items with per-item Update and Delete buttons.
+- News edit page supports updating title, excerpt, content, published date, and optional image replacement.
+- Replacing an image removes the previous file from public/images.
+- News manage and news edit pages include the same bottom sidebar admin card as the other admin pages:
+  - admin avatar
+  - admin name
+  - Super Admin label
+  - logout link
+
+### 2.6 Activity Logs Page
 - Route: GET /admin/activity-logs (name: admin.activity-logs)
 - CSV export route: GET /admin/activity-logs/export (name: admin.activity-logs.export)
 - Includes filters:
@@ -103,10 +128,14 @@ The profile record currently includes additional personal/social fields such as:
   - actor user
   - action type
 - CSV export respects the current filter query.
-- Description column for alumni_updated action shows a point-wise bullet list of every changed field with old and new values, e.g. "Degree: — to B.Tech".
-- New log rows include a changes array in the properties JSON column. Existing older rows show only the summary sentence.
+- Repeated non-change events from the same actor/action/subject are grouped into a single summary row with an xN count badge.
+- Hovering a grouped repeated-event row expands a timeline panel showing each individual occurrence with its own timestamp.
+- Change-based actions such as alumni_updated and profile_updated remain as separate rows.
+- For change-based actions, the description column shows only the summary line by default.
+- Hovering a change row expands full per-field change details under the summary, e.g. "Degree: Empty to B.Tech".
+- Newer change log rows include a changes array in the properties JSON column. Older rows without structured changes continue to show summary-only text.
 
-### 2.6 Admin Sidebar Profile Photo
+### 2.7 Admin Sidebar Profile Photo
 - Upload route: POST /admin/profile/avatar (name: admin.profile.avatar)
 - The sidebar avatar (bottom-left user card) is now clickable on all admin pages.
 - Clicking the avatar opens file selection and auto-submits the upload form.
@@ -140,9 +169,15 @@ Provides a helper:
 ### 3.3 Logged Events
 Current events include:
 - user_registered
+- user_logged_in
+- user_logged_out
 - profile_created
-- profile_updated
+- profile_updated (properties.changes array records per-field old/new values for user self-service profile edits)
 - alumni_updated (properties.changes array records per-field old/new values)
+- admin_news_create_opened
+- news_created
+- news_updated
+- news_deleted
 - admin_avatar_updated
 - alumni_deleted
 - activity_logs_exported
@@ -151,10 +186,13 @@ Current events include:
 - Sidebar links are present across admin pages:
   - Dashboard
   - All SRU Alumni
+  - News -> View / New / Update/Delete
   - Activity Logs
   - Reports
   - System -> Settings
+- The News submenu on all admin pages uses the same hover dropdown behavior, including the News manage and News edit pages.
 - Admin sidebar profile avatar uses a consistent fit style across all admin pages (contain + center + white background + border).
+- The bottom sidebar admin identity card is present across all admin pages, including News create, News manage, and News edit.
 - Logout hover visibility was normalized for icon-style sidebar variants.
 - The same shared logo is rendered across all admin pages using the file public/images/logos/sru_logo_new.png.
 
@@ -163,19 +201,24 @@ Current events include:
 ### Backend
 - routes/web.php
 - app/Http/Controllers/AdminController.php
+- app/Http/Controllers/NewsController.php
 - app/Http/Controllers/ProfileController.php
 - app/Http/Controllers/Auth/RegisteredUserController.php
 - app/Models/User.php
 - app/Models/Profile.php
+- app/Models/News.php
 - app/Models/ActivityLog.php
 - database/migrations/2026_04_25_090000_create_activity_logs_table.php
 - database/migrations/2026_04_25_120000_add_avatar_to_users_table.php
 
 ### Admin Views
-- resources/views/admin/panel.blade.php
-- resources/views/admin/allalumini.blade.php
-- resources/views/admin/edit-alumni.blade.php
-- resources/views/admin/activity-logs.blade.php
+- resources/views/admin/dashboard/panel.blade.php (view: admin.dashboard.panel)
+- resources/views/admin/alumni/allalumini.blade.php (view: admin.alumni.allalumini)
+- resources/views/admin/alumni/edit-alumni.blade.php (view: admin.alumni.edit-alumni)
+- resources/views/admin/logs/activity-logs.blade.php (view: admin.logs.activity-logs)
+- resources/views/admin/news/news-create.blade.php (view: admin.news.news-create)
+- resources/views/admin/news/news-manage.blade.php (view: admin.news.news-manage)
+- resources/views/admin/news/news-edit.blade.php (view: admin.news.news-edit)
 
 ## 6. Data and Validation Notes
 - father_name is now part of the profile data model.
@@ -206,18 +249,26 @@ Export notes:
 Recommended checks:
 
 1. Run migrations.
-2. Open dashboard and verify newest alumni appear first.
+2. Open dashboard and verify the alumni table section is removed and the reserved blank space is visible.
 3. Open dashboard and verify the shared logo renders in the sidebar.
 4. Open All SRU Alumni and verify photo avatars match dashboard style (contain + border), social links, and details modal.
 5. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
 6. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
-7. After editing an alumni record, open Activity Logs and verify the description shows a point-wise bullet list of changed fields.
-8. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
-9. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
+7. After editing an alumni record, open Activity Logs and verify the table shows only the summary line by default; hover the row and verify it expands to show per-field change details.
+8. Trigger the same non-change action multiple times (for example opening the same admin page repeatedly), then open Activity Logs and verify those repeated events are grouped into one row with an xN badge; hover the grouped row and verify the expanded panel shows every occurrence timestamp.
+9. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
+10. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
-10. Open Activity Logs, apply filters, and export CSV; verify exported rows match filters.
+11. Open Activity Logs, apply filters, and export CSV; verify exported rows match filters.
+12. Open News -> New and verify the right-side "Recent Updated News" panel is visible and ordered by latest update time.
+13. Open News -> Update/Delete and verify the page lists news items with separate Update and Delete action buttons.
+14. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
+15. On News create/manage/edit pages, verify the News submenu appears on hover and is not permanently expanded.
+16. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
+17. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
 
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.
 - The older URL /admin/allalumini is preserved as a redirect.
 - If renamed to allalumni in future, route names and view references must be updated together.
+- Admin Blade files are now grouped by module under resources/views/admin (dashboard, alumni, logs, news) instead of a single flat folder.

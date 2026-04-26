@@ -36,15 +36,17 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'email' => ['required', 'email', 'unique:users'],
         ]);
+
+        $email = $validated['email'];
 
         $password = Str::random(8);
 
         $user = User::create([
             'name' => 'Alumni User',
-            'email' => $request->email,
+            'email' => $email,
             'password' => Hash::make($password),
         ]);
 
@@ -55,7 +57,7 @@ class RegisteredUserController extends Controller
             $user->email . ' registered as alumni user'
         );
 
-        Mail::to($request->email)->send(new SendPasswordMail($password));
+        Mail::to($email)->send(new SendPasswordMail($password));
 
         return redirect()->route('login')->with('status', 'A password has been sent to your email. Use it to log in.');
     }
