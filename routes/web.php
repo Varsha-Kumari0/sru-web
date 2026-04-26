@@ -14,7 +14,11 @@ use App\Models\User;
 
 // 🏠 Home
 Route::get('/', function () {
-    return view('welcome');
+    return view('welcome', [
+        'news' => [],
+        'events' => [],
+        'jobs' => [],
+    ]);
 });
 
 
