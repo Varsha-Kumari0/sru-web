@@ -105,7 +105,7 @@ class ProfileController extends Controller
     public function storeProfile(Request $request)
     {
         // ❌ prevent duplicate profile
-        if (Profile::where('user_id', auth()->id())->exists()) {
+        if (Profile::where('user_id', Auth::id())->exists()) {
             return redirect()->route('profile')->with('error', 'Profile already exists');
         }
 
@@ -153,7 +153,7 @@ class ProfileController extends Controller
 
         // ✅ SAVE PROFILE
         $profile = Profile::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
 
             'profile_photo' => $imagePath,
 
@@ -181,7 +181,7 @@ class ProfileController extends Controller
                 if (!$org) continue;
 
                 Professional::create([
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'organization' => $org,
                     'industry' => $request->industry[$i] ?? null,
                     'role' => $request->role[$i] ?? null,
@@ -193,10 +193,10 @@ class ProfileController extends Controller
         }
 
         ActivityLog::record(
-            auth()->id(),
-            auth()->id(),
+            Auth::id(),
+            Auth::id(),
             'profile_created',
-            (auth()->user()?->name ?? 'User') . ' created profile'
+            (Auth::user()?->name ?? 'User') . ' created profile'
         );
 
         return redirect()->route('profile')->with('success', 'Profile created successfully');
@@ -207,8 +207,8 @@ class ProfileController extends Controller
      */
     public function editProfile()
     {
-        $profile = Profile::where('user_id', auth()->id())->first();
-        $experiences = Professional::where('user_id', auth()->id())->get();
+        $profile = Profile::where('user_id', Auth::id())->first();
+        $experiences = Professional::where('user_id', Auth::id())->get();
 
         return view('profile.edit', compact('profile', 'experiences'));
     }
@@ -218,11 +218,27 @@ class ProfileController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $profile = Profile::where('user_id', auth()->id())->first();
+        $profile = Profile::where('user_id', Auth::id())->first();
 
         if (!$profile) {
             return redirect('/profile/create');
         }
+
+        $originalProfileData = $profile->only([
+            'city',
+            'country',
+            'linkedin',
+            'instagram',
+            'facebook',
+            'twitter',
+            'profile_photo',
+        ]);
+
+        $existingExperiences = Professional::where('user_id', Auth::id())
+            ->orderBy('id')
+            ->get(['organization', 'industry', 'role', 'from', 'to', 'location'])
+            ->map(fn ($exp) => $exp->toArray())
+            ->toArray();
 
         // ✅ VALIDATION
         $request->validate([
@@ -267,7 +283,7 @@ class ProfileController extends Controller
         ]);
 
         // ✅ RESET EXPERIENCES (simple approach)
-        Professional::where('user_id', auth()->id())->delete();
+        Professional::where('user_id', Auth::id())->delete();
 
         if ($request->has('organization')) {
             foreach ($request->organization as $i => $org) {
@@ -275,7 +291,7 @@ class ProfileController extends Controller
                 if (!$org) continue;
 
                 Professional::create([
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'organization' => $org,
                     'industry' => $request->industry[$i] ?? null,
                     'role' => $request->role[$i] ?? null,
@@ -286,11 +302,52 @@ class ProfileController extends Controller
             }
         }
 
+        $updatedProfile = Profile::where('user_id', Auth::id())->first();
+        $updatedProfileData = $updatedProfile ? $updatedProfile->only([
+            'city',
+            'country',
+            'linkedin',
+            'instagram',
+            'facebook',
+            'twitter',
+            'profile_photo',
+        ]) : [];
+
+        $updatedExperiences = Professional::where('user_id', Auth::id())
+            ->orderBy('id')
+            ->get(['organization', 'industry', 'role', 'from', 'to', 'location'])
+            ->map(fn ($exp) => $exp->toArray())
+            ->toArray();
+
+        $changes = [];
+
+        foreach ($originalProfileData as $field => $oldValue) {
+            $newValue = $updatedProfileData[$field] ?? null;
+            if ((string) ($oldValue ?? '') !== (string) ($newValue ?? '')) {
+                $changes[] = [
+                    'field' => $field,
+                    'old' => $oldValue,
+                    'new' => $newValue,
+                ];
+            }
+        }
+
+        if ($existingExperiences !== $updatedExperiences) {
+            $changes[] = [
+                'field' => 'professional_experiences',
+                'old' => $existingExperiences,
+                'new' => $updatedExperiences,
+            ];
+        }
+
         ActivityLog::record(
-            auth()->id(),
-            auth()->id(),
+            Auth::id(),
+            Auth::id(),
             'profile_updated',
-            (auth()->user()?->name ?? 'User') . ' updated profile'
+            (Auth::user()?->name ?? 'User') . ' updated profile',
+            [
+                'changes' => $changes,
+            ]
         );
 
         return redirect()->route('profile')->with('success', 'Profile updated successfully');

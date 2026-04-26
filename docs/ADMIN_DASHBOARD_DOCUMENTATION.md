@@ -142,9 +142,13 @@ Provides a helper:
 ### 3.3 Logged Events
 Current events include:
 - user_registered
+- user_logged_in
+- user_logged_out
 - profile_created
 - profile_updated
 - alumni_updated (properties.changes array records per-field old/new values)
+- admin_news_create_opened
+- news_created
 - admin_avatar_updated
 - alumni_deleted
 - activity_logs_exported

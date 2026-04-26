@@ -77,8 +77,8 @@
                 </svg>
             </a>
             <div class="ml-9 hidden flex-col gap-1 pb-2 group-hover:flex">
-                <a href="#" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
-                <a href="#" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
+                <a href="{{ route('newsroom') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
+                <a href="{{ route('admin.news.create') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
             </div>
         </div>
 
@@ -215,31 +215,108 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($logs as $log)
+                        @php
+                            $groupedLogs = [];
+                            $currentGroup = null;
+
+                            $extractChangeDetails = static function ($log): array {
+                                $rawChanges = $log->properties['changes'] ?? null;
+
+                                if (!is_array($rawChanges) || empty($rawChanges)) {
+                                    return [];
+                                }
+
+                                $details = [];
+                                foreach ($rawChanges as $change) {
+                                    $details[] = [
+                                        'field' => $change['field'] ?? 'Field',
+                                        'from' => $change['from'] ?? ($change['old'] ?? 'Empty'),
+                                        'to' => $change['to'] ?? ($change['new'] ?? 'Empty'),
+                                    ];
+                                }
+
+                                return $details;
+                            };
+
+                            foreach ($logs as $log) {
+                                $changeDetails = $extractChangeDetails($log);
+                                $hasChangeDetails = !empty($changeDetails);
+
+                                $groupKey = implode('|', [
+                                    (string) ($log->actor_user_id ?? '0'),
+                                    (string) $log->action,
+                                    (string) $log->description,
+                                    (string) ($log->subject_user_id ?? '0'),
+                                ]);
+
+                                if (!$hasChangeDetails && $currentGroup && $currentGroup['key'] === $groupKey) {
+                                    $currentGroup['count']++;
+                                    $currentGroup['last_at'] = $log->created_at;
+                                    $currentGroup['entries'][] = [
+                                        'created_at' => $log->created_at,
+                                        'description' => $log->description,
+                                    ];
+                                    continue;
+                                }
+
+                                if ($currentGroup) {
+                                    $groupedLogs[] = $currentGroup;
+                                }
+
+                                $currentGroup = [
+                                    'key' => $groupKey,
+                                    'log' => $log,
+                                    'count' => 1,
+                                    'first_at' => $log->created_at,
+                                    'last_at' => $log->created_at,
+                                    'change_details' => $changeDetails,
+                                    'has_change_details' => $hasChangeDetails,
+                                    'entries' => [
+                                        [
+                                            'created_at' => $log->created_at,
+                                            'description' => $log->description,
+                                        ],
+                                    ],
+                                ];
+
+                                // Keep field-level change rows separate so hover details remain accurate.
+                                if ($hasChangeDetails) {
+                                    $groupedLogs[] = $currentGroup;
+                                    $currentGroup = null;
+                                }
+                            }
+
+                            if ($currentGroup) {
+                                $groupedLogs[] = $currentGroup;
+                            }
+                        @endphp
+
+                        @forelse($groupedLogs as $group)
+                            @php
+                                $log = $group['log'];
+                                $changeDetails = $group['change_details'];
+                                $hasChangeDetails = $group['has_change_details'];
+                                $repeatCount = $group['count'];
+                                $groupEntries = $group['entries'] ?? [];
+                            @endphp
                             <tr class="group border-t border-slate-200 hover:bg-slate-50">
                                 <td class="px-4 py-3 text-slate-700">
-                                    <div class="font-medium text-slate-900">{{ $log->created_at?->format('d M Y, h:i A') }}</div>
-                                    <div class="text-xs text-slate-500">{{ $log->created_at?->diffForHumans() }}</div>
+                                    <div class="font-medium text-slate-900">{{ $group['first_at']?->format('d M Y, h:i A') }}</div>
+                                    <div class="text-xs text-slate-500">{{ $group['first_at']?->diffForHumans() }}</div>
+                                    @if($repeatCount > 1)
+                                        <div class="mt-1 text-xs text-slate-500">First in group: {{ $group['last_at']?->format('d M Y, h:i A') }}</div>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 text-slate-700">
-                                    <span class="inline-flex rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{{ $log->action }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-flex rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">{{ $log->action }}</span>
+                                        @if($repeatCount > 1)
+                                            <span class="inline-flex rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">x{{ $repeatCount }}</span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 text-slate-900">
-                                    @php
-                                        $changeDetails = [];
-
-                                        if ($log->action === 'alumni_updated' && !empty($log->properties['changes']) && is_array($log->properties['changes'])) {
-                                            foreach ($log->properties['changes'] as $change) {
-                                                $changeDetails[] = [
-                                                    'field' => $change['field'] ?? 'Field',
-                                                    'from' => $change['from'] ?? 'Empty',
-                                                    'to' => $change['to'] ?? 'Empty',
-                                                ];
-                                            }
-                                        }
-                                    @endphp
-
-                                    @if(!empty($changeDetails))
+                                    @if($hasChangeDetails)
                                         <div>
                                             <div class="cursor-help underline decoration-dotted underline-offset-4">
                                                 {{ $log->description }}
@@ -260,6 +337,26 @@
                                         </div>
                                     @else
                                         <div>{{ $log->description }}</div>
+                                        @if($repeatCount > 1)
+                                            <div class="mt-1 cursor-help text-xs text-slate-500 underline decoration-dotted underline-offset-4">
+                                                Grouped {{ $repeatCount }} repeated events with the same actor and action. Hover to see all timestamps.
+                                            </div>
+                                            <div class="max-h-0 overflow-hidden opacity-0 transition-all duration-200 ease-out group-hover:mt-3 group-hover:max-h-52 group-hover:opacity-100">
+                                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-700">
+                                                    <div class="mb-2 font-semibold text-slate-900">Grouped Event Timeline</div>
+                                                    <ul class="space-y-2">
+                                                        @foreach($groupEntries as $entry)
+                                                            <li class="flex items-start justify-between gap-3">
+                                                                <span class="text-slate-900">
+                                                                    {{ $entry['created_at']?->format('d M Y, h:i:s A') ?? '-' }}
+                                                                </span>
+                                                                <span class="text-right text-slate-600">{{ $entry['description'] ?? '-' }}</span>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        @endif
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-slate-700">

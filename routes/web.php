@@ -149,6 +149,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Persistent audit logs (view + filtered CSV export).
     Route::get('/admin/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');
     Route::get('/admin/activity-logs/export', [AdminController::class, 'exportActivityLogsCsv'])->name('admin.activity-logs.export');
+    Route::get('/admin/news/new', [NewsController::class, 'adminCreate'])->name('admin.news.create');
+    Route::post('/admin/news', [NewsController::class, 'adminStore'])->name('admin.news.store');
     Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
     Route::get('/admin/alumni/{id}/edit', [AdminController::class, 'editAlumni'])->name('admin.alumni.edit');
     Route::put('/admin/alumni/{id}', [AdminController::class, 'updateAlumni'])->name('admin.alumni.update');
