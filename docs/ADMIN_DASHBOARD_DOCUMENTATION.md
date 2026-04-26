@@ -119,7 +119,40 @@ The profile record currently includes additional personal/social fields such as:
   - Super Admin label
   - logout link
 
-### 2.6 Activity Logs Page
+### 2.6 Admin Events Management
+- Create route: GET /admin/events/new (name: admin.events.create)
+- Store route: POST /admin/events (name: admin.events.store)
+- Manage route: GET /admin/events/manage (name: admin.events.manage)
+- Edit route: GET /admin/events/{id}/edit (name: admin.events.edit)
+- Update route: PUT /admin/events/{id} (name: admin.events.update)
+- Delete route: DELETE /admin/events/{id} (name: admin.events.delete)
+- The Events sidebar submenu now uses a single shared management entry labeled Update/Delete.
+- On all admin pages, the Events submenu remains hover-based with options: View / New / Update/Delete.
+- Events create page includes a right-side "Recent Events" panel.
+- The panel is ordered by latest updated_at and shows:
+  - title
+  - excerpt
+  - updated timestamp
+  - start date/time
+- Events manage page lists existing events with per-item Update and Delete buttons.
+- Events are displayed as cards with title, excerpt, event type badge, and date/time information.
+- Event type values: campus-events, hackathons, reunions, webinars.
+- Events edit page supports updating title, excerpt, description, event type, location, start/end dates, registration link, and optional image replacement.
+- Replacing an image removes the previous file from public/images.
+- Events manage and edit pages include the same bottom sidebar admin card as the other admin pages.
+- Form validation enforces:
+  - title (required, max 255 characters)
+  - excerpt (nullable)
+  - description (nullable)
+  - event_type (required, must be one of: reunions, webinars, hackathons, campus-events)
+  - location (nullable, max 255 characters)
+  - start_at (required, must be a valid datetime)
+  - end_at (nullable, must be after or equal to start_at)
+  - registration_link (nullable, must be a valid URL)
+  - image (nullable, must be jpg/jpeg/png/webp, max 2048 KB)
+- Event model fields use datetime casting for start_at and end_at.
+
+### 2.7 Activity Logs Page
 - Route: GET /admin/activity-logs (name: admin.activity-logs)
 - CSV export route: GET /admin/activity-logs/export (name: admin.activity-logs.export)
 - Includes server-side filter form:
@@ -148,7 +181,7 @@ The profile record currently includes additional personal/social fields such as:
   - Actor/Subject emails are truncated with full email available on hover tooltip.
   - Table text is smaller on compact screens and scales up on wider viewports (`xl` breakpoint).
 
-### 2.7 Admin Sidebar Profile Photo
+### 2.8 Admin Sidebar Profile Photo
 - Upload route: POST /admin/profile/avatar (name: admin.profile.avatar)
 - The sidebar avatar (bottom-left user card) is now clickable on all admin pages.
 - Clicking the avatar opens file selection and auto-submits the upload form.
@@ -191,6 +224,10 @@ Current events include:
 - news_created
 - news_updated
 - news_deleted
+- admin_event_create_opened
+- event_created
+- event_updated
+- event_deleted
 - admin_avatar_updated
 - alumni_deleted
 - activity_logs_exported
@@ -200,12 +237,13 @@ Current events include:
   - Dashboard
   - All SRU Alumni
   - News -> View / New / Update/Delete
+  - Events -> View / New / Update/Delete
   - Activity Logs
   - Reports
   - System -> Settings
-- The News submenu on all admin pages uses the same hover dropdown behavior, including the News manage and News edit pages.
+- The News and Events submenus on all admin pages use the same hover dropdown behavior, including their respective manage and edit pages.
 - Admin sidebar profile avatar uses a consistent fit style across all admin pages (contain + center + white background + border).
-- The bottom sidebar admin identity card is present across all admin pages, including News create, News manage, and News edit.
+- The bottom sidebar admin identity card is present across all admin pages, including News create, News manage, News edit, Events create, Events manage, and Events edit.
 - Logout hover visibility was normalized for icon-style sidebar variants.
 - The same shared logo is rendered across all admin pages using the file public/images/logos/sru_logo_new.png.
 
@@ -214,14 +252,17 @@ Current events include:
 ### Backend
 - routes/web.php
 - app/Http/Controllers/AdminController.php
+- app/Http/Controllers/EventController.php
 - app/Http/Controllers/NewsController.php
 - app/Http/Controllers/ProfileController.php
 - app/Http/Controllers/Auth/RegisteredUserController.php
 - app/Models/User.php
 - app/Models/Profile.php
 - app/Models/News.php
+- app/Models/Event.php
 - app/Models/ActivityLog.php
 - database/migrations/2026_04_25_090000_create_activity_logs_table.php
+- database/migrations/2026_04_25_111645_create_events_table.php
 - database/migrations/2026_04_25_120000_add_avatar_to_users_table.php
 
 ### Admin Views
@@ -232,6 +273,9 @@ Current events include:
 - resources/views/admin/news/news-create.blade.php (view: admin.news.news-create)
 - resources/views/admin/news/news-manage.blade.php (view: admin.news.news-manage)
 - resources/views/admin/news/news-edit.blade.php (view: admin.news.news-edit)
+- resources/views/admin/events/event-create.blade.php (view: admin.events.event-create)
+- resources/views/admin/events/event-manage.blade.php (view: admin.events.event-manage)
+- resources/views/admin/events/event-edit.blade.php (view: admin.events.event-edit)
 
 ## 6. Data and Validation Notes
 - father_name is now part of the profile data model.
@@ -274,15 +318,55 @@ Recommended checks:
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
 11. Open Activity Logs with various filters (date range, actor, action type); verify filters work correctly and Export CSV respects the filtered results.
 12. On Activity Logs page, verify the layout fits within a standard browser window without horizontal scroll; verify sidebar logo area aligns with top header.
-13. Open News -> New and verify the right-side "Recent Updated News" panel is visible and ordered by latest update time.
-14. Open News -> Update/Delete and verify the page lists news items with separate Update and Delete action buttons.
-15. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
-16. On News create/manage/edit pages, verify the News submenu appears on hover and is not permanently expanded.
-17. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
-17. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
+13. Open Events -> New and verify the right-side "Recent Events" panel is visible and ordered by latest update time.
+14. On Events -> Create form, verify all event fields are present:
+    - title (required, text input)
+    - excerpt (optional, textarea)
+    - description (optional, large textarea)
+    - event_type (required, dropdown with 4 options: Campus Events, Hackathons, Reunions, Webinars)
+    - location (optional, text input)
+    - start_at (required, datetime-local input)
+    - end_at (optional, datetime-local input)
+    - registration_link (optional, URL input)
+    - image (optional, file input for jpg/jpeg/png/webp)
+15. Create a new event with all fields and verify it appears in Recent Events panel and can be viewed on the public events page.
+16. Open Events -> Update/Delete and verify the page lists events as cards with:
+    - title (truncated if long)
+    - excerpt (max 2 lines)
+    - event type badge
+    - start date/time
+    - end date/time or "No end date" if empty
+    - location (if present)
+    - Update and Delete buttons
+17. Edit an event and verify:
+    - all fields are pre-populated with current values
+    - image replacement works and old image is deleted
+    - Activity Logs records an event_updated entry
+    - Changes appear immediately on public events page
+18. Delete an event and verify:
+    - the record is removed from manage page
+    - any stored image file is deleted
+    - Activity Logs records an event_deleted entry
+    - event no longer appears on public events page
+19. On Events create/manage/edit pages, verify:
+    - the Events submenu appears on hover with View / New / Update/Delete options
+    - the submenu is not permanently expanded
+    - the correct sub-link is highlighted based on current page
+    - the bottom sidebar admin card is visible
+20. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
+21. On News create/manage/edit pages, verify the News submenu appears on hover and is not permanently expanded.
+22. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
+23. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
 
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.
 - The older URL /admin/allalumini is preserved as a redirect.
 - If renamed to allalumni in future, route names and view references must be updated together.
-- Admin Blade files are now grouped by module under resources/views/admin (dashboard, alumni, logs, news) instead of a single flat folder.
+- Admin Blade files are now grouped by module under resources/views/admin (dashboard, alumni, logs, news, events) instead of a single flat folder.
+- News and Events management modules use identical CRUD patterns:
+  - Create page with recent items right panel
+  - Manage page with card grid and per-item action buttons
+  - Edit page with form and back link
+  - Image upload support with automatic cleanup on replacement/deletion
+  - Activity log recording for all create/update/delete operations
+- Both modules are fully integrated into the admin sidebar with hover submenus on all admin pages.

@@ -83,6 +83,26 @@
             </div>
         </div>
 
+        <div class="group">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span class="flex-1">Events</span>
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="transition-transform duration-150 group-hover:rotate-180">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </a>
+            <div class="ml-9 hidden flex-col gap-1 pb-2 group-hover:flex">
+                <a href="{{ route('events.index') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
+                <a href="{{ route('admin.events.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
+                <a href="{{ route('admin.events.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
+            </div>
+        </div>
+
         <a href="{{ route('admin.activity-logs') }}" class="nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M3 3v18h18"/>
@@ -152,7 +172,7 @@
 
 {{-- Activity logs page with server-side filters --}}
 <main class="ml-64 flex-1 flex flex-col min-h-screen max-w-[calc(100vw-16rem)] overflow-x-hidden">
-    <header class="sticky top-0 z-40 flex items-center justify-between px-6 py-5 xl:px-9 bg-white border-b border-slate-300">
+    <header class="sticky top-0 z-40 flex items-center justify-between px-6 pt-[1.9rem] pb-[1.7em] xl:px-9 bg-white border-b border-slate-300">
         <div>
             <h2 class="font-display text-2xl font-semibold" style="letter-spacing:.01em;">Activity Logs</h2>
             <p class="text-xs mt-0.5 text-slate-500">{{ now()->format('l, d F Y') }} &mdash; Permanent audit records</p>

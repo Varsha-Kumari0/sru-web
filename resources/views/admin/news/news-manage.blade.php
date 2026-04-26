@@ -45,6 +45,20 @@
             </div>
         </div>
 
+        <div class="group">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+                <span class="flex-1">Events</span>
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="transition-transform duration-150 group-hover:rotate-180">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </a>
+            <div class="ml-9 hidden flex-col gap-1 pb-2 group-hover:flex">
+                <a href="{{ route('events.index') }}" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault(); event.stopPropagation(); window.open(this.href, '_blank');" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
+                <a href="{{ route('admin.events.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
+                <a href="{{ route('admin.events.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
+            </div>
+        </div>
+
         <a href="{{ route('admin.activity-logs') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">Activity Logs</a>
     </nav>
 
@@ -98,11 +112,11 @@
             @forelse($newsItems as $news)
                 <div class="rounded-xl border border-slate-300 bg-white p-5 shadow-sm">
                     <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h3 class="text-lg font-semibold text-slate-900">{{ $news->title }}</h3>
-                            <p class="mt-2 text-sm text-slate-600">{{ $news->excerpt }}</p>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="truncate text-lg font-semibold text-slate-900">{{ $news->title }}</h3>
+                            <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $news->excerpt }}</p>
                         </div>
-                        <span class="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">{{ $news->updated_at?->diffForHumans() ?? '-' }}</span>
+                        <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">{{ $news->updated_at?->diffForHumans() ?? '-' }}</span>
                     </div>
 
                     <div class="mt-4 grid grid-cols-1 gap-2 text-xs text-slate-500 sm:grid-cols-2">
