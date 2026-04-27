@@ -213,9 +213,9 @@
                                     Message
                                 </a>
                                 <a href="{{ route('profile.edit') }}"
-                                   class="flex items-center justify-center rounded-xl border-2 py-2.5 text-sm font-semibold transition-all hover:bg-[#1a2d4a] hover:text-white"
-                                   style="border-color: #1a2d4a; color: #1a2d4a;">
-                                    More
+                                   class="flex items-center justify-center text-[#1a2d4a] rounded-xl border-2 py-2.5 text-sm font-semibold transition-all hover:text-white hover:bg-[#1a2d4a]"
+                                   style="border-color: #1a2d4a;">
+                                    Edit Profile
                                 </a>
                             </div>
                         </div>
@@ -486,10 +486,65 @@
                             </div>
                         </div>
                     </div>
+
+                    @if(($profile->current_status ?? null) === 'studying')
+                        <div class="rounded-xl border p-4 mt-3" style="background:#eefaf8; border-color:#b2ece5;">
+                            <p class="text-xs font-bold uppercase tracking-widest" style="color:#94a3b8;">
+                                Currently Studying
+                            </p>
+                            <p class="font-semibold text-sm mt-2" style="color:#1a2d4a;">
+                                {{ $profile->study_institution ?? '—' }}
+                            </p>
+                            <p class="text-xs mt-0.5" style="color:#2a9d8f;">
+                                {{ $profile->study_degree ?? '—' }}
+                                @if(!empty($profile->study_branch))
+                                    • {{ $profile->study_branch }}
+                                @endif
+                            </p>
+                            <p class="text-xs mt-1" style="color:#94a3b8;">
+                                {{ $profile->study_from ?? '—' }} – {{ $profile->study_to ?? 'Present' }}
+                            </p>
+                        </div>
+                    @endif
+
+                    @php
+                        $previousEducation = is_array($profile->previous_education ?? null)
+                            ? $profile->previous_education
+                            : [];
+                    @endphp
+
+                    <div class="mt-4">
+                        <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #94a3b8;">
+                            Previous Education
+                        </p>
+
+                        @if(count($previousEducation) > 0)
+                            <div class="space-y-2">
+                                @foreach($previousEducation as $edu)
+                                    <div class="rounded-xl border p-3" style="background:#f8f9fa; border-color:#e5e7eb;">
+                                        <p class="font-semibold text-sm" style="color:#1a2d4a;">
+                                            {{ $edu['institution'] ?? '—' }}
+                                        </p>
+                                        <p class="text-xs mt-0.5" style="color:#2a9d8f;">
+                                            {{ $edu['degree'] ?? '—' }}
+                                            @if(!empty($edu['branch']))
+                                                • {{ $edu['branch'] }}
+                                            @endif
+                                        </p>
+                                        <p class="text-xs mt-1" style="color:#94a3b8;">
+                                            {{ $edu['from'] ?? '—' }} – {{ $edu['to'] ?? '—' }}
+                                        </p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-xs italic" style="color:#94a3b8;">No previous education added yet.</p>
+                        @endif
+                    </div>
                 </div>
 
                 {{-- CTA CARD --}}
-                <div class="rounded-2xl p-5 text-center sru-hero-gradient fade-up fu5">
+                <!-- <div class="rounded-2xl p-5 text-center sru-hero-gradient fade-up fu5">
                     <p class="text-white text-sm font-semibold mb-1">Keep your profile updated</p>
                     <p class="text-sm mb-3" style="color: rgba(255,255,255,0.65);">
                         Help employers and alumni find you.
@@ -499,7 +554,7 @@
                        style="color: #1a2d4a;">
                         Edit Profile
                     </a>
-                </div>
+                </div> -->
 
             </div>
         </div>

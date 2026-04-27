@@ -172,16 +172,30 @@
                 </ul>
 
                 <div>
-                    <a href="/register"
-                        class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold"
-                        style="background: var(--navy)">
-                        Register
-                    </a>
-                    <a href="/login"
-                        class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold"
-                        style="background: var(--navy)">
-                        Login
-                    </a>
+                    @auth
+                        @php
+                            $displayName = auth()->user()->name ?? 'Profile';
+                            $avatarInitial = strtoupper(substr($displayName, 0, 1));
+                        @endphp
+                        <a href="{{ route('profile') }}"
+                            class="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-semibold"
+                            style="border-color: #dbe5f5; color: var(--navy); background: #ffffff;">
+                            <span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-white text-[11px] font-bold"
+                                style="background: var(--navy)">{{ $avatarInitial }}</span>
+                            <span class="max-w-[130px] truncate">{{ $displayName }}</span>
+                        </a>
+                    @else
+                        <a href="/register"
+                            class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold"
+                            style="background: var(--navy)">
+                            Register
+                        </a>
+                        <a href="/login"
+                            class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold"
+                            style="background: var(--navy)">
+                            Login
+                        </a>
+                    @endauth
                 </div>
             </div>
             <div id="mobile-menu" class="md:hidden hidden border-t border-slate-200 bg-white">
@@ -193,10 +207,24 @@
                     <a href="#directory" class="block">Directory</a>
                     <a href="#giving" class="block">Giving</a>
                     <a href="#contact" class="block">Contact</a>
-                    <a href="/register" class="inline-block mt-2 px-4 py-2 rounded-full text-white"
-                        style="background: var(--navy)">Register</a>
-                    <a href="/login" class="inline-block mt-2 px-4 py-2 rounded-full text-white"
-                        style="background: var(--navy)">Login</a>
+                    @auth
+                        @php
+                            $mobileDisplayName = auth()->user()->name ?? 'Profile';
+                            $mobileAvatarInitial = strtoupper(substr($mobileDisplayName, 0, 1));
+                        @endphp
+                        <a href="{{ route('profile') }}"
+                            class="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-full border"
+                            style="border-color: #dbe5f5; color: var(--navy); background: #ffffff;">
+                            <span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-white text-[11px] font-bold"
+                                style="background: var(--navy)">{{ $mobileAvatarInitial }}</span>
+                            <span class="max-w-[160px] truncate">{{ $mobileDisplayName }}</span>
+                        </a>
+                    @else
+                        <a href="/register" class="inline-block mt-2 px-4 py-2 rounded-full text-white"
+                            style="background: var(--navy)">Register</a>
+                        <a href="/login" class="inline-block mt-2 px-4 py-2 rounded-full text-white"
+                            style="background: var(--navy)">Login</a>
+                    @endauth
                 </div>
             </div>
         </nav>

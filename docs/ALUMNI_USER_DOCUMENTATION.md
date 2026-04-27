@@ -35,6 +35,9 @@ It covers:
 - Displays:
   - basic profile details
   - social links
+  - education details
+  - current status (studying or working)
+  - current educational details when status is studying
   - professional experience list
 - If no profile exists, the page prompts user to complete profile.
 
@@ -46,7 +49,9 @@ It covers:
 - Auth required
 - Form has 2 steps:
   - Step 1: basic details + education + social links
-  - Step 2: professional experience entries
+  - Step 2: current status choice and conditional details
+    - Option A: currently studying -> educational details form
+    - Option B: currently working -> professional experience entries
 
 ### 3.2 Mandatory Fields at Creation
 Required fields:
@@ -58,6 +63,7 @@ Required fields:
 - Degree
 - Specialization / Branch
 - Passing Year
+- Current Status (studying or working)
 - LinkedIn URL
 - Instagram URL
 - Facebook URL
@@ -65,7 +71,16 @@ Required fields:
 
 Optional fields:
 - Profile photo
-- Professional experience rows
+
+Conditionally required when Current Status = studying:
+- Current Institution / College
+- Current Degree
+- Current Specialization / Branch
+- Study From date
+- Study To value (date or Present)
+
+Conditionally required when Current Status = working:
+- At least one professional experience row
 
 ### 3.3 Creation Validation Rules
 
@@ -73,6 +88,20 @@ Mobile:
 - digits only
 - length 10 to 15
 - regex: ^[0-9]{10,15}$
+
+Current status:
+- required
+- allowed values: studying, working
+
+Current study fields:
+- required only when current_status is studying
+- study_from must be a valid date
+- study_to accepts date text values so Present can be stored
+
+Professional experience fields:
+- at least one organization is required when current_status is working
+- from uses date values
+- to accepts date text values so Present can be stored
 
 Social links:
 - LinkedIn: required, valid URL, must be linkedin.com
@@ -115,6 +144,10 @@ Current mapped degrees:
 - Profile photo
 - Professional experience rows
 
+Note:
+- The create flow includes status-based study/work inputs.
+- The edit page currently focuses on social/location/photo and experience updates.
+
 Read-only on edit page:
 - Father's Name
 
@@ -136,7 +169,17 @@ Social URL rules are the same as creation:
 
 Profile photo rules are unchanged (optional image, jpg/jpeg/png, max 2 MB).
 
-## 5. Professional Experience Data
+## 5. Status and Timeline Data
+Current status is stored in profiles table:
+- current_status (studying or working)
+
+When status is studying, current educational details are stored in profiles table:
+- study_institution
+- study_degree
+- study_branch
+- study_from
+- study_to
+
 Experience is stored in professionals table with these values:
 - organization
 - role
@@ -144,6 +187,10 @@ Experience is stored in professionals table with these values:
 - location
 - from
 - to
+
+Present support:
+- For currently studying users, study_to can be stored as Present.
+- For currently working users, experience to can be stored as Present.
 
 Update behavior:
 - existing experience rows for user are deleted and recreated from submitted form data
@@ -221,4 +268,5 @@ Models and migrations:
 - database/migrations/2026_04_23_042025_create_profiles_table.php
 - database/migrations/2026_04_23_053819_create_professionals_table.php
 - database/migrations/2026_04_25_120000_add_father_name_to_profiles_table.php
+- database/migrations/2026_04_27_120000_add_current_study_fields_to_profiles_table.php
 - database/migrations/2026_04_25_090000_create_activity_logs_table.php

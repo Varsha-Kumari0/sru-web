@@ -28,8 +28,14 @@ class Profile extends Model
         'study_branch',
         'study_from',
         'study_to',
+        'previous_education',
         'description',
     ];
+
+    protected $casts = [
+        'previous_education' => 'array',
+    ];
+
     /**
      * Get the user that owns the profile.
      */

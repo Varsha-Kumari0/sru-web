@@ -332,6 +332,13 @@ class ProfileController extends Controller
             'facebook',
             'twitter',
             'profile_photo',
+            'current_status',
+            'study_institution',
+            'study_degree',
+            'study_branch',
+            'study_from',
+            'study_to',
+            'previous_education',
         ]);
 
         $existingExperiences = Professional::where('user_id', Auth::id())
@@ -344,6 +351,40 @@ class ProfileController extends Controller
         $request->validate([
             'city' => 'required',
             'country' => 'required',
+            'current_status' => 'required|in:studying,working',
+
+            // current study details (required only when user is studying)
+            'study_institution' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_degree' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_branch' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_from' => 'required_if:current_status,studying|nullable|date',
+            'study_to' => 'required_if:current_status,studying|nullable|string|max:255',
+
+            // professional details (required only when user is working)
+            'organization' => 'nullable|array',
+            'organization.*' => 'nullable|string|max:255',
+            'industry' => 'nullable|array',
+            'industry.*' => 'nullable|string|max:255',
+            'role' => 'nullable|array',
+            'role.*' => 'nullable|string|max:255',
+            'location_exp' => 'nullable|array',
+            'location_exp.*' => 'nullable|string|max:255',
+            'from' => 'nullable|array',
+            'from.*' => 'nullable|date',
+            'to' => 'nullable|array',
+            'to.*' => 'nullable|string|max:255',
+
+            // previous education rows
+            'previous_institution' => 'nullable|array',
+            'previous_institution.*' => 'nullable|string|max:255',
+            'previous_degree' => 'nullable|array',
+            'previous_degree.*' => 'nullable|string|max:255',
+            'previous_branch' => 'nullable|array',
+            'previous_branch.*' => 'nullable|string|max:255',
+            'previous_from' => 'nullable|array',
+            'previous_from.*' => 'nullable|date',
+            'previous_to' => 'nullable|array',
+            'previous_to.*' => 'nullable|date',
 
             'linkedin' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(linkedin\.com)\/.+/i'],
             'instagram' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(instagram\.com)\/.+/i'],
@@ -366,6 +407,39 @@ class ProfileController extends Controller
             'twitter.regex' => 'X link must be from x.com or twitter.com.',
         ]);
 
+        if ($request->current_status === 'working') {
+            $organizations = collect($request->organization ?? [])->filter(fn ($value) => !empty(trim((string) $value)));
+
+            if ($organizations->isEmpty()) {
+                return back()
+                    ->withErrors(['organization' => 'Please add at least one work experience if you are currently working.'])
+                    ->withInput();
+            }
+        }
+
+        $previousEducation = [];
+        $previousInstitutions = $request->input('previous_institution', []);
+
+        foreach ($previousInstitutions as $i => $institution) {
+            $institution = trim((string) ($institution ?? ''));
+            $degree = trim((string) ($request->previous_degree[$i] ?? ''));
+            $branch = trim((string) ($request->previous_branch[$i] ?? ''));
+            $from = $request->previous_from[$i] ?? null;
+            $to = $request->previous_to[$i] ?? null;
+
+            if ($institution === '' && $degree === '' && $branch === '' && empty($from) && empty($to)) {
+                continue;
+            }
+
+            $previousEducation[] = [
+                'institution' => $institution,
+                'degree' => $degree,
+                'branch' => $branch,
+                'from' => $from,
+                'to' => $to,
+            ];
+        }
+
         // ✅ IMAGE UPDATE
         if ($request->hasFile('profile_photo')) {
             $profile->profile_photo = $request->file('profile_photo')->store('profiles', 'public');
@@ -380,12 +454,19 @@ class ProfileController extends Controller
             'instagram' => $request->instagram,
             'facebook' => $request->facebook,
             'twitter' => $request->twitter,
+            'current_status' => $request->current_status,
+            'study_institution' => $request->current_status === 'studying' ? $request->study_institution : null,
+            'study_degree' => $request->current_status === 'studying' ? $request->study_degree : null,
+            'study_branch' => $request->current_status === 'studying' ? $request->study_branch : null,
+            'study_from' => $request->current_status === 'studying' ? $request->study_from : null,
+            'study_to' => $request->current_status === 'studying' ? $request->study_to : null,
+            'previous_education' => $previousEducation,
         ]);
 
         // ✅ RESET EXPERIENCES (simple approach)
         Professional::where('user_id', Auth::id())->delete();
 
-        if ($request->has('organization')) {
+        if ($request->current_status === 'working' && $request->has('organization')) {
             foreach ($request->organization as $i => $org) {
 
                 if (!$org) continue;
@@ -411,6 +492,13 @@ class ProfileController extends Controller
             'facebook',
             'twitter',
             'profile_photo',
+            'current_status',
+            'study_institution',
+            'study_degree',
+            'study_branch',
+            'study_from',
+            'study_to',
+            'previous_education',
         ]) : [];
 
         $updatedExperiences = Professional::where('user_id', Auth::id())
@@ -423,7 +511,10 @@ class ProfileController extends Controller
 
         foreach ($originalProfileData as $field => $oldValue) {
             $newValue = $updatedProfileData[$field] ?? null;
-            if ((string) ($oldValue ?? '') !== (string) ($newValue ?? '')) {
+            $normalizedOld = is_array($oldValue) ? json_encode($oldValue) : (string) ($oldValue ?? '');
+            $normalizedNew = is_array($newValue) ? json_encode($newValue) : (string) ($newValue ?? '');
+
+            if ($normalizedOld !== $normalizedNew) {
                 $changes[] = [
                     'field' => $field,
                     'old' => $oldValue,

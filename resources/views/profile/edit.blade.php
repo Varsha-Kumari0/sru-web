@@ -87,8 +87,35 @@
                     </div>
                 @endif
 
-                <!-- ✏️ EDITABLE -->
                 @if($profile)
+                    @php
+                        $selectedStatus = old('current_status', $profile->current_status ?? 'working');
+                        $studyToValue = old('study_to', $profile->study_to ?? '');
+                        $hasOldPreviousRows = old('previous_institution') !== null;
+
+                        if ($hasOldPreviousRows) {
+                            $previousEducationRows = [];
+                            $oldInstitutions = old('previous_institution', []);
+                            $oldDegrees = old('previous_degree', []);
+                            $oldBranches = old('previous_branch', []);
+                            $oldFrom = old('previous_from', []);
+                            $oldTo = old('previous_to', []);
+
+                            foreach ($oldInstitutions as $idx => $institution) {
+                                $previousEducationRows[] = [
+                                    'institution' => $institution,
+                                    'degree' => $oldDegrees[$idx] ?? '',
+                                    'branch' => $oldBranches[$idx] ?? '',
+                                    'from' => $oldFrom[$idx] ?? '',
+                                    'to' => $oldTo[$idx] ?? '',
+                                ];
+                            }
+                        } else {
+                            $previousEducationRows = $profile->previous_education ?? [];
+                        }
+                    @endphp
+
+                    <!-- ✏️ EDITABLE -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <div>
@@ -134,68 +161,189 @@
                         </div>
 
                     </div>
-                @endif
 
-                <!-- 💼 EXPERIENCE -->
-                <div class="mt-10">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">
-                        Professional Experience
-                    </h3>
+                    <!-- ✅ CURRENT STATUS -->
+                    <div class="mt-10">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Current Status</h3>
 
-                    <div id="experienceContainer">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <label class="border border-gray-300 rounded-md p-4 cursor-pointer">
+                                <input type="radio" name="current_status" value="studying" class="mr-2"
+                                    @checked($selectedStatus === 'studying')>
+                                <span class="font-semibold text-gray-800">I am currently studying</span>
+                            </label>
 
-                        @foreach($experiences as $exp)
-                            <div class="bg-gray-50 border rounded p-5 mb-4">
+                            <label class="border border-gray-300 rounded-md p-4 cursor-pointer">
+                                <input type="radio" name="current_status" value="working" class="mr-2"
+                                    @checked($selectedStatus === 'working')>
+                                <span class="font-semibold text-gray-800">I am currently working</span>
+                            </label>
+                        </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- 🎓 CURRENT EDUCATION -->
+                        <div id="studySection" style="display:none;" class="mb-6 border border-gray-300 p-4 rounded-md bg-gray-50">
+                            <h4 class="text-base font-semibold text-gray-700 mb-4">Current Educational Details</h4>
 
-                                    <div>
-                                        <label class="label">Organization</label>
-                                        <input name="organization[]" value="{{ $exp->organization }}" class="input">
-                                    </div>
-
-                                    <div>
-                                        <label class="label">Role</label>
-                                        <input name="role[]" value="{{ $exp->role }}" class="input">
-                                    </div>
-
-                                    <div>
-                                        <label class="label">Industry</label>
-                                        <input name="industry[]" value="{{ $exp->industry }}" class="input">
-                                    </div>
-
-                                    <div>
-                                        <label class="label">Location</label>
-                                        <input name="location_exp[]" value="{{ $exp->location }}" class="input">
-                                    </div>
-
-                                    <div>
-                                        <label class="label">From</label>
-                                        <input type="date" name="from[]" value="{{ $exp->from }}" class="input">
-                                    </div>
-
-                                    <div>
-                                        <label class="label">To</label>
-                                        <input type="date" name="to[]" value="{{ $exp->to }}" class="input">
-                                    </div>
-
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="label">Institution / College <span class="text-red-500">*</span></label>
+                                    <input type="text" name="study_institution" value="{{ old('study_institution', $profile->study_institution ?? '') }}" class="input" placeholder="Institution name">
                                 </div>
 
-                                <button type="button" onclick="this.parentElement.remove()"
-                                    class="text-red-500 text-sm mt-3 hover:underline">
-                                    Remove
-                                </button>
+                                <div>
+                                    <label class="label">Current Degree <span class="text-red-500">*</span></label>
+                                    <input type="text" name="study_degree" value="{{ old('study_degree', $profile->study_degree ?? '') }}" class="input" placeholder="Degree you are pursuing">
+                                </div>
 
+                                <div>
+                                    <label class="label">Specialization / Branch <span class="text-red-500">*</span></label>
+                                    <input type="text" name="study_branch" value="{{ old('study_branch', $profile->study_branch ?? '') }}" class="input" placeholder="Current specialization">
+                                </div>
+
+                                <div>
+                                    <label class="label">From Date <span class="text-red-500">*</span></label>
+                                    <input type="date" name="study_from" value="{{ old('study_from', $profile->study_from ?? '') }}" class="input">
+                                </div>
+
+                                <div>
+                                    <label class="label">To Date</label>
+                                    <input type="date" id="studyToDate" name="study_to"
+                                        value="{{ $studyToValue !== 'Present' ? $studyToValue : '' }}" class="input">
+                                    <input type="hidden" id="studyToHidden" value="Present">
+                                </div>
+
+                                <div class="flex items-end">
+                                    <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+                                        <input type="checkbox" id="studyPresentCheckbox"
+                                            @checked($studyToValue === 'Present')>
+                                        I am presently studying
+                                    </label>
+                                </div>
                             </div>
-                        @endforeach
-
+                        </div>
                     </div>
 
-                    <button type="button" onclick="addExperience()"
-                        class="text-blue-600 text-sm font-medium mt-2 hover:underline">
-                        + Add Experience
-                    </button>
-                </div>
+                    <!-- 💼 EXPERIENCE -->
+                    <div id="workSection" class="mt-10" style="display:none;">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Professional Experience</h3>
+
+                        @error('organization')
+                            <p class="mb-3 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+
+                        <div id="experienceContainer">
+
+                            @foreach($experiences as $exp)
+                                @php
+                                    $isPresent = ($exp->to === 'Present');
+                                @endphp
+                                <div class="experience-item bg-gray-50 border rounded p-5 mb-4">
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                        <div>
+                                            <label class="label">Organization</label>
+                                            <input name="organization[]" value="{{ $exp->organization }}" class="input">
+                                        </div>
+
+                                        <div>
+                                            <label class="label">Role</label>
+                                            <input name="role[]" value="{{ $exp->role }}" class="input">
+                                        </div>
+
+                                        <div>
+                                            <label class="label">Industry</label>
+                                            <input name="industry[]" value="{{ $exp->industry }}" class="input">
+                                        </div>
+
+                                        <div>
+                                            <label class="label">Location</label>
+                                            <input name="location_exp[]" value="{{ $exp->location }}" class="input">
+                                        </div>
+
+                                        <div>
+                                            <label class="label">From</label>
+                                            <input type="date" name="from[]" value="{{ $exp->from }}" class="input">
+                                        </div>
+
+                                        <div>
+                                            <label class="label">To</label>
+                                            <input type="date" class="input exp-to-date"
+                                                @if(!$isPresent) name="to[]" value="{{ $exp->to }}" @endif>
+                                            <input type="hidden" class="exp-to-hidden" value="Present"
+                                                @if($isPresent) name="to[]" @endif>
+                                        </div>
+
+                                        <div class="md:col-span-2">
+                                            <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+                                                <input type="checkbox" class="exp-present-toggle" onchange="toggleExperiencePresent(this)"
+                                                    @checked($isPresent)>
+                                                I am currently working here
+                                            </label>
+                                        </div>
+
+                                    </div>
+
+                                    <button type="button" onclick="this.parentElement.remove()"
+                                        class="text-red-500 text-sm mt-3 hover:underline">
+                                        Remove
+                                    </button>
+
+                                </div>
+                            @endforeach
+
+                        </div>
+
+                        <button type="button" onclick="addExperience()"
+                            class="text-blue-600 text-sm font-medium mt-2 hover:underline">
+                            + Add Experience
+                        </button>
+                    </div>
+
+                    <!-- 🎓 PREVIOUS EDUCATION -->
+                    <div class="mt-10">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Previous Educational Details</h3>
+
+                        <div id="previousEducationContainer">
+                            @foreach($previousEducationRows as $row)
+                                <div class="previous-education-item bg-gray-50 border rounded p-5 mb-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="label">Institution / College</label>
+                                            <input name="previous_institution[]" value="{{ $row['institution'] ?? '' }}" class="input" placeholder="Institution name">
+                                        </div>
+                                        <div>
+                                            <label class="label">Degree</label>
+                                            <input name="previous_degree[]" value="{{ $row['degree'] ?? '' }}" class="input" placeholder="Degree name">
+                                        </div>
+                                        <div>
+                                            <label class="label">Specialization / Branch</label>
+                                            <input name="previous_branch[]" value="{{ $row['branch'] ?? '' }}" class="input" placeholder="Branch or specialization">
+                                        </div>
+                                        <div>
+                                            <label class="label">From</label>
+                                            <input type="date" name="previous_from[]" value="{{ $row['from'] ?? '' }}" class="input">
+                                        </div>
+                                        <div>
+                                            <label class="label">To</label>
+                                            <input type="date" name="previous_to[]" value="{{ $row['to'] ?? '' }}" class="input">
+                                        </div>
+                                    </div>
+
+                                    <button type="button" onclick="this.parentElement.remove()"
+                                        class="text-red-500 text-sm mt-3 hover:underline">
+                                        Remove
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <button type="button" onclick="addPreviousEducation()"
+                            class="text-blue-600 text-sm font-medium mt-2 hover:underline">
+                            + Add Previous Education
+                        </button>
+                    </div>
+                @endif
 
                 <!-- SUBMIT -->
                 <div class="mt-8">
@@ -229,11 +377,95 @@
 
     <!-- 🎯 JAVASCRIPT -->
     <script>
+        const statusRadios = document.querySelectorAll('input[name="current_status"]');
+        const studySection = document.getElementById('studySection');
+        const workSection = document.getElementById('workSection');
+        const studyToDateInput = document.getElementById('studyToDate');
+        const studyPresentCheckbox = document.getElementById('studyPresentCheckbox');
+        const studyToHiddenInput = document.getElementById('studyToHidden');
+
+        function setSectionEnabled(section, enabled) {
+            if (!section) {
+                return;
+            }
+
+            const fields = section.querySelectorAll('input, select, textarea, button');
+            fields.forEach(function (field) {
+                if (field.type === 'radio') {
+                    return;
+                }
+
+                if (field.id === 'studyPresentCheckbox') {
+                    field.disabled = !enabled;
+                    return;
+                }
+
+                field.disabled = !enabled;
+            });
+        }
+
+        function toggleStudyPresent() {
+            if (!studyPresentCheckbox || !studyToDateInput || !studyToHiddenInput) {
+                return;
+            }
+
+            if (studyPresentCheckbox.checked) {
+                studyToDateInput.value = '';
+                studyToDateInput.removeAttribute('name');
+                studyToDateInput.disabled = true;
+                studyToHiddenInput.setAttribute('name', 'study_to');
+            } else {
+                studyToDateInput.setAttribute('name', 'study_to');
+                studyToDateInput.disabled = false;
+                studyToHiddenInput.removeAttribute('name');
+            }
+        }
+
+        function handleStatusChange() {
+            const selectedStatus = document.querySelector('input[name="current_status"]:checked')?.value;
+
+            if (studySection) {
+                studySection.style.display = selectedStatus === 'studying' ? 'block' : 'none';
+            }
+
+            if (workSection) {
+                workSection.style.display = selectedStatus === 'working' ? 'block' : 'none';
+            }
+
+            setSectionEnabled(studySection, selectedStatus === 'studying');
+            setSectionEnabled(workSection, selectedStatus === 'working');
+
+            if (selectedStatus === 'studying') {
+                toggleStudyPresent();
+            }
+
+            if (selectedStatus === 'working' && !document.querySelector('#experienceContainer .experience-item')) {
+                addExperience();
+            }
+        }
+
+        function toggleExperiencePresent(checkbox) {
+            const card = checkbox.closest('.experience-item');
+            const toDateInput = card.querySelector('.exp-to-date');
+            const toHiddenInput = card.querySelector('.exp-to-hidden');
+
+            if (checkbox.checked) {
+                toDateInput.value = '';
+                toDateInput.removeAttribute('name');
+                toDateInput.disabled = true;
+                toHiddenInput.setAttribute('name', 'to[]');
+            } else {
+                toDateInput.setAttribute('name', 'to[]');
+                toDateInput.disabled = false;
+                toHiddenInput.removeAttribute('name');
+            }
+        }
+
         function addExperience() {
             const container = document.getElementById('experienceContainer');
 
             const newExperience = document.createElement('div');
-            newExperience.className = 'bg-gray-50 border rounded p-5 mb-4';
+            newExperience.className = 'experience-item bg-gray-50 border rounded p-5 mb-4';
             newExperience.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -258,16 +490,78 @@
                     </div>
                     <div>
                         <label class="label">To</label>
-                        <input type="date" name="to[]" class="input">
+                        <input type="date" name="to[]" class="input exp-to-date">
+                        <input type="hidden" class="exp-to-hidden" value="Present">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+                            <input type="checkbox" class="exp-present-toggle" onchange="toggleExperiencePresent(this)">
+                            I am currently working here
+                        </label>
                     </div>
                 </div>
-                <button type="button" onclick="this.parentElement.remove()" 
+                <button type="button" onclick="this.parentElement.remove()"
                     class="text-red-500 text-sm mt-3 hover:underline">
                     Remove
                 </button>
             `;
 
             container.appendChild(newExperience);
+        }
+
+        function addPreviousEducation() {
+            const container = document.getElementById('previousEducationContainer');
+
+            const newEducation = document.createElement('div');
+            newEducation.className = 'previous-education-item bg-gray-50 border rounded p-5 mb-4';
+            newEducation.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="label">Institution / College</label>
+                        <input name="previous_institution[]" class="input" placeholder="Institution name">
+                    </div>
+                    <div>
+                        <label class="label">Degree</label>
+                        <input name="previous_degree[]" class="input" placeholder="Degree name">
+                    </div>
+                    <div>
+                        <label class="label">Specialization / Branch</label>
+                        <input name="previous_branch[]" class="input" placeholder="Branch or specialization">
+                    </div>
+                    <div>
+                        <label class="label">From</label>
+                        <input type="date" name="previous_from[]" class="input">
+                    </div>
+                    <div>
+                        <label class="label">To</label>
+                        <input type="date" name="previous_to[]" class="input">
+                    </div>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()"
+                    class="text-red-500 text-sm mt-3 hover:underline">
+                    Remove
+                </button>
+            `;
+
+            container.appendChild(newEducation);
+        }
+
+        statusRadios.forEach(function (radio) {
+            radio.addEventListener('change', handleStatusChange);
+        });
+
+        if (studyPresentCheckbox) {
+            studyPresentCheckbox.addEventListener('change', toggleStudyPresent);
+        }
+
+        document.querySelectorAll('.exp-present-toggle').forEach(function (checkbox) {
+            toggleExperiencePresent(checkbox);
+        });
+
+        handleStatusChange();
+
+        if (!document.querySelector('#previousEducationContainer .previous-education-item')) {
+            addPreviousEducation();
         }
     </script>
 
