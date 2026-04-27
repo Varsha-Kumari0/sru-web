@@ -216,7 +216,21 @@ class AdminController extends Controller
             'BCA' => ['BCA General', 'BCA (Cloud Computing)'],
         ];
 
-        return view('admin.alumni.edit-alumni', compact('user', 'selectDegree'));
+        // Compute previous education text for the view
+        $previousEducationTextDefault = collect($user->profile?->previous_education ?? [])
+            ->map(function ($row) {
+                return implode(' | ', [
+                    $row['institution'] ?? '',
+                    $row['degree'] ?? '',
+                    $row['branch'] ?? '',
+                    $row['from'] ?? '',
+                    $row['to'] ?? '',
+                ]);
+            })
+            ->filter()
+            ->implode("\n") ?? '';
+
+        return view('admin.alumni.edit-alumni', compact('user', 'selectDegree', 'previousEducationTextDefault'));
     }
 
     /**
@@ -240,7 +254,32 @@ class AdminController extends Controller
         ];
 
         $originalProfileData = $user->profile
-            ? $user->profile->only(['full_name', 'mobile', 'city', 'country', 'degree', 'branch', 'passing_year', 'current_status', 'company', 'profile_photo'])
+            ? $user->profile->only([
+                'full_name',
+                'father_name',
+                'mobile',
+                'city',
+                'country',
+                'linkedin',
+                'facebook',
+                'instagram',
+                'twitter',
+                'degree',
+                'branch',
+                'passing_year',
+                'current_status',
+                'company',
+                'employment_from',
+                'employment_to',
+                'study_institution',
+                'study_degree',
+                'study_branch',
+                'study_from',
+                'study_to',
+                'description',
+                'previous_education',
+                'profile_photo',
+            ])
             : [];
 
         $originalProfessionalData = $user->professional
@@ -252,14 +291,28 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'full_name' => 'sometimes|nullable|string|max:255',
+            'father_name' => 'sometimes|nullable|string|max:255',
             'mobile' => 'sometimes|nullable|string|max:20',
             'city' => 'sometimes|nullable|string|max:255',
             'country' => 'sometimes|nullable|string|max:255',
+            'linkedin' => 'sometimes|nullable|string|max:255',
+            'facebook' => 'sometimes|nullable|string|max:255',
+            'instagram' => 'sometimes|nullable|string|max:255',
+            'twitter' => 'sometimes|nullable|string|max:255',
             'degree' => 'sometimes|nullable|string|max:255',
             'branch' => 'sometimes|nullable|string|max:255',
             'passing_year' => 'sometimes|nullable|regex:/^\d{4}$/',
             'current_status' => 'sometimes|nullable|string|max:255',
             'company' => 'sometimes|nullable|string|max:255',
+            'employment_from' => 'sometimes|nullable|date',
+            'employment_to' => 'sometimes|nullable|string|max:255',
+            'study_institution' => 'sometimes|nullable|string|max:255',
+            'study_degree' => 'sometimes|nullable|string|max:255',
+            'study_branch' => 'sometimes|nullable|string|max:255',
+            'study_from' => 'sometimes|nullable|date',
+            'study_to' => 'sometimes|nullable|string|max:255',
+            'description' => 'sometimes|nullable|string|max:2000',
+            'previous_education_text' => 'sometimes|nullable|string|max:5000',
             'organization' => 'sometimes|nullable|string|max:255',
             'industry' => 'sometimes|nullable|string|max:255',
             'role' => 'sometimes|nullable|string|max:255',
@@ -267,6 +320,7 @@ class AdminController extends Controller
             'to' => 'sometimes|nullable|string|max:255',
             'location' => 'sometimes|nullable|string|max:255',
             'is_current' => 'sometimes|boolean',
+            'is_current_employment' => 'sometimes|boolean',
             'profile_photo' => 'sometimes|nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -284,16 +338,71 @@ class AdminController extends Controller
 
         // Update or create profile
         $profileData = [];
-        foreach (['full_name', 'mobile', 'city', 'country', 'degree', 'branch', 'passing_year', 'current_status', 'company'] as $field) {
+        foreach ([
+            'full_name',
+            'father_name',
+            'mobile',
+            'city',
+            'country',
+            'linkedin',
+            'facebook',
+            'instagram',
+            'twitter',
+            'degree',
+            'branch',
+            'passing_year',
+            'current_status',
+            'company',
+            'employment_from',
+            'employment_to',
+            'study_institution',
+            'study_degree',
+            'study_branch',
+            'study_from',
+            'study_to',
+            'description',
+        ] as $field) {
             if (isset($validated[$field])) {
                 $profileData[$field] = $validated[$field];
             }
+        }
+
+        // Parse previous education from textarea rows: institution | degree | branch | from | to
+        if (array_key_exists('previous_education_text', $validated)) {
+            $lines = preg_split('/\r\n|\r|\n/', (string) $validated['previous_education_text']);
+            $parsedPreviousEducation = [];
+
+            foreach ($lines as $line) {
+                $line = trim((string) $line);
+                if ($line === '') {
+                    continue;
+                }
+
+                $parts = array_map('trim', explode('|', $line));
+
+                $parsedPreviousEducation[] = [
+                    'institution' => $parts[0] ?? '',
+                    'degree' => $parts[1] ?? '',
+                    'branch' => $parts[2] ?? '',
+                    'from' => $parts[3] ?? '',
+                    'to' => $parts[4] ?? '',
+                ];
+            }
+
+            $profileData['previous_education'] = !empty($parsedPreviousEducation) ? $parsedPreviousEducation : null;
         }
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
             $imagePath = $request->file('profile_photo')->store('profiles', 'public');
             $profileData['profile_photo'] = $imagePath;
+        }
+        
+        // Handle 'employment_to' field - if is_current_employment is checked, set to 'Present', otherwise use provided value
+        if (isset($validated['is_current_employment']) && $validated['is_current_employment']) {
+            $profileData['employment_to'] = 'Present';
+        } elseif (isset($validated['employment_to'])) {
+            $profileData['employment_to'] = $validated['employment_to'];
         }
         
         $profileChanged = !empty($profileData);
@@ -343,7 +452,32 @@ class AdminController extends Controller
             ];
 
             $updatedProfileData = $user->profile
-                ? $user->profile->only(['full_name', 'mobile', 'city', 'country', 'degree', 'branch', 'passing_year', 'current_status', 'company', 'profile_photo'])
+                ? $user->profile->only([
+                    'full_name',
+                    'father_name',
+                    'mobile',
+                    'city',
+                    'country',
+                    'linkedin',
+                    'facebook',
+                    'instagram',
+                    'twitter',
+                    'degree',
+                    'branch',
+                    'passing_year',
+                    'current_status',
+                    'company',
+                    'employment_from',
+                    'employment_to',
+                    'study_institution',
+                    'study_degree',
+                    'study_branch',
+                    'study_from',
+                    'study_to',
+                    'description',
+                    'previous_education',
+                    'profile_photo',
+                ])
                 : [];
 
             $updatedProfessionalData = $user->professional
@@ -357,6 +491,10 @@ class AdminController extends Controller
 
                 if (is_bool($value)) {
                     return $value ? 'Yes' : 'No';
+                }
+
+                if (is_array($value)) {
+                    return json_encode($value, JSON_UNESCAPED_UNICODE) ?: '[]';
                 }
 
                 return (string) $value;
@@ -395,14 +533,28 @@ class AdminController extends Controller
             $collectChanges(
                 [
                     'full_name' => 'Full Name',
+                    'father_name' => 'Father Name',
                     'mobile' => 'Mobile',
                     'city' => 'City',
                     'country' => 'Country',
+                    'linkedin' => 'LinkedIn',
+                    'facebook' => 'Facebook',
+                    'instagram' => 'Instagram',
+                    'twitter' => 'Twitter / X',
                     'degree' => 'Degree',
                     'branch' => 'Branch / Specialization',
                     'passing_year' => 'Passing Year',
                     'current_status' => 'Current Status',
                     'company' => 'Company',
+                    'employment_from' => 'Employment From',
+                    'employment_to' => 'Employment To',
+                    'study_institution' => 'Study Institution',
+                    'study_degree' => 'Study Degree',
+                    'study_branch' => 'Study Branch',
+                    'study_from' => 'Study From',
+                    'study_to' => 'Study To',
+                    'description' => 'Bio / Description',
+                    'previous_education' => 'Previous Education',
                     'profile_photo' => 'Profile Photo',
                 ],
                 $originalProfileData,

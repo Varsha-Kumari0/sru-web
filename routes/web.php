@@ -22,6 +22,9 @@ use App\Http\Controllers\NewsController;
 
 // 🏠 Home
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('admin.dashboard');
+    }
     return view('welcome', [
         'news' => [],
         'events' => [],
@@ -176,13 +179,207 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Admin list page for all registered alumni records.
     Route::get('/admin/all-alumini', function () {
-        $users = User::where('role', 'user')
-            ->with(['profile', 'professional'])
+        $selectedFilterBy = request('filter_by', 'all');
+        $allowedFilters = ['all', 'branch', 'graduation_year', 'organization', 'role', 'location'];
+        $selectedFilterBy = in_array($selectedFilterBy, $allowedFilters, true) ? $selectedFilterBy : 'all';
+        $selectedFilterValue = trim((string) request('filter_value', ''));
+
+        // Backward compatibility: map previous organization-only query param.
+        if ($selectedFilterBy === 'organization' && $selectedFilterValue === '') {
+            $selectedFilterValue = trim((string) request('organization', ''));
+        }
+
+        $usersQuery = User::query()
+            ->where('role', 'user')
+            ->with(['profile', 'professional']);
+
+        if ($selectedFilterBy !== 'all' && $selectedFilterValue !== '') {
+            if ($selectedFilterBy === 'branch') {
+                $usersQuery->whereHas('profile', function ($query) use ($selectedFilterValue) {
+                    $query->where('branch', $selectedFilterValue);
+                });
+            }
+
+            if ($selectedFilterBy === 'graduation_year') {
+                $usersQuery->whereHas('profile', function ($query) use ($selectedFilterValue) {
+                    $query->where('passing_year', $selectedFilterValue);
+                });
+            }
+
+            if ($selectedFilterBy === 'organization') {
+                $usersQuery->whereHas('professional', function ($query) use ($selectedFilterValue) {
+                    $query->where('organization', $selectedFilterValue);
+                });
+            }
+
+            if ($selectedFilterBy === 'role') {
+                $usersQuery->whereHas('professional', function ($query) use ($selectedFilterValue) {
+                    $query->where('role', $selectedFilterValue);
+                });
+            }
+
+            if ($selectedFilterBy === 'location') {
+                $usersQuery->whereHas('professional', function ($query) use ($selectedFilterValue) {
+                    $query->where('location', $selectedFilterValue);
+                });
+            }
+        }
+
+        $users = $usersQuery
             ->orderByDesc('id')
             ->get();
 
-        return view('admin.alumni.allalumini', compact('users'));
+        $filterValues = collect();
+
+        if ($selectedFilterBy === 'branch') {
+            $filterValues = Profile::query()
+                ->whereNotNull('branch')
+                ->where('branch', '!=', '')
+                ->distinct()
+                ->orderBy('branch')
+                ->pluck('branch');
+        }
+
+        if ($selectedFilterBy === 'graduation_year') {
+            $filterValues = Profile::query()
+                ->whereNotNull('passing_year')
+                ->where('passing_year', '!=', '')
+                ->distinct()
+                ->orderByDesc('passing_year')
+                ->pluck('passing_year')
+                ->map(fn ($year) => (string) $year);
+        }
+
+        if ($selectedFilterBy === 'organization') {
+            $filterValues = Professional::query()
+                ->whereNotNull('organization')
+                ->where('organization', '!=', '')
+                ->distinct()
+                ->orderBy('organization')
+                ->pluck('organization');
+        }
+
+        if ($selectedFilterBy === 'role') {
+            $filterValues = Professional::query()
+                ->whereNotNull('role')
+                ->where('role', '!=', '')
+                ->distinct()
+                ->orderBy('role')
+                ->pluck('role');
+        }
+
+        if ($selectedFilterBy === 'location') {
+            $filterValues = Professional::query()
+                ->whereNotNull('location')
+                ->where('location', '!=', '')
+                ->distinct()
+                ->orderBy('location')
+                ->pluck('location');
+        }
+
+        return view('admin.alumni.allalumini', compact('users', 'filterValues', 'selectedFilterBy', 'selectedFilterValue'));
     })->name('admin.allalumini');
+
+    // CSV export for alumni list with same filters as the list page.
+    Route::get('/admin/all-alumini/export', function () {
+        $selectedFilterBy = request('filter_by', 'all');
+        $allowedFilters = ['all', 'branch', 'graduation_year', 'organization', 'role', 'location'];
+        $selectedFilterBy = in_array($selectedFilterBy, $allowedFilters, true) ? $selectedFilterBy : 'all';
+        $selectedFilterValue = trim((string) request('filter_value', ''));
+
+        if ($selectedFilterBy === 'organization' && $selectedFilterValue === '') {
+            $selectedFilterValue = trim((string) request('organization', ''));
+        }
+
+        $usersQuery = User::query()
+            ->where('role', 'user')
+            ->with(['profile', 'professional'])
+            ->orderByDesc('id');
+
+        if ($selectedFilterBy !== 'all' && $selectedFilterValue !== '') {
+            if ($selectedFilterBy === 'branch') {
+                $usersQuery->whereHas('profile', function ($query) use ($selectedFilterValue) {
+                    $query->where('branch', $selectedFilterValue);
+                });
+            }
+
+            if ($selectedFilterBy === 'graduation_year') {
+                $usersQuery->whereHas('profile', function ($query) use ($selectedFilterValue) {
+                    $query->where('passing_year', $selectedFilterValue);
+                });
+            }
+
+            if ($selectedFilterBy === 'organization') {
+                $usersQuery->whereHas('professional', function ($query) use ($selectedFilterValue) {
+                    $query->where('organization', $selectedFilterValue);
+                });
+            }
+
+            if ($selectedFilterBy === 'role') {
+                $usersQuery->whereHas('professional', function ($query) use ($selectedFilterValue) {
+                    $query->where('role', $selectedFilterValue);
+                });
+            }
+
+            if ($selectedFilterBy === 'location') {
+                $usersQuery->whereHas('professional', function ($query) use ($selectedFilterValue) {
+                    $query->where('location', $selectedFilterValue);
+                });
+            }
+        }
+
+        $users = $usersQuery->get();
+        $filename = 'sru_alumni_export_' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($users) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, [
+                'ID', 'Account Name', 'Email',
+                'Full Name', 'Father Name', 'Phone', 'City', 'Country',
+                'Degree', 'Branch / Specialization', 'Graduation Year',
+                'Current Status', 'Company',
+                'LinkedIn', 'Facebook', 'Instagram', 'Twitter',
+                'Organization', 'Industry', 'Role',
+                'Work From', 'Work To', 'Work Location',
+                'Registered',
+            ]);
+
+            foreach ($users as $u) {
+                fputcsv($handle, [
+                    $u->id,
+                    $u->name,
+                    $u->email,
+                    $u->profile?->full_name ?? $u->name,
+                    $u->profile?->father_name ?? '-',
+                    $u->profile?->mobile ?? '-',
+                    $u->profile?->city ?? '-',
+                    $u->profile?->country ?? '-',
+                    $u->profile?->degree ?? '-',
+                    $u->profile?->branch ?? '-',
+                    $u->profile?->passing_year ?? '-',
+                    $u->profile?->current_status ?? '-',
+                    $u->profile?->company ?? '-',
+                    $u->profile?->linkedin ?? '-',
+                    $u->profile?->facebook ?? '-',
+                    $u->profile?->instagram ?? '-',
+                    $u->profile?->twitter ?? '-',
+                    $u->professional?->organization ?? '-',
+                    $u->professional?->industry ?? '-',
+                    $u->professional?->role ?? '-',
+                    $u->professional?->from ?? '-',
+                    $u->professional?->to ?? '-',
+                    $u->professional?->location ?? '-',
+                    $u->created_at?->format('d M Y') ?? '-',
+                ]);
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    })->name('admin.allalumini.export');
+
     // Persistent audit logs (view + filtered CSV export).
     Route::get('/admin/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');
     Route::get('/admin/activity-logs/export', [AdminController::class, 'exportActivityLogsCsv'])->name('admin.activity-logs.export');

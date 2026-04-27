@@ -22,6 +22,15 @@ The profile record currently includes additional personal/social fields such as:
 - facebook
 - instagram
 - twitter
+- employment_from
+- employment_to
+- study_institution
+- study_degree
+- study_branch
+- study_from
+- study_to
+- previous_education
+- description
 
 ## 2. Current Admin Features
 
@@ -45,20 +54,39 @@ The profile record currently includes additional personal/social fields such as:
 - Route: GET /admin/all-alumini (name: admin.allalumini)
 - Legacy URL redirect: /admin/allalumini -> /admin/all-alumini
 - Table includes alumni data from users + profiles + professionals.
+- Built-in filters support:
+  - all records
+  - branch
+  - graduation year
+  - organization
+  - role
+  - location
+- Filter value selection uses a searchable dropdown populated from distinct stored values.
+- Export CSV respects the current filter selection.
 - Row actions:
   - View details modal
   - Edit alumni record
   - Delete alumni record
 - Profile photo support:
   - avatar shown in table using object-fit:contain with border, matching the dashboard style
-  - photo shown in details modal
-- View details modal includes social profile values from the profile table:
+  - photo shown in a larger details modal using the same contain/center fit behavior
+- View details modal includes expanded alumni profile values from the profile table:
   - father_name
   - linkedin
   - facebook
   - instagram
   - twitter
-- Export CSV button in page header exports all alumni fields (same 24-column format as dashboard export).
+  - employment_from
+  - employment_to
+  - study_institution
+  - study_degree
+  - study_branch
+  - study_from
+  - study_to
+  - previous_education
+  - description
+- The details modal was widened for easier scanning of long alumni records.
+- Export CSV button in page header exports the alumni list fields shown in the current export route.
 
 ### 2.3 Edit Alumni Page
 - Route: GET /admin/alumni/{id}/edit (name: admin.alumni.edit)
@@ -68,8 +96,24 @@ The profile record currently includes additional personal/social fields such as:
   - profile fields
   - professional fields
   - profile photo upload
+- Profile-side current employment fields now include:
+  - current_status
+  - company
+  - employment_from
+  - employment_to
+- Study-related profile fields now include:
+  - study_institution
+  - study_degree
+  - study_branch
+  - study_from
+  - study_to
+- Long-form profile fields now include:
+  - description
+  - previous_education_text (admin textarea input parsed into profile.previous_education JSON)
 - Work experience end-date behavior:
   - "Currently Working" checkbox sets professional.to to "Present".
+- Current employment end-date behavior:
+  - "Currently Working Here" checkbox sets profile.employment_to to "Present".
 - Name field behavior:
   - if the stored account name is the generic placeholder "Alumni User", the form shows profile.full_name as the default editable value instead.
 - Validation behavior:
@@ -79,6 +123,11 @@ The profile record currently includes additional personal/social fields such as:
   - Degree is now a dropdown select.
   - Branch/Specialization is a dependent dropdown populated from the selected Degree.
   - When Degree is not selected, Branch/Specialization stays blank and disabled.
+- Previous education input behavior:
+  - admins enter one education row per line using the format: Institution | Degree | Branch | From | To
+  - the controller converts each non-empty line into a structured JSON row for storage
+- Change auditing:
+  - alumni edit activity logs now capture profile-side employment date changes in addition to existing profile/professional updates
 
 ### 2.4 Alumni Self-Service Profile Flow
 - Profile model fillable fields now include father_name.
@@ -284,16 +333,19 @@ Current events include:
 - father_name is now part of the profile data model.
 - users.avatar stores the admin sidebar profile photo path.
 - passing_year is treated as a 4-digit year string.
+- profile employment_from is stored as a date.
+- profile employment_to is stored as a string so it can hold either a date-like value or "Present".
 - professional from/to fields are stored as strings to support "Present".
 - profile photo uploads are validated as jpg/jpeg/png with size limit.
 - admin sidebar avatar uploads are validated as jpg/jpeg/png with 2MB limit.
 - activity log filter inputs are validated before query execution.
 - Admin detail modals now expose stored profile social links when present.
+- Admin detail modals now expose expanded profile/study/employment fields and preserve multiline previous education rendering.
 - Admin edit form treats optional text inputs as nullable and preserves clearer required-field validation for name and email.
 - Profile create/update validation includes stricter social-link URL checks for LinkedIn, Instagram, Facebook, and X/Twitter.
 
 ## 6.1 CSV Export Columns
-Both the Dashboard and All SRU Alumni page export the same 24 columns:
+The All SRU Alumni export currently includes these 24 columns:
 - ID, Account Name, Email
 - Full Name, Father Name, Phone, City, Country
 - Degree, Branch / Specialization, Graduation Year, Current Status, Company
@@ -303,7 +355,8 @@ Both the Dashboard and All SRU Alumni page export the same 24 columns:
 
 Export notes:
 - Values containing commas or quotes are properly escaped (RFC 4180).
-- File includes a UTF-8 BOM so Excel opens it without garbled characters.
+- Empty values are exported as a plain hyphen (-).
+- The current export implementation does not prepend a UTF-8 BOM.
 
 ## 7. Verification Checklist
 Recommended checks:
@@ -314,17 +367,21 @@ Recommended checks:
 4. In dashboard, click News "View All" and Events "View All" and verify both open public listing pages in a new browser tab.
 5. Open dashboard and verify the shared logo renders in the sidebar.
 6. Open All SRU Alumni and verify photo avatars match dashboard style (contain + border), social links, and details modal.
-7. Edit an alumni record and verify updates, photo upload, required-field messages, and default name behavior.
-8. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
-9. After editing an alumni record, open Activity Logs and verify the table shows only the summary line by default; hover the row and verify it expands to show per-field change details.
-10. Trigger the same non-change action multiple times (for example opening the same admin page repeatedly), then open Activity Logs and verify those repeated events are grouped into one row; hover the grouped row and verify the expanded panel shows "First in group" timestamp and every occurrence timestamp in the timeline.
-11. Use the Export CSV button on both Dashboard and All SRU Alumni; verify the file has all 24 columns and opens correctly in Excel.
-12. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
+7. On All SRU Alumni, switch filter types and verify the searchable value dropdown updates to the correct set of distinct values.
+8. Apply a filter on All SRU Alumni and verify both the on-screen results and CSV export respect the same filter.
+9. Open the larger View Details modal and verify the profile photo is contained without cropping and the expanded alumni fields render correctly.
+10. Edit an alumni record and verify updates, photo upload, required-field messages, default name behavior, and the previous education textarea parsing.
+11. In Edit Alumni, verify the Current Employment section supports employment start/end dates and that the "Currently Working Here" checkbox sets Employment To to "Present".
+12. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
+13. After editing an alumni record, open Activity Logs and verify the table shows only the summary line by default; hover the row and verify it expands to show per-field change details, including employment date changes when edited.
+14. Trigger the same non-change action multiple times (for example opening the same admin page repeatedly), then open Activity Logs and verify those repeated events are grouped into one row; hover the grouped row and verify the expanded panel shows "First in group" timestamp and every occurrence timestamp in the timeline.
+15. Use the Export CSV button on All SRU Alumni; verify the file has the documented 24 columns and filtered exports only include matching rows.
+16. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
-13. Open Activity Logs with various filters (date range, actor, action type); verify filters work correctly and Export CSV respects the filtered results.
-14. On Activity Logs page, verify the layout fits within a standard browser window without horizontal scroll; verify sidebar logo area aligns with top header.
-15. Open Events -> New and verify the right-side "Recent Events" panel is visible and ordered by latest update time.
-16. On Events -> Create form, verify all event fields are present:
+17. Open Activity Logs with various filters (date range, actor, action type); verify filters work correctly and Export CSV respects the filtered results.
+18. On Activity Logs page, verify the layout fits within a standard browser window without horizontal scroll; verify sidebar logo area aligns with top header.
+19. Open Events -> New and verify the right-side "Recent Events" panel is visible and ordered by latest update time.
+20. On Events -> Create form, verify all event fields are present:
     - title (required, text input)
     - excerpt (optional, textarea)
     - description (optional, large textarea)
@@ -334,8 +391,8 @@ Recommended checks:
     - end_at (optional, datetime-local input)
     - registration_link (optional, URL input)
     - image (optional, file input for jpg/jpeg/png/webp)
-17. Create a new event with all fields and verify it appears in Recent Events panel and can be viewed on the public events page.
-18. Open Events -> Update/Delete and verify the page lists events as cards with:
+21. Create a new event with all fields and verify it appears in Recent Events panel and can be viewed on the public events page.
+22. Open Events -> Update/Delete and verify the page lists events as cards with:
     - title (truncated if long)
     - excerpt (max 2 lines)
     - event type badge
@@ -343,31 +400,34 @@ Recommended checks:
     - end date/time or "No end date" if empty
     - location (if present)
     - Update and Delete buttons
-19. Edit an event and verify:
+23. Edit an event and verify:
     - all fields are pre-populated with current values
     - image replacement works and old image is deleted
     - Activity Logs records an event_updated entry
     - Changes appear immediately on public events page
-20. Delete an event and verify:
+24. Delete an event and verify:
     - the record is removed from manage page
     - any stored image file is deleted
     - Activity Logs records an event_deleted entry
     - event no longer appears on public events page
-21. On Events create/manage/edit pages, verify:
+25. On Events create/manage/edit pages, verify:
   - the Events submenu appears on hover as an outside-sidebar flyout with View / New / Update/Delete options
     - the submenu is not permanently expanded
     - the correct sub-link is highlighted based on current page
     - the bottom sidebar admin card is visible
-22. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
-23. On News create/manage/edit pages, verify the News submenu appears on hover as an outside-sidebar flyout and is not permanently expanded.
-24. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
-25. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
+26. On News -> Update/Delete and News edit pages, verify the bottom sidebar admin card is visible and matches the rest of the admin pages.
+27. On News create/manage/edit pages, verify the News submenu appears on hover as an outside-sidebar flyout and is not permanently expanded.
+28. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
+29. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
 
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.
 - The older URL /admin/allalumini is preserved as a redirect.
 - If renamed to allalumni in future, route names and view references must be updated together.
 - Admin Blade files are now grouped by module under resources/views/admin (dashboard, alumni, logs, news, events) instead of a single flat folder.
+- Alumni admin editing now stores two parallel employment concepts:
+  - profile-level current employment summary (company + employment_from + employment_to)
+  - professional history/work details (organization + industry + role + from + to + location)
 - News and Events management modules use identical CRUD patterns:
   - Create page with recent items right panel
   - Manage page with card grid and per-item action buttons
