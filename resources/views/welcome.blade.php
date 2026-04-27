@@ -174,7 +174,12 @@
                 <div>
                     @auth
                         @php
-                            $displayName = auth()->user()->name ?? 'Profile';
+                            $user = auth()->user();
+                            $profileName = trim((string) ($user->profile?->full_name ?? ''));
+                            $accountName = trim((string) ($user->name ?? ''));
+                            $displayName = ($profileName !== '' && ($accountName === '' || $accountName === 'Alumni User'))
+                                ? $profileName
+                                : ($accountName !== '' ? $accountName : 'Profile');
                             $avatarInitial = strtoupper(substr($displayName, 0, 1));
                         @endphp
                         <a href="{{ route('profile') }}"
@@ -209,7 +214,12 @@
                     <a href="#contact" class="block">Contact</a>
                     @auth
                         @php
-                            $mobileDisplayName = auth()->user()->name ?? 'Profile';
+                            $user = auth()->user();
+                            $mobileProfileName = trim((string) ($user->profile?->full_name ?? ''));
+                            $mobileAccountName = trim((string) ($user->name ?? ''));
+                            $mobileDisplayName = ($mobileProfileName !== '' && ($mobileAccountName === '' || $mobileAccountName === 'Alumni User'))
+                                ? $mobileProfileName
+                                : ($mobileAccountName !== '' ? $mobileAccountName : 'Profile');
                             $mobileAvatarInitial = strtoupper(substr($mobileDisplayName, 0, 1));
                         @endphp
                         <a href="{{ route('profile') }}"
