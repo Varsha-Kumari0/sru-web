@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\GalleryAdminController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\MessageController;
@@ -66,7 +68,7 @@ Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->
 Route::get('/events/{id}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
 Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials.index');
 Route::view('/about', 'pages.about')->name('about');
-Route::view('/gallery', 'pages.gallery')->name('gallery');
+Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 Route::view('/engage', 'pages.engage')->name('engage');
 Route::view('/contact', 'pages.contact')->name('contact');
 Route::view('/jobs', 'pages.jobs')->name('jobs.index');
@@ -559,6 +561,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/events/{id}/edit', [EventController::class, 'adminEdit'])->name('admin.events.edit');
     Route::put('/admin/events/{id}', [EventController::class, 'adminUpdate'])->name('admin.events.update');
     Route::delete('/admin/events/{id}', [EventController::class, 'adminDestroy'])->name('admin.events.delete');
+    Route::get('/admin/gallery/new', [GalleryAdminController::class, 'adminCreate'])->name('admin.gallery.create');
+    Route::get('/admin/gallery/manage', [GalleryAdminController::class, 'adminManage'])->name('admin.gallery.manage');
+    Route::get('/admin/gallery/{section}/{id}/edit', [GalleryAdminController::class, 'adminEdit'])->name('admin.gallery.edit');
+    Route::post('/admin/gallery/{section}', [GalleryAdminController::class, 'adminStore'])->name('admin.gallery.store');
+    Route::put('/admin/gallery/{section}/{id}', [GalleryAdminController::class, 'adminUpdate'])->name('admin.gallery.update');
+    Route::delete('/admin/gallery/{section}/{id}', [GalleryAdminController::class, 'adminDestroy'])->name('admin.gallery.delete');
     Route::delete('/admin/alumni/{id}', [AdminController::class, 'deleteAlumni'])->name('admin.alumni.delete');
     Route::get('/admin/alumni/{id}/edit', [AdminController::class, 'editAlumni'])->name('admin.alumni.edit');
     Route::put('/admin/alumni/{id}', [AdminController::class, 'updateAlumni'])->name('admin.alumni.update');

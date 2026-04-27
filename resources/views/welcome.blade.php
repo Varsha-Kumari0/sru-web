@@ -166,6 +166,7 @@
                     <li><a class="hover:text-teal-600" href="#about">About</a></li>
                     <li><a class="hover:text-teal-600" href="/events">Events</a></li>
                     <li><a class="hover:text-teal-600" href="/newsroom">Newsroom</a></li>
+                    <li><a class="hover:text-teal-600" href="{{ route('gallery') }}">Gallery</a></li>
                     <li><a class="hover:text-teal-600" href="#directory">Directory</a></li>
                     <li><a class="hover:text-teal-600" href="#giving">Giving</a></li>
                     <li><a class="hover:text-teal-600" href="#contact">Contact</a></li>
@@ -209,6 +210,7 @@
                     <a href="#about" class="block">About</a>
                     <a href="/events" class="block">Events</a>
                     <a href="/newsroom" class="block">Newsroom</a>
+                    <a href="{{ route('gallery') }}" class="block">Gallery</a>
                     <a href="#directory" class="block">Directory</a>
                     <a href="#giving" class="block">Giving</a>
                     <a href="#contact" class="block">Contact</a>
@@ -428,6 +430,12 @@
         <section class="max-w-7xl mx-auto px-6 sm:px-8 py-16">
             <div class="text-center mb-10 reveal">
                 <span class="section-heading">Gallery Carousel</span>
+                <div class="mt-4">
+                    <a href="{{ route('gallery') }}" class="inline-flex items-center rounded-full px-5 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-white"
+                        style="background: var(--navy)">
+                        Open Full Gallery
+                    </a>
+                </div>
             </div>
 
             <div class="carousel reveal" data-carousel data-autoplay="5000">
@@ -494,6 +502,7 @@
                         <li><a href="/" class="hover:text-white">Home</a></li>
                         <li><a href="/newsroom" class="hover:text-white">Newsroom</a></li>
                         <li><a href="/events" class="hover:text-white">Events</a></li>
+                        <li><a href="{{ route('gallery') }}" class="hover:text-white">Gallery</a></li>
                         <li><a href="#directory" class="hover:text-white">Directory</a></li>
                     </ul>
                 </div>
