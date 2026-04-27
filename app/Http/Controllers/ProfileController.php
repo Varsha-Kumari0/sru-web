@@ -157,6 +157,28 @@ class ProfileController extends Controller
             'degree' => 'required',
             'branch' => 'required',
             'passing_year' => 'required',
+            'current_status' => 'required|in:studying,working',
+
+            // current study details (required only when user is studying)
+            'study_institution' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_degree' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_branch' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_from' => 'required_if:current_status,studying|nullable|date',
+            'study_to' => 'required_if:current_status,studying|nullable|string|max:255',
+
+            // professional details (required only when user is working)
+            'organization' => 'required_if:current_status,working|array|min:1',
+            'organization.*' => 'nullable|string|max:255',
+            'industry' => 'nullable|array',
+            'industry.*' => 'nullable|string|max:255',
+            'role' => 'nullable|array',
+            'role.*' => 'nullable|string|max:255',
+            'location_exp' => 'nullable|array',
+            'location_exp.*' => 'nullable|string|max:255',
+            'from' => 'nullable|array',
+            'from.*' => 'nullable|date',
+            'to' => 'nullable|array',
+            'to.*' => 'nullable|string|max:255',
 
             // social links
             'linkedin' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(linkedin\.com)\/.+/i'],
@@ -210,10 +232,16 @@ class ProfileController extends Controller
             'degree' => $request->degree,
             'branch' => $request->branch,
             'passing_year' => $request->passing_year,
+            'current_status' => $request->current_status,
+            'study_institution' => $request->current_status === 'studying' ? $request->study_institution : null,
+            'study_degree' => $request->current_status === 'studying' ? $request->study_degree : null,
+            'study_branch' => $request->current_status === 'studying' ? $request->study_branch : null,
+            'study_from' => $request->current_status === 'studying' ? $request->study_from : null,
+            'study_to' => $request->current_status === 'studying' ? $request->study_to : null,
         ]);
 
         // ✅ SAVE EXPERIENCE
-        if ($request->has('organization')) {
+        if ($request->current_status === 'working' && $request->has('organization')) {
             foreach ($request->organization as $i => $org) {
 
                 if (!$org) continue;
@@ -264,7 +292,7 @@ class ProfileController extends Controller
     /**
      * Show bio edit form
      */
-    public function editBio(): View
+    public function editBio(): View|RedirectResponse
     {
         $profile = Profile::where('user_id', Auth::id())->first();
 
@@ -309,7 +337,7 @@ class ProfileController extends Controller
         $existingExperiences = Professional::where('user_id', Auth::id())
             ->orderBy('id')
             ->get(['organization', 'industry', 'role', 'from', 'to', 'location'])
-            ->map(fn ($exp) => $exp->toArray())
+            ->map(fn ($exp) => (array) $exp)
             ->toArray();
 
         // ✅ VALIDATION
@@ -388,7 +416,7 @@ class ProfileController extends Controller
         $updatedExperiences = Professional::where('user_id', Auth::id())
             ->orderBy('id')
             ->get(['organization', 'industry', 'role', 'from', 'to', 'location'])
-            ->map(fn ($exp) => $exp->toArray())
+            ->map(fn ($exp) => (array) $exp)
             ->toArray();
 
         $changes = [];

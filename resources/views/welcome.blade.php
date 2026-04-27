@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SR University Alumni Association</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --navy: #0a1f44;
@@ -113,6 +116,7 @@
         }
     </style>
 </head>
+
 <body class="antialiased">
     @php
         $newsItems = [
@@ -146,7 +150,9 @@
         <nav class="sticky top-0 z-50 bg-white/95 border-b border-slate-200/80 backdrop-blur">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <a href="/" class="flex items-center gap-3">
-                    <span class="w-10 h-10 rounded-full inline-flex items-center justify-center text-white font-bold text-sm" style="background: var(--navy)">SRU</span>
+                    <span
+                        class="w-10 h-10 rounded-full inline-flex items-center justify-center text-white font-bold text-sm"
+                        style="background: var(--navy)">SRU</span>
                     <span>
                         <span class="block text-sm font-bold" style="color: var(--navy)">SR University</span>
                         <span class="block text-[11px] text-slate-500">Alumni Association</span>
@@ -165,9 +171,18 @@
                     <li><a class="hover:text-teal-600" href="#contact">Contact</a></li>
                 </ul>
 
-                <a href="/login" class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold" style="background: var(--navy)">
-                    Login / Register
-                </a>
+                <div>
+                    <a href="/register"
+                        class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold"
+                        style="background: var(--navy)">
+                        Register
+                    </a>
+                    <a href="/login"
+                        class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold"
+                        style="background: var(--navy)">
+                        Login
+                    </a>
+                </div>
             </div>
             <div id="mobile-menu" class="md:hidden hidden border-t border-slate-200 bg-white">
                 <div class="px-4 py-3 space-y-2 text-sm font-semibold text-slate-700">
@@ -178,7 +193,10 @@
                     <a href="#directory" class="block">Directory</a>
                     <a href="#giving" class="block">Giving</a>
                     <a href="#contact" class="block">Contact</a>
-                    <a href="/login" class="inline-block mt-2 px-4 py-2 rounded-full text-white" style="background: var(--navy)">Login / Register</a>
+                    <a href="/register" class="inline-block mt-2 px-4 py-2 rounded-full text-white"
+                        style="background: var(--navy)">Register</a>
+                    <a href="/login" class="inline-block mt-2 px-4 py-2 rounded-full text-white"
+                        style="background: var(--navy)">Login</a>
                 </div>
             </div>
         </nav>
@@ -187,35 +205,53 @@
             <div class="carousel" data-carousel data-autoplay="5500" id="hero-carousel">
                 <div class="overflow-hidden">
                     <div class="carousel-track">
-                        <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center" style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&q=80') center/cover no-repeat;">
+                        <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center"
+                            style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&q=80') center/cover no-repeat;">
                             <div class="max-w-7xl mx-auto px-6 sm:px-10 w-full reveal">
-                                <h1 class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">Our Journey, <span style="color: var(--gold)">Your Legacy.</span> Reconnect and Grow.</h1>
-                                <p class="text-white/85 mt-5 max-w-xl">Meet alumni, discover opportunities, and give back to the next generation of SRU leaders.</p>
+                                <h1
+                                    class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">
+                                    Our Journey, <span style="color: var(--gold)">Your Legacy.</span> Reconnect and
+                                    Grow.</h1>
+                                <p class="text-white/85 mt-5 max-w-xl">Meet alumni, discover opportunities, and give
+                                    back to the next generation of SRU leaders.</p>
                                 <div class="mt-8 flex flex-wrap gap-3">
-                                    <a href="/login" class="px-7 py-3 rounded-full text-sm font-bold text-white" style="background: var(--gold)">Join Alumni Portal</a>
-                                    <a href="/newsroom" class="px-7 py-3 rounded-full text-sm font-bold bg-white/15 text-white border border-white/30">Explore Newsroom</a>
+                                    <a href="/login" class="px-7 py-3 rounded-full text-sm font-bold text-white"
+                                        style="background: var(--gold)">Join Alumni Portal</a>
+                                    <a href="/newsroom"
+                                        class="px-7 py-3 rounded-full text-sm font-bold bg-white/15 text-white border border-white/30">Explore
+                                        Newsroom</a>
                                 </div>
                             </div>
                         </article>
 
-                        <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center" style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600&q=80') center/cover no-repeat;">
+                        <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center"
+                            style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600&q=80') center/cover no-repeat;">
                             <div class="max-w-7xl mx-auto px-6 sm:px-10 w-full reveal">
-                                <h2 class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">Build Meaningful Connections Across Batches.</h2>
-                                <p class="text-white/85 mt-5 max-w-xl">From mentorship to partnerships, your alumni network can be your strongest advantage.</p>
+                                <h2
+                                    class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">
+                                    Build Meaningful Connections Across Batches.</h2>
+                                <p class="text-white/85 mt-5 max-w-xl">From mentorship to partnerships, your alumni
+                                    network can be your strongest advantage.</p>
                             </div>
                         </article>
 
-                        <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center" style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=80') center/cover no-repeat;">
+                        <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center"
+                            style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=80') center/cover no-repeat;">
                             <div class="max-w-7xl mx-auto px-6 sm:px-10 w-full reveal">
-                                <h2 class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">Careers, Events, and Stories in One Place.</h2>
-                                <p class="text-white/85 mt-5 max-w-xl">Stay updated through jobs, curated events, and campus stories from across the world.</p>
+                                <h2
+                                    class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">
+                                    Careers, Events, and Stories in One Place.</h2>
+                                <p class="text-white/85 mt-5 max-w-xl">Stay updated through jobs, curated events, and
+                                    campus stories from across the world.</p>
                             </div>
                         </article>
                     </div>
                 </div>
 
-                <button class="arrow-btn absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white bg-white/20" data-prev type="button">&#8592;</button>
-                <button class="arrow-btn absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white bg-white/20" data-next type="button">&#8594;</button>
+                <button class="arrow-btn absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white bg-white/20"
+                    data-prev type="button">&#8592;</button>
+                <button class="arrow-btn absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white bg-white/20"
+                    data-next type="button">&#8594;</button>
 
                 <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2" data-dots></div>
             </div>
@@ -229,12 +265,14 @@
         </section> -->
 
         <section id="about" class="bg-gradient-to-r from-slate-900 via-teal-700 to-lime-500">
-            <div class="max-w-7xl mx-auto px-6 sm:px-8 py-8 md:py-9 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 text-white">
+            <div
+                class="max-w-7xl mx-auto px-6 sm:px-8 py-8 md:py-9 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 text-white">
                 <div class="reveal">
                     <p class="text-sm text-white/80">Are you an SRU alumnus?</p>
                     <h2 class="font-display text-3xl leading-tight">Join Our Ever-Growing Alumni Network</h2>
                 </div>
-                <a href="/register" class="shrink-0 bg-white text-sm font-extrabold px-8 py-3 rounded-md tracking-wide" style="color: var(--navy)">Register Now</a>
+                <a href="/register" class="shrink-0 bg-white text-sm font-extrabold px-8 py-3 rounded-md tracking-wide"
+                    style="color: var(--navy)">Register Now</a>
             </div>
         </section>
 
@@ -245,7 +283,8 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 @foreach($newsItems as $item)
                     <article class="glass rounded-2xl overflow-hidden hover-lift reveal">
-                        <div class="h-40 bg-gradient-to-br from-sky-100 via-cyan-100 to-teal-100 flex items-center justify-center">
+                        <div
+                            class="h-40 bg-gradient-to-br from-sky-100 via-cyan-100 to-teal-100 flex items-center justify-center">
                             <span class="text-sm font-bold text-teal-700">SRU Update</span>
                         </div>
                         <div class="p-5">
@@ -271,12 +310,14 @@
                         </h3>
                         <div class="space-y-4">
                             @foreach($eventItems as $event)
-                                <div class="border-l-4 border-teal-500 bg-slate-50 rounded-r-xl px-5 py-4 flex items-center justify-between gap-4 hover-lift">
+                                <div
+                                    class="border-l-4 border-teal-500 bg-slate-50 rounded-r-xl px-5 py-4 flex items-center justify-between gap-4 hover-lift">
                                     <div>
                                         <p class="font-semibold text-sm">{{ $event[0] }}</p>
                                         <p class="text-xs text-slate-500 mt-1">{{ $event[2] }}</p>
                                     </div>
-                                    <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-teal-50 text-teal-700 whitespace-nowrap">{{ $event[1] }}</span>
+                                    <span
+                                        class="text-xs font-bold px-3 py-1.5 rounded-full bg-teal-50 text-teal-700 whitespace-nowrap">{{ $event[1] }}</span>
                                 </div>
                             @endforeach
                         </div>
@@ -289,12 +330,14 @@
                         </h3>
                         <div class="space-y-4">
                             @foreach($jobItems as $job)
-                                <div class="border-l-4 rounded-r-xl px-5 py-4 flex items-center justify-between gap-4 hover-lift" style="border-color: var(--gold); background: #fffaf0;">
+                                <div class="border-l-4 rounded-r-xl px-5 py-4 flex items-center justify-between gap-4 hover-lift"
+                                    style="border-color: var(--gold); background: #fffaf0;">
                                     <div>
                                         <p class="font-semibold text-sm">{{ $job[0] }}</p>
                                         <p class="text-xs text-slate-500 mt-1">{{ $job[2] }}</p>
                                     </div>
-                                    <span class="text-xs font-bold px-3 py-1.5 rounded-full" style="background: #fff2cf; color: #8d6a00;">{{ $job[1] }}</span>
+                                    <span class="text-xs font-bold px-3 py-1.5 rounded-full"
+                                        style="background: #fff2cf; color: #8d6a00;">{{ $job[1] }}</span>
                                 </div>
                             @endforeach
                         </div>
@@ -306,7 +349,9 @@
         <section class="py-16" style="background: linear-gradient(135deg, #0a1f44 0%, #0d9488 100%);">
             <div class="max-w-7xl mx-auto px-6 sm:px-8">
                 <div class="text-center mb-10 reveal">
-                    <span class="inline-block text-white text-xs tracking-[0.14em] uppercase font-extrabold border-b-2 pb-1" style="border-color: var(--gold)">Testimonial Carousel</span>
+                    <span
+                        class="inline-block text-white text-xs tracking-[0.14em] uppercase font-extrabold border-b-2 pb-1"
+                        style="border-color: var(--gold)">Testimonial Carousel</span>
                 </div>
 
                 <div class="carousel" data-carousel data-autoplay="6500">
@@ -314,9 +359,11 @@
                         <div class="carousel-track">
                             @foreach($testimonialItems as $testimonial)
                                 <article class="carousel-slide">
-                                    <div class="glass bg-white/10 text-white p-8 md:p-10 min-h-[280px] flex flex-col justify-center">
+                                    <div
+                                        class="glass bg-white/10 text-white p-8 md:p-10 min-h-[280px] flex flex-col justify-center">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-14 h-14 rounded-full bg-teal-300 text-teal-900 font-bold text-xl inline-flex items-center justify-center">
+                                            <div
+                                                class="w-14 h-14 rounded-full bg-teal-300 text-teal-900 font-bold text-xl inline-flex items-center justify-center">
                                                 {{ strtoupper(substr($testimonial[0], 0, 1)) }}
                                             </div>
                                             <div>
@@ -331,8 +378,10 @@
                         </div>
                     </div>
 
-                    <button class="arrow-btn absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 text-white" data-prev type="button">&#8592;</button>
-                    <button class="arrow-btn absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 text-white" data-next type="button">&#8594;</button>
+                    <button class="arrow-btn absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 text-white" data-prev
+                        type="button">&#8592;</button>
+                    <button class="arrow-btn absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 text-white" data-next
+                        type="button">&#8594;</button>
                     <div class="mt-5 flex justify-center gap-2" data-dots></div>
                 </div>
             </div>
@@ -349,15 +398,19 @@
                         @for($page = 0; $page < 3; $page++)
                             <div class="carousel-slide grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                                 @for($i = 0; $i < 10; $i++)
-                                    <div class="aspect-square rounded-lg bg-gradient-to-br from-teal-100 to-sky-100 flex items-center justify-center text-teal-700 text-xs font-semibold">Campus {{ ($page * 10) + $i + 1 }}</div>
+                                    <div
+                                        class="aspect-square rounded-lg bg-gradient-to-br from-teal-100 to-sky-100 flex items-center justify-center text-teal-700 text-xs font-semibold">
+                                        Campus {{ ($page * 10) + $i + 1 }}</div>
                                 @endfor
                             </div>
                         @endfor
                     </div>
                 </div>
 
-                <button class="arrow-btn absolute left-2 top-1/2 -translate-y-1/2 bg-slate-800 text-white" data-prev type="button">&#8592;</button>
-                <button class="arrow-btn absolute right-2 top-1/2 -translate-y-1/2 bg-slate-800 text-white" data-next type="button">&#8594;</button>
+                <button class="arrow-btn absolute left-2 top-1/2 -translate-y-1/2 bg-slate-800 text-white" data-prev
+                    type="button">&#8592;</button>
+                <button class="arrow-btn absolute right-2 top-1/2 -translate-y-1/2 bg-slate-800 text-white" data-next
+                    type="button">&#8594;</button>
                 <div class="mt-5 flex justify-center gap-2" data-dots></div>
             </div>
         </section>
@@ -373,7 +426,8 @@
                             $colors = ['bg-blue-100', 'bg-teal-100', 'bg-yellow-100', 'bg-rose-100', 'bg-emerald-100'];
                             $letters = range('A', 'T');
                         @endphp
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full {{ $colors[$i % count($colors)] }} border border-slate-200 flex items-center justify-center font-bold text-slate-700 mx-auto reveal">
+                        <div
+                            class="w-14 h-14 sm:w-16 sm:h-16 rounded-full {{ $colors[$i % count($colors)] }} border border-slate-200 flex items-center justify-center font-bold text-slate-700 mx-auto reveal">
                             {{ $letters[$i] }}
                         </div>
                     @endfor
@@ -385,13 +439,15 @@
             <div class="max-w-7xl mx-auto px-6 sm:px-8 grid grid-cols-1 md:grid-cols-3 gap-10">
                 <div>
                     <div class="flex items-center gap-3">
-                        <span class="w-10 h-10 rounded-full bg-white/10 inline-flex items-center justify-center text-white font-bold text-sm">SRU</span>
+                        <span
+                            class="w-10 h-10 rounded-full bg-white/10 inline-flex items-center justify-center text-white font-bold text-sm">SRU</span>
                         <div>
                             <p class="text-white font-display text-xl">SRU</p>
                             <p class="text-xs text-slate-400">Alumni Association</p>
                         </div>
                     </div>
-                    <p class="mt-4 text-sm text-slate-400">Building lifelong bonds through opportunities, mentorship, and alumni-led initiatives.</p>
+                    <p class="mt-4 text-sm text-slate-400">Building lifelong bonds through opportunities, mentorship,
+                        and alumni-led initiatives.</p>
                 </div>
 
                 <div>
@@ -406,7 +462,8 @@
 
                 <div>
                     <p class="text-white text-xs tracking-[0.14em] uppercase font-bold mb-3">Campus Map</p>
-                    <div class="h-32 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-xs text-slate-400">
+                    <div
+                        class="h-32 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-xs text-slate-400">
                         Map Embed Placeholder
                     </div>
                 </div>
@@ -560,4 +617,5 @@
         });
     </script>
 </body>
+
 </html>

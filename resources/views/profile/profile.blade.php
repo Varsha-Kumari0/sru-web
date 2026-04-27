@@ -253,8 +253,24 @@
                             <div>
                                 <p class="font-semibold text-gray-900">{{ $profile->degree ?? '-' }}</p>
                                 <p class="text-sm text-gray-600">{{ $profile->branch ?? '-' }}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ $profile->passing_year ?? '-' }}</p>
+                                <p class="text-xs text-gray-500 mt-1">Class of {{ $profile->passing_year ?? '-' }}</p>
                             </div>
+
+                            @if($profile->current_status)
+                                <div class="pt-3 border-t border-gray-100">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Current Status</p>
+                                    <p class="text-sm text-gray-800 mt-1">{{ ucfirst($profile->current_status) }}</p>
+                                </div>
+                            @endif
+
+                            @if($profile->current_status === 'studying')
+                                <div class="pt-3 border-t border-gray-100">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Current Educational Details</p>
+                                    <p class="text-sm font-semibold text-gray-900 mt-1">{{ $profile->study_institution ?? '-' }}</p>
+                                    <p class="text-sm text-gray-700">{{ $profile->study_degree ?? '-' }} @if($profile->study_branch)• {{ $profile->study_branch }}@endif</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ $profile->study_from ?? '-' }} → {{ $profile->study_to ?? '-' }}</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
 

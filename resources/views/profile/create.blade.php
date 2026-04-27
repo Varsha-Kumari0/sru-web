@@ -154,13 +154,70 @@
         </div>
 
         <div id="step2" style="display:none;">
-            <h3 class="text-2xl font-bold mb-6 text-gray-800">Professional Experience</h3>
+            <h3 class="text-2xl font-bold mb-6 text-gray-800">Current Status</h3>
 
-            <div id="experienceContainer"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <label class="border border-gray-300 rounded-md p-4 cursor-pointer hover:border-blue-500 transition">
+                    <input type="radio" name="current_status" value="studying" class="mr-2" @checked(old('current_status') === 'studying')>
+                    <span class="font-semibold text-gray-800">I am currently studying</span>
+                    <p class="text-sm text-gray-600 mt-1">Add your current educational details.</p>
+                </label>
 
-            <button type="button" onclick="addExperience()" class="text-blue-600 mb-6 font-semibold">
-                + Add Experience
-            </button>
+                <label class="border border-gray-300 rounded-md p-4 cursor-pointer hover:border-blue-500 transition">
+                    <input type="radio" name="current_status" value="working" class="mr-2" @checked(old('current_status') === 'working')>
+                    <span class="font-semibold text-gray-800">I am currently working</span>
+                    <p class="text-sm text-gray-600 mt-1">Add your work experience details.</p>
+                </label>
+            </div>
+
+            <div id="studySection" style="display:none;" class="mb-6 border border-gray-300 p-4 rounded-md bg-gray-50">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Educational Details</h4>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Institution / College <span class="text-red-500">*</span></label>
+                        <input type="text" name="study_institution" value="{{ old('study_institution') }}" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Where are you currently studying?">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Current Degree <span class="text-red-500">*</span></label>
+                        <input type="text" name="study_degree" value="{{ old('study_degree') }}" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Degree you are pursuing">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Specialization / Branch <span class="text-red-500">*</span></label>
+                        <input type="text" name="study_branch" value="{{ old('study_branch') }}" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Current specialization">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">From Date <span class="text-red-500">*</span></label>
+                        <input type="date" name="study_from" value="{{ old('study_from') }}" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">To Date</label>
+                        <input type="date" name="study_to" value="{{ old('study_to') !== 'Present' ? old('study_to') : '' }}" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" id="studyToDate">
+                        <input type="hidden" id="studyToHidden" value="Present">
+                    </div>
+
+                    <div class="flex items-end">
+                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+                            <input type="checkbox" id="studyPresentCheckbox" @checked(old('study_to') === 'Present')>
+                            I am presently studying
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="workSection" style="display:none;" class="mb-6">
+                <h4 class="text-xl font-bold mb-4 text-gray-800">Professional Experience</h4>
+
+                <div id="experienceContainer"></div>
+
+                <button type="button" onclick="addExperience()" class="text-blue-600 mb-6 font-semibold">
+                    + Add Experience
+                </button>
+            </div>
 
             <div class="flex gap-4">
                 <button type="button" onclick="prevStep()"
@@ -179,6 +236,7 @@
 <script>
     const specializationData = {
         'B.Tech': [
+            'CSE',
             'CSE (AI & ML)',
             'CSE (Cybersecurity)',
             'CSE (Data Science)',
@@ -217,6 +275,12 @@
     const branchSelect = document.getElementById('branch');
     const profileForm = document.getElementById('profileForm');
     const mobileInput = document.querySelector('input[name="mobile"]');
+    const studySection = document.getElementById('studySection');
+    const workSection = document.getElementById('workSection');
+    const statusRadios = document.querySelectorAll('input[name="current_status"]');
+    const studyToDateInput = document.getElementById('studyToDate');
+    const studyPresentCheckbox = document.getElementById('studyPresentCheckbox');
+    const studyToHiddenInput = document.getElementById('studyToHidden');
 
     function validateMobileField() {
         const value = mobileInput.value.trim();
@@ -263,8 +327,14 @@
     mobileInput.addEventListener('input', validateMobileField);
     mobileInput.addEventListener('blur', validateMobileField);
 
+    statusRadios.forEach(function (radio) {
+        radio.addEventListener('change', handleStatusChange);
+    });
+
+    studyPresentCheckbox.addEventListener('change', toggleStudyPresent);
+
     profileForm.addEventListener('submit', function (event) {
-        if (!validateStep1()) {
+        if (!validateStep1() || !validateStep2()) {
             event.preventDefault();
             return;
         }
@@ -298,6 +368,53 @@
         }
 
         return true;
+    }
+
+    function handleStatusChange() {
+        const selectedStatus = document.querySelector('input[name="current_status"]:checked')?.value;
+
+        studySection.style.display = selectedStatus === 'studying' ? 'block' : 'none';
+        workSection.style.display = selectedStatus === 'working' ? 'block' : 'none';
+
+        setSectionEnabled(studySection, selectedStatus === 'studying');
+        setSectionEnabled(workSection, selectedStatus === 'working');
+
+        if (selectedStatus === 'studying') {
+            toggleStudyPresent();
+        }
+
+        if (selectedStatus === 'working' && !document.querySelector('#experienceContainer .experience-item')) {
+            addExperience();
+        }
+    }
+
+    function setSectionEnabled(section, enabled) {
+        const fields = section.querySelectorAll('input, select, textarea, button');
+        fields.forEach(function (field) {
+            if (field.type === 'radio') {
+                return;
+            }
+
+            if (field.id === 'studyPresentCheckbox') {
+                field.disabled = !enabled;
+                return;
+            }
+
+            field.disabled = !enabled;
+        });
+    }
+
+    function toggleStudyPresent() {
+        if (studyPresentCheckbox.checked) {
+            studyToDateInput.value = '';
+            studyToDateInput.removeAttribute('name');
+            studyToDateInput.disabled = true;
+            studyToHiddenInput.setAttribute('name', 'study_to');
+        } else {
+            studyToDateInput.setAttribute('name', 'study_to');
+            studyToDateInput.disabled = false;
+            studyToHiddenInput.removeAttribute('name');
+        }
     }
 
     function validateSocialLinks() {
@@ -360,36 +477,108 @@
         window.scrollTo(0, 0);
     }
 
+    function validateStep2() {
+        const selectedStatus = document.querySelector('input[name="current_status"]:checked')?.value;
+
+        if (!selectedStatus) {
+            alert('Please choose whether you are currently studying or working.');
+            return false;
+        }
+
+        if (selectedStatus === 'studying') {
+            const institution = document.querySelector('input[name="study_institution"]').value.trim();
+            const degree = document.querySelector('input[name="study_degree"]').value.trim();
+            const branch = document.querySelector('input[name="study_branch"]').value.trim();
+            const from = document.querySelector('input[name="study_from"]').value;
+            const hasTo = studyPresentCheckbox.checked || !!document.querySelector('input[name="study_to"]')?.value;
+
+            if (!institution || !degree || !branch || !from || !hasTo) {
+                alert('Please complete all required educational details.');
+                return false;
+            }
+        }
+
+        if (selectedStatus === 'working') {
+            const experiences = document.querySelectorAll('#experienceContainer .experience-item');
+            if (!experiences.length) {
+                alert('Please add at least one work experience.');
+                return false;
+            }
+
+            for (const exp of experiences) {
+                const org = exp.querySelector('input[name="organization[]"]').value.trim();
+                const role = exp.querySelector('input[name="role[]"]').value.trim();
+                const industry = exp.querySelector('input[name="industry[]"]').value.trim();
+                const location = exp.querySelector('input[name="location_exp[]"]').value.trim();
+                const from = exp.querySelector('input[name="from[]"]').value;
+                const toInput = exp.querySelector('input[name="to[]"]');
+                const presentChecked = exp.querySelector('.exp-present-toggle').checked;
+                const toValue = toInput ? toInput.value : '';
+
+                if (!org || !role || !industry || !location || !from || (!presentChecked && !toValue)) {
+                    alert('Please complete all required experience details. Use Present if still working there.');
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    function toggleExperiencePresent(checkbox) {
+        const card = checkbox.closest('.experience-item');
+        const toDateInput = card.querySelector('.exp-to-date');
+        const toHiddenInput = card.querySelector('.exp-to-hidden');
+
+        if (checkbox.checked) {
+            toDateInput.value = '';
+            toDateInput.removeAttribute('name');
+            toDateInput.disabled = true;
+            toHiddenInput.setAttribute('name', 'to[]');
+        } else {
+            toDateInput.setAttribute('name', 'to[]');
+            toDateInput.disabled = false;
+            toHiddenInput.removeAttribute('name');
+        }
+    }
+
     function addExperience() {
         const container = document.getElementById('experienceContainer');
         const div = document.createElement('div');
-        div.classList.add('border', 'border-gray-300', 'p-4', 'mb-4', 'rounded-md', 'bg-gray-50');
+        div.classList.add('experience-item', 'border', 'border-gray-300', 'p-4', 'mb-4', 'rounded-md', 'bg-gray-50');
 
         div.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Organization</label>
-                    <input type="text" name="organization[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Organization name" required>
+                    <input type="text" name="organization[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Organization name">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Role</label>
-                    <input type="text" name="role[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Your role" required>
+                    <input type="text" name="role[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Your role">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Industry</label>
-                    <input type="text" name="industry[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Industry" required>
+                    <input type="text" name="industry[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Industry">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Location</label>
-                    <input type="text" name="location_exp[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Location" required>
+                    <input type="text" name="location_exp[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Location">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">From Date</label>
-                    <input type="date" name="from[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" required>
+                    <input type="date" name="from[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">To Date</label>
-                    <input type="date" name="to[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" required>
+                    <input type="date" name="to[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 exp-to-date">
+                    <input type="hidden" class="exp-to-hidden" value="Present">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+                        <input type="checkbox" class="exp-present-toggle" onchange="toggleExperiencePresent(this)">
+                        I am presently working here
+                    </label>
                 </div>
             </div>
             <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-semibold text-sm">Remove Experience</button>
@@ -400,5 +589,11 @@
 
     // Preserve old value on validation error reload.
     loadBranches('{{ old('degree') }}', '{{ old('branch') }}');
+    handleStatusChange();
+    toggleStudyPresent();
+
+    if ('{{ old('current_status') }}' === 'working' && !document.querySelector('#experienceContainer .experience-item')) {
+        addExperience();
+    }
 </script>
 @endsection
