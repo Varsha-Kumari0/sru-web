@@ -225,7 +225,8 @@
 
                     <!-- 💼 EXPERIENCE -->
                     <div id="workSection" class="mt-10" style="display:none;">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Professional Experience</h3>
+                        <h3 id="workSectionTitle" class="text-lg font-semibold text-gray-700 mb-2">Professional Experience</h3>
+                        <p id="workSectionHelp" class="text-sm text-gray-600 mb-4"></p>
 
                         @error('organization')
                             <p class="mb-3 text-sm text-red-600">{{ $message }}</p>
@@ -383,6 +384,8 @@
         const studyToDateInput = document.getElementById('studyToDate');
         const studyPresentCheckbox = document.getElementById('studyPresentCheckbox');
         const studyToHiddenInput = document.getElementById('studyToHidden');
+        const workSectionTitle = document.getElementById('workSectionTitle');
+        const workSectionHelp = document.getElementById('workSectionHelp');
 
         function setSectionEnabled(section, enabled) {
             if (!section) {
@@ -429,11 +432,19 @@
             }
 
             if (workSection) {
-                workSection.style.display = selectedStatus === 'working' ? 'block' : 'none';
+                workSection.style.display = selectedStatus ? 'block' : 'none';
             }
 
             setSectionEnabled(studySection, selectedStatus === 'studying');
-            setSectionEnabled(workSection, selectedStatus === 'working');
+            setSectionEnabled(workSection, !!selectedStatus);
+
+            if (selectedStatus === 'studying') {
+                workSectionTitle.textContent = 'Previous Work Experience';
+                workSectionHelp.textContent = 'Optional: add internships, jobs, or roles you held before your current studies.';
+            } else if (selectedStatus === 'working') {
+                workSectionTitle.textContent = 'Professional Experience';
+                workSectionHelp.textContent = 'Add your current or previous work experience details.';
+            }
 
             if (selectedStatus === 'studying') {
                 toggleStudyPresent();
@@ -463,6 +474,15 @@
 
         function addExperience() {
             const container = document.getElementById('experienceContainer');
+            const selectedStatus = document.querySelector('input[name="current_status"]:checked')?.value;
+            const presentOption = selectedStatus === 'working'
+                ? `<div class="md:col-span-2">
+                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+                            <input type="checkbox" class="exp-present-toggle" onchange="toggleExperiencePresent(this)">
+                            I am currently working here
+                        </label>
+                    </div>`
+                : '';
 
             const newExperience = document.createElement('div');
             newExperience.className = 'experience-item bg-gray-50 border rounded p-5 mb-4';
@@ -493,12 +513,7 @@
                         <input type="date" name="to[]" class="input exp-to-date">
                         <input type="hidden" class="exp-to-hidden" value="Present">
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
-                            <input type="checkbox" class="exp-present-toggle" onchange="toggleExperiencePresent(this)">
-                            I am currently working here
-                        </label>
-                    </div>
+                    ${presentOption}
                 </div>
                 <button type="button" onclick="this.parentElement.remove()"
                     class="text-red-500 text-sm mt-3 hover:underline">

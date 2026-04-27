@@ -11,7 +11,9 @@
     <nav class="bg-[#2f4f8f] text-white px-6 py-3 flex justify-between items-center">
 
     <div class="font-semibold text-lg">
-        SRU Alumni
+        <a href="{{ url('/') }}" class="font-semibold text-lg">
+            SRU Alumni
+        </a>
     </div>
 
     <div class="space-x-6 text-sm">

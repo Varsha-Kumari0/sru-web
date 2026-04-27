@@ -258,11 +258,11 @@
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <h2 class="sru-section-label">About</h2>
-                            <p class="text-xs mt-2" style="color: #94a3b8;">A concise view of your alumni background.</p>
+                            <!-- <p class="text-xs mt-2" style="color: #94a3b8;">A concise view of your alumni background.</p> -->
                         </div>
                         <a href="{{ route('profile.edit-bio') }}"
-                           class="text-xs font-bold px-3 py-1.5 rounded-lg border transition-all hover:bg-[#2a9d8f] hover:text-white hover:border-[#2a9d8f]"
-                           style="color: #2a9d8f; border-color: #2a9d8f;">
+                           class="text-xs font-bold px-3 py-1.5 text-[#2a9d8f] rounded-lg border transition-all hover:bg-[#2a9d8f] hover:text-white hover:border-[#2a9d8f]"
+                           style="border-color: #2a9d8f;">
                             Edit
                         </a>
                     </div>
@@ -281,7 +281,7 @@
                 <div class="sru-card bg-white rounded-2xl border border-gray-100 p-6 shadow-sm fade-up fu3">
                     <div class="mb-5">
                         <h2 class="sru-section-label">Experience</h2>
-                        <p class="text-xs mt-2" style="color: #94a3b8;">A chronological record of your positions and achievements.</p>
+                        <!-- <p class="text-xs mt-2" style="color: #94a3b8;">A chronological record of your positions and achievements.</p> -->
                     </div>
                     @forelse($experiences as $exp)
                         <div class="sru-teal-left mb-5 last:mb-0 py-1">
@@ -320,7 +320,7 @@
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <h2 class="sru-section-label">Skills</h2>
-                            <p class="text-xs mt-2" style="color: #94a3b8;">Showcase what you do best.</p>
+                            <!-- <p class="text-xs mt-2" style="color: #94a3b8;">Showcase what you do best.</p> -->
                         </div>
                         <a href="{{ route('skills.index') }}"
                            class="text-xs font-bold px-3 py-1.5 rounded-lg border transition-all hover:bg-[#1a2d4a] hover:text-white hover:border-[#1a2d4a]"
