@@ -166,7 +166,7 @@ class ProfileController extends Controller
             'study_from' => 'required_if:current_status,studying|nullable|date',
             'study_to' => 'required_if:current_status,studying|nullable|string|max:255',
 
-            // professional details (required only when user is working)
+            // professional details (required only when user is working, optional for studying users with past work)
             'organization' => 'required_if:current_status,working|array|min:1',
             'organization.*' => 'nullable|string|max:255',
             'industry' => 'nullable|array',
@@ -203,6 +203,16 @@ class ProfileController extends Controller
             'twitter.regex' => 'X link must be from x.com or twitter.com.',
             'mobile.regex' => 'Mobile number must contain only digits and be 10 to 15 characters long.',
         ]);
+
+        if ($request->current_status === 'working') {
+            $organizations = collect($request->organization ?? [])->filter(fn ($value) => !empty(trim((string) $value)));
+
+            if ($organizations->isEmpty()) {
+                return back()
+                    ->withErrors(['organization' => 'Please add at least one work experience if you are currently working.'])
+                    ->withInput();
+            }
+        }
 
         // ✅ IMAGE UPLOAD
         $imagePath = null;
@@ -241,7 +251,7 @@ class ProfileController extends Controller
         ]);
 
         // ✅ SAVE EXPERIENCE
-        if ($request->current_status === 'working' && $request->has('organization')) {
+        if ($request->has('organization')) {
             foreach ($request->organization as $i => $org) {
 
                 if (!$org) continue;
@@ -360,7 +370,7 @@ class ProfileController extends Controller
             'study_from' => 'required_if:current_status,studying|nullable|date',
             'study_to' => 'required_if:current_status,studying|nullable|string|max:255',
 
-            // professional details (required only when user is working)
+            // professional details (required only when user is working, optional for studying users with past work)
             'organization' => 'nullable|array',
             'organization.*' => 'nullable|string|max:255',
             'industry' => 'nullable|array',
@@ -466,7 +476,7 @@ class ProfileController extends Controller
         // ✅ RESET EXPERIENCES (simple approach)
         Professional::where('user_id', Auth::id())->delete();
 
-        if ($request->current_status === 'working' && $request->has('organization')) {
+        if ($request->has('organization')) {
             foreach ($request->organization as $i => $org) {
 
                 if (!$org) continue;

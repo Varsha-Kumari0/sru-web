@@ -210,7 +210,8 @@
             </div>
 
             <div id="workSection" style="display:none;" class="mb-6">
-                <h4 class="text-xl font-bold mb-4 text-gray-800">Professional Experience</h4>
+                <h4 id="workSectionTitle" class="text-xl font-bold mb-2 text-gray-800">Professional Experience</h4>
+                <p id="workSectionHelp" class="text-sm text-gray-600 mb-4"></p>
 
                 <div id="experienceContainer"></div>
 
@@ -281,6 +282,8 @@
     const studyToDateInput = document.getElementById('studyToDate');
     const studyPresentCheckbox = document.getElementById('studyPresentCheckbox');
     const studyToHiddenInput = document.getElementById('studyToHidden');
+    const workSectionTitle = document.getElementById('workSectionTitle');
+    const workSectionHelp = document.getElementById('workSectionHelp');
 
     function validateMobileField() {
         const value = mobileInput.value.trim();
@@ -374,10 +377,18 @@
         const selectedStatus = document.querySelector('input[name="current_status"]:checked')?.value;
 
         studySection.style.display = selectedStatus === 'studying' ? 'block' : 'none';
-        workSection.style.display = selectedStatus === 'working' ? 'block' : 'none';
+        workSection.style.display = selectedStatus ? 'block' : 'none';
 
         setSectionEnabled(studySection, selectedStatus === 'studying');
-        setSectionEnabled(workSection, selectedStatus === 'working');
+        setSectionEnabled(workSection, !!selectedStatus);
+
+        if (selectedStatus === 'studying') {
+            workSectionTitle.textContent = 'Previous Work Experience';
+            workSectionHelp.textContent = 'Optional: add internships, jobs, or roles you held before your current studies.';
+        } else if (selectedStatus === 'working') {
+            workSectionTitle.textContent = 'Professional Experience';
+            workSectionHelp.textContent = 'Add your current or previous work experience details.';
+        }
 
         if (selectedStatus === 'studying') {
             toggleStudyPresent();
@@ -522,6 +533,26 @@
             }
         }
 
+        if (selectedStatus === 'studying') {
+            const experiences = document.querySelectorAll('#experienceContainer .experience-item');
+
+            for (const exp of experiences) {
+                const org = exp.querySelector('input[name="organization[]"]').value.trim();
+                const role = exp.querySelector('input[name="role[]"]').value.trim();
+                const industry = exp.querySelector('input[name="industry[]"]').value.trim();
+                const location = exp.querySelector('input[name="location_exp[]"]').value.trim();
+                const from = exp.querySelector('input[name="from[]"]').value;
+                const toInput = exp.querySelector('input[name="to[]"]');
+                const toValue = toInput ? toInput.value : '';
+                const hasAnyValue = org || role || industry || location || from || toValue;
+
+                if (hasAnyValue && (!org || !role || !industry || !location || !from || !toValue)) {
+                    alert('Please complete all previous work details, or remove the incomplete experience.');
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
@@ -544,6 +575,15 @@
 
     function addExperience() {
         const container = document.getElementById('experienceContainer');
+        const selectedStatus = document.querySelector('input[name="current_status"]:checked')?.value;
+        const presentOption = selectedStatus === 'working'
+            ? `<div class="md:col-span-2">
+                    <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+                        <input type="checkbox" class="exp-present-toggle" onchange="toggleExperiencePresent(this)">
+                        I am presently working here
+                    </label>
+                </div>`
+            : '';
         const div = document.createElement('div');
         div.classList.add('experience-item', 'border', 'border-gray-300', 'p-4', 'mb-4', 'rounded-md', 'bg-gray-50');
 
@@ -574,12 +614,7 @@
                     <input type="date" name="to[]" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 exp-to-date">
                     <input type="hidden" class="exp-to-hidden" value="Present">
                 </div>
-                <div class="md:col-span-2">
-                    <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
-                        <input type="checkbox" class="exp-present-toggle" onchange="toggleExperiencePresent(this)">
-                        I am presently working here
-                    </label>
-                </div>
+                ${presentOption}
             </div>
             <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-semibold text-sm">Remove Experience</button>
         `;
