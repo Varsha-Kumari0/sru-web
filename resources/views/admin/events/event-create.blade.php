@@ -267,10 +267,19 @@
                                     <p class="truncate text-sm font-semibold text-slate-900">{{ $event->title }}</p>
                                     <p class="mt-1 line-clamp-2 text-xs text-slate-600">{{ $event->excerpt }}</p>
                                 </div>
-                                <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">Updated</span>
+                                @if($event->created_at?->eq($event->updated_at))
+                                    <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-green-50 px-2 py-1 text-[11px] font-semibold text-green-700">Created</span>
+                                @else
+                                    <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">Updated</span>
+                                @endif
                             </div>
                             <div class="mt-3 space-y-1 text-xs text-slate-500">
-                                <div>Updated: {{ $event->updated_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                @if($event->created_at?->eq($event->updated_at))
+                                    <div>Created: {{ $event->created_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                @else
+                                    <div>Updated: {{ $event->updated_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                    <div>Created: {{ $event->created_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                @endif
                                 <div>Starts: {{ $event->start_at?->format('d M Y, h:i A') ?? '-' }}</div>
                             </div>
                         </div>
