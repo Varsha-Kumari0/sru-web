@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\JobOpportunityController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\SkillController;
 use App\Models\ActivityLog;
 use App\Models\Event;
+use App\Models\JobOpportunity;
 use App\Models\News;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -25,10 +27,27 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('admin.dashboard');
     }
+
+    $news = News::query()
+        ->latest('published_at')
+        ->take(4)
+        ->get();
+
+    $events = Event::query()
+        ->where('start_at', '>=', now())
+        ->orderBy('start_at', 'asc')
+        ->take(3)
+        ->get();
+
+    $jobs = JobOpportunity::query()
+        ->latest()
+        ->take(4)
+        ->get();
+
     return view('welcome', [
-        'news' => [],
-        'events' => [],
-        'jobs' => [],
+        'news' => $news,
+        'events' => $events,
+        'jobs' => $jobs,
     ]);
 });
 
@@ -45,6 +64,7 @@ Route::get('/newsroom', [NewsController::class, 'index'])->name('newsroom');
 Route::get('/newsroom/{id}', [NewsController::class, 'show'])->name('news.show');
 Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
 Route::get('/events/{id}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
+Route::get('/jobs', [JobOpportunityController::class, 'index'])->name('jobs.index');
 Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials.index');
 
 // 🔐 AUTH REQUIRED ROUTES
@@ -72,6 +92,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('skills', SkillController::class)->except(['show']);
     Route::post('/skills/{skill}/endorse', [SkillController::class, 'endorse'])->name('skills.endorse');
     Route::delete('/skills/{skill}/endorse', [SkillController::class, 'removeEndorsement'])->name('skills.remove-endorsement');
+
+    // 💼 JOBS AND INTERNSHIPS
+    Route::get('/jobs/create', [JobOpportunityController::class, 'create'])->name('jobs.create');
+    Route::post('/jobs', [JobOpportunityController::class, 'store'])->name('jobs.store');
 
     // 📝 BIO EDITING
     Route::get('/profile/edit-bio', [ProfileController::class, 'editBio'])->name('profile.edit-bio');

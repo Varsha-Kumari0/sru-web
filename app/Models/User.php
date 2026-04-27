@@ -65,4 +65,12 @@ class User extends Authenticatable
     {
         return $this->hasOne(Professional::class);
     }
+
+    /**
+     * Get job and internship opportunities posted by the user.
+     */
+    public function jobOpportunities()
+    {
+        return $this->hasMany(JobOpportunity::class);
+    }
 }
