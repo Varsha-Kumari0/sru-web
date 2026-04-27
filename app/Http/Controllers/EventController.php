@@ -24,7 +24,21 @@ class EventController extends Controller
         $currentFilter = array_key_exists($filter, $allowedFilters) ? $filter : 'all';
         $now = Carbon::now();
 
+        $eventTypes = [
+            'reunions' => 'Reunions',
+            'webinars' => 'Webinars',
+            'hackathons' => 'Hackathons',
+            'campus-events' => 'Campus Events',
+        ];
+
+        $selectedType = $request->query('type');
+        $currentType = array_key_exists($selectedType, $eventTypes) ? $selectedType : null;
+
         $query = Event::query();
+
+        if ($currentType) {
+            $query->where('event_type', $currentType);
+        }
 
         if ($currentFilter === 'upcoming') {
             $query->where('start_at', '>=', $now)->orderBy('start_at', 'asc');
@@ -36,19 +50,12 @@ class EventController extends Controller
 
         $events = $query->get();
 
-        $eventTypes = [
-            'reunions' => 'Reunions',
-            'webinars' => 'Webinars',
-            'hackathons' => 'Hackathons',
-            'campus-events' => 'Campus Events',
-        ];
-
         $typeCounts = Event::selectRaw('event_type, count(*) as total')
             ->groupBy('event_type')
             ->pluck('total', 'event_type')
             ->toArray();
 
-        return view('events.index', compact('events', 'allowedFilters', 'currentFilter', 'eventTypes', 'typeCounts', 'now'));
+        return view('events.index', compact('events', 'allowedFilters', 'currentFilter', 'eventTypes', 'typeCounts', 'now', 'currentType'));
     }
 
     public function show($id)
