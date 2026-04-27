@@ -128,7 +128,6 @@
                                     ? asset('storage/'.$profile->profile_photo)
                                     : 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22 viewBox=%220 0 150 150%22><rect width=%22150%22 height=%22150%22 fill=%22%231a2d4a%22/><circle cx=%2275%22 cy=%2250%22 r=%2226%22 fill=%22%23ffffff33%22/><path d=%22M30 125c5-22 25-37 45-37s40 15 45 37%22 fill=%22%23ffffff33%22/></svg>' }}"
                                 class="avatar-ring h-28 w-28 md:h-32 md:w-32 rounded-2xl object-cover border-4 border-white"
-                                style="margin-top: -3.5rem;"
                                 alt="{{ $profile->full_name }}"
                             >
                             <span class="absolute bottom-2 right-2 w-3.5 h-3.5 rounded-full border-2 border-white"
