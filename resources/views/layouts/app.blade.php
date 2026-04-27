@@ -60,7 +60,7 @@
                 </div>
             </div>
 
-    <div class="hidden lg:flex items-center space-x-5 text-sm">
+    <div class="lg:hidden flex items-center space-x-5 text-sm">
         <a href="{{ route('about') }}" class="hover:underline">About</a>
         <a href="{{ route('testimonials.index') }}" class="hover:underline">Testimonials</a>
         <a href="{{ route('gallery') }}" class="hover:underline">Gallery</a>
