@@ -175,13 +175,13 @@
 			<h2 class="font-display text-2xl font-semibold">All SRU Alumni</h2>
 			<p class="text-xs mt-0.5 text-slate-500">{{ now()->format('l, d F Y') }} - Total records: {{ $users->count() }}</p>
 		</div>
-		<button onclick="exportCSV()" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+		<a href="{{ route('admin.allalumini.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
 			<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 				<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
 				<polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
 			</svg>
 			Export CSV
-		</button>
+		</a>
 	</header>
 
 	<div class="p-9 flex-1">
@@ -195,6 +195,69 @@
 				{{ session('error') }}
 			</div>
 		@endif
+
+		<form id="alumniFilterForm" method="GET" action="{{ route('admin.allalumini') }}" class="mb-5 rounded-xl border border-slate-300 bg-white p-4">
+			<div class="grid grid-cols-1 gap-3 md:grid-cols-[minmax(160px,220px)_1fr_auto_auto] md:items-end">
+				<div>
+					<label for="filter_by" class="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500">Filter By</label>
+					<select id="filter_by" name="filter_by" onchange="handleFilterByChange()" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none">
+						<option value="all" {{ ($selectedFilterBy ?? 'all') === 'all' ? 'selected' : '' }}>All Alumni</option>
+						<option value="branch" {{ ($selectedFilterBy ?? 'all') === 'branch' ? 'selected' : '' }}>Branch</option>
+						<option value="graduation_year" {{ ($selectedFilterBy ?? 'all') === 'graduation_year' ? 'selected' : '' }}>Graduation Year</option>
+						<option value="organization" {{ ($selectedFilterBy ?? 'all') === 'organization' ? 'selected' : '' }}>Organization</option>
+						<option value="role" {{ ($selectedFilterBy ?? 'all') === 'role' ? 'selected' : '' }}>Role</option>
+						<option value="location" {{ ($selectedFilterBy ?? 'all') === 'location' ? 'selected' : '' }}>Location</option>
+					</select>
+				</div>
+				<div>
+					<label for="filter_value" class="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500">Value</label>
+					<div class="relative">
+						<input
+							type="text"
+							id="filter_value"
+							name="filter_value"
+							value="{{ $selectedFilterValue ?? '' }}"
+							placeholder="Type to search values"
+							autocomplete="off"
+							onfocus="openValueDropdown()"
+							onblur="queueCloseValueDropdown()"
+							oninput="applyValueDropdownFilter()"
+							class="w-full rounded-lg border border-slate-300 px-3 py-2 pr-9 text-sm text-slate-700 focus:border-blue-500 focus:outline-none"
+						>
+						<button
+							type="button"
+							onclick="toggleValueDropdown()"
+							class="absolute inset-y-0 right-0 inline-flex items-center px-3 text-slate-500"
+							tabindex="-1"
+						>
+							<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+								<polyline points="6 9 12 15 18 9"/>
+							</svg>
+						</button>
+						<div id="filter_value_dropdown" class="absolute z-30 mt-1 hidden max-h-52 w-full overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-lg">
+							@foreach(($filterValues ?? collect()) as $value)
+								<button
+									type="button"
+									data-filter-value-item
+									data-value="{{ $value }}"
+									onmousedown="selectFilterValue('{{ addslashes($value) }}')"
+									class="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
+								>
+									{{ $value }}
+								</button>
+							@endforeach
+							<div id="filter_value_no_match" class="hidden px-3 py-2 text-sm text-slate-500">No matching values</div>
+						</div>
+					</div>
+				</div>
+				<button type="submit" class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+					Apply Filter
+				</button>
+				<a href="{{ route('admin.allalumini') }}" class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+					Reset
+				</a>
+			</div>
+		</form>
 
 		<div class="rounded-xl overflow-hidden bg-white border border-slate-300">
 			<div class="overflow-x-auto">
@@ -243,6 +306,26 @@
 										'passing_year' => $user->profile?->passing_year ?? '-',
 										'current_status' => $user->profile?->current_status ?? '-',
 										'company' => $user->profile?->company ?? '-',
+										'employment_from' => $user->profile?->employment_from ?? '-',
+										'employment_to' => $user->profile?->employment_to ?? '-',
+										'study_institution' => $user->profile?->study_institution ?? '-',
+										'study_degree' => $user->profile?->study_degree ?? '-',
+										'study_branch' => $user->profile?->study_branch ?? '-',
+										'study_from' => $user->profile?->study_from ?? '-',
+										'study_to' => $user->profile?->study_to ?? '-',
+										'description' => $user->profile?->description ?? '-',
+										'previous_education' => collect($user->profile?->previous_education ?? [])
+											->map(function ($row) {
+												return implode(' | ', [
+													$row['institution'] ?? '',
+													$row['degree'] ?? '',
+													$row['branch'] ?? '',
+													$row['from'] ?? '',
+													$row['to'] ?? '',
+												]);
+											})
+											->filter()
+											->implode("\n") ?: '-',
 										'organization' => $user->professional?->organization ?? '-',
 										'industry' => $user->professional?->industry ?? '-',
 										'role' => $user->professional?->role ?? '-',
@@ -318,81 +401,128 @@
 
 {{-- Alumni quick-view modal --}}
 <div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
-	<div class="w-full max-w-xl rounded-xl bg-white border border-slate-300 shadow-xl">
-		<div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-			<h3 id="detailsTitle" class="text-lg font-semibold text-slate-900">Alumni Details</h3>
+	<div class="w-full max-w-4xl rounded-xl bg-white border border-slate-300 shadow-xl">
+		<div class="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+			<h3 id="detailsTitle" class="text-xl font-semibold text-slate-900">Alumni Details</h3>
 			<button type="button" class="text-slate-500 hover:text-slate-900" onclick="closeDetails()">Close</button>
 		</div>
-		<div class="max-h-[340px] overflow-y-auto p-5">
-			<div id="detailsBody" class="grid grid-cols-2 gap-3"></div>
+		<div class="max-h-[75vh] overflow-y-auto p-6">
+			<div id="detailsBody" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"></div>
 		</div>
 	</div>
 </div>
 
 <script>
-const alumniData = {!! json_encode($users->map(function($u) {
-    return [
-        'id'              => $u->id,
-        'name'            => $u->name,
-        'email'           => $u->email,
-        'full_name'       => $u->profile?->full_name ?? $u->name,
-        'father_name'     => $u->profile?->father_name ?? '—',
-        'phone'           => $u->profile?->mobile ?? '—',
-        'city'            => $u->profile?->city ?? '—',
-        'country'         => $u->profile?->country ?? '—',
-        'degree'          => $u->profile?->degree ?? '—',
-        'branch'          => $u->profile?->branch ?? '—',
-        'graduation_year' => $u->profile?->passing_year ?? '—',
-        'current_status'  => $u->profile?->current_status ?? '—',
-        'company'         => $u->profile?->company ?? '—',
-        'linkedin'        => $u->profile?->linkedin ?? '—',
-        'facebook'        => $u->profile?->facebook ?? '—',
-        'instagram'       => $u->profile?->instagram ?? '—',
-        'twitter'         => $u->profile?->twitter ?? '—',
-        'organization'    => $u->professional?->organization ?? '—',
-        'industry'        => $u->professional?->industry ?? '—',
-        'role'            => $u->professional?->role ?? '—',
-        'from'            => $u->professional?->from ?? '—',
-        'to'              => $u->professional?->to ?? '—',
-        'pro_location'    => $u->professional?->location ?? '—',
-        'created_at'      => $u->created_at?->format('d M Y') ?? '—',
-    ];
-})) !!};
+let valueDropdownCloseTimer = null;
 
-function exportCSV() {
-    const q = (v) => '"' + String(v ?? '—').replace(/"/g, '""') + '"';
+function toggleValueFilter() {
+	const filterBy = document.getElementById('filter_by');
+	const filterValue = document.getElementById('filter_value');
+	const filterValueDropdown = document.getElementById('filter_value_dropdown');
+	if (!filterBy || !filterValue) return;
 
-    const headers = [
-        'ID', 'Account Name', 'Email',
-        'Full Name', 'Father Name', 'Phone', 'City', 'Country',
-        'Degree', 'Branch / Specialization', 'Graduation Year',
-        'Current Status', 'Company',
-        'LinkedIn', 'Facebook', 'Instagram', 'Twitter',
-        'Organization', 'Industry', 'Role',
-        'Work From', 'Work To', 'Work Location',
-        'Registered'
-    ];
+	const useValue = filterBy.value !== 'all';
+	filterValue.disabled = !useValue;
+	filterValue.classList.toggle('bg-slate-100', !useValue);
+	filterValue.classList.toggle('cursor-not-allowed', !useValue);
+	filterValue.placeholder = useValue ? `Type to search ${getFilterValueLabel(filterBy.value).toLowerCase()}` : 'Select filter first';
 
-    const rows = alumniData.map(a => [
-        q(a.id), q(a.name), q(a.email),
-        q(a.full_name), q(a.father_name), q(a.phone), q(a.city), q(a.country),
-        q(a.degree), q(a.branch), q(a.graduation_year),
-        q(a.current_status), q(a.company),
-        q(a.linkedin), q(a.facebook), q(a.instagram), q(a.twitter),
-        q(a.organization), q(a.industry), q(a.role),
-        q(a.from), q(a.to), q(a.pro_location),
-        q(a.created_at),
-    ]);
-
-    const csv  = [headers.map(q), ...rows].map(r => r.join(',')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `sru_alumni_export_${new Date().toISOString().slice(0,10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+	if (!useValue) {
+		filterValue.value = '';
+		if (filterValueDropdown) {
+			filterValueDropdown.classList.add('hidden');
+		}
+	}
 }
+
+function openValueDropdown() {
+	const filterValue = document.getElementById('filter_value');
+	const dropdownEl = document.getElementById('filter_value_dropdown');
+	if (!filterValue || !dropdownEl || filterValue.disabled) return;
+
+	clearTimeout(valueDropdownCloseTimer);
+	dropdownEl.classList.remove('hidden');
+	applyValueDropdownFilter();
+}
+
+function closeValueDropdown() {
+	const dropdownEl = document.getElementById('filter_value_dropdown');
+	if (!dropdownEl) return;
+	dropdownEl.classList.add('hidden');
+}
+
+function queueCloseValueDropdown() {
+	clearTimeout(valueDropdownCloseTimer);
+	valueDropdownCloseTimer = setTimeout(closeValueDropdown, 120);
+}
+
+function toggleValueDropdown() {
+	const filterValue = document.getElementById('filter_value');
+	const dropdownEl = document.getElementById('filter_value_dropdown');
+	if (!filterValue || !dropdownEl || filterValue.disabled) return;
+
+	if (dropdownEl.classList.contains('hidden')) {
+		openValueDropdown();
+		filterValue.focus();
+	} else {
+		closeValueDropdown();
+	}
+}
+
+function applyValueDropdownFilter() {
+	const filterValue = document.getElementById('filter_value');
+	const items = document.querySelectorAll('[data-filter-value-item]');
+	const noMatch = document.getElementById('filter_value_no_match');
+	if (!filterValue || !items) return;
+
+	const query = filterValue.value.trim().toLowerCase();
+	let visibleCount = 0;
+
+	items.forEach((item) => {
+		const value = (item.getAttribute('data-value') || '').toLowerCase();
+		const show = query === '' || value.includes(query);
+		item.classList.toggle('hidden', !show);
+		if (show) visibleCount += 1;
+	});
+
+	if (noMatch) {
+		noMatch.classList.toggle('hidden', visibleCount > 0);
+	}
+}
+
+function selectFilterValue(value) {
+	const filterValue = document.getElementById('filter_value');
+	if (!filterValue) return;
+	filterValue.value = value;
+	applyValueDropdownFilter();
+	closeValueDropdown();
+}
+
+function getFilterValueLabel(filterBy) {
+	const labels = {
+		branch: 'Branch',
+		graduation_year: 'Graduation Year',
+		organization: 'Organization',
+		role: 'Role',
+		location: 'Location',
+	};
+
+	return labels[filterBy] || 'Value';
+}
+
+function handleFilterByChange() {
+	const filterValue = document.getElementById('filter_value');
+	if (filterValue) {
+		filterValue.value = '';
+	}
+
+	const form = document.getElementById('alumniFilterForm');
+	if (form) {
+		form.submit();
+	}
+}
+
+window.addEventListener('DOMContentLoaded', toggleValueFilter);
 
 	// Render selected alumni details inside modal.
 	function openDetails(data) {
@@ -408,6 +538,7 @@ function exportCSV() {
 			['Phone', data.phone],
 			['City', data.city],
 			['Country', data.country],
+			['Bio / Description', data.description],
 			['LinkedIn', data.linkedin],
 			['Facebook', data.facebook],
 			['Instagram', data.instagram],
@@ -420,6 +551,14 @@ function exportCSV() {
 			['Graduation Year', data.passing_year],
 			['Current Status', data.current_status],
 			['Company', data.company],
+			['Employment From', data.employment_from],
+			['Employment To', data.employment_to],
+			['Study Institution', data.study_institution],
+			['Study Degree', data.study_degree],
+			['Study Branch', data.study_branch],
+			['Study From', data.study_from],
+			['Study To', data.study_to],
+			['Previous Education', data.previous_education],
 			['Work From', data.work_from],
 			['Work To', data.work_to],
 			['Work Location', data.work_location],
@@ -428,13 +567,13 @@ function exportCSV() {
 
 		let photoHtml = '';
 		if (data.profile_photo) {
-			photoHtml = `<div class="col-span-2 flex justify-center mb-2"><img src="${data.profile_photo}" alt="Profile" style="width:80px;height:80px;border-radius:10px;object-fit:cover;background:#f8f9fc;border:2px solid #e2e8f0;"></div>`;
+			photoHtml = `<div class="col-span-2 md:col-span-3 lg:col-span-4 flex justify-center mb-4"><img src="${data.profile_photo}" alt="Profile" style="width:150px;height:150px;border-radius:12px;object-fit:contain;object-position:center;background:#f8f9fc;border:1px solid #dde3ec;flex-shrink:0;"></div>`;
 		}
 
 		body.innerHTML = photoHtml + entries.map(([label, value]) => `
 			<div class="rounded-lg bg-slate-100 p-3">
 				<p class="mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-700">${label}</p>
-				<p class="text-sm text-slate-900">${value ?? '-'}</p>
+				<p class="text-sm text-slate-900" style="white-space: pre-line;">${value ?? '-'}</p>
 			</div>
 		`).join('');
 

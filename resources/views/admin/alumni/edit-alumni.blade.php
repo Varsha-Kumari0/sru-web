@@ -367,6 +367,11 @@
                         @error('full_name')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                     <div class="form-group">
+                        <label for="father_name">Father Name</label>
+                        <input type="text" id="father_name" name="father_name" value="{{ old('father_name', $user->profile?->father_name ?? '') }}">
+                        @error('father_name')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
                         <label for="mobile">Mobile Number</label>
                         <input type="text" id="mobile" name="mobile" value="{{ old('mobile', $user->profile?->mobile ?? '') }}">
                         @error('mobile')<span class="error-text">{{ $message }}</span>@enderror
@@ -380,6 +385,30 @@
                         <label for="country">Country</label>
                         <input type="text" id="country" name="country" value="{{ old('country', $user->profile?->country ?? '') }}">
                         @error('country')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; font-weight: 600; font-size: 14px; color: #475569;">Social Links</h4>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="linkedin">LinkedIn URL</label>
+                        <input type="text" id="linkedin" name="linkedin" value="{{ old('linkedin', $user->profile?->linkedin ?? '') }}">
+                        @error('linkedin')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="facebook">Facebook URL</label>
+                        <input type="text" id="facebook" name="facebook" value="{{ old('facebook', $user->profile?->facebook ?? '') }}">
+                        @error('facebook')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="instagram">Instagram URL</label>
+                        <input type="text" id="instagram" name="instagram" value="{{ old('instagram', $user->profile?->instagram ?? '') }}">
+                        @error('instagram')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="twitter">Twitter / X URL</label>
+                        <input type="text" id="twitter" name="twitter" value="{{ old('twitter', $user->profile?->twitter ?? '') }}">
+                        @error('twitter')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
                 </div>
 
@@ -421,6 +450,70 @@
                         <input type="text" id="company" name="company" value="{{ old('company', $user->profile?->company ?? '') }}">
                         @error('company')<span class="error-text">{{ $message }}</span>@enderror
                     </div>
+                    <div class="form-group">
+                        <label for="employment_from">Employment From (Date) 📅</label>
+                        <input type="date" id="employment_from" name="employment_from" value="{{ old('employment_from', $user->profile?->employment_from ?? '') }}" title="Select employment start date">
+                        @error('employment_from')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="employment_to">Employment To (Date) 📅</label>
+                        <input type="date" id="employment_to" name="employment_to" value="{{ old('employment_to', $user->profile?->employment_to !== 'Present' ? $user->profile?->employment_to : '') }}" title="Select end date or use 'Currently Working' checkbox">
+                        @error('employment_to')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+
+                {{-- Currently Working Checkbox --}}
+                <div style="margin-top: 1rem; padding: 1rem; background: #dbeafe; border-radius: 0.5rem; border: 1px solid #7dd3fc;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <input type="checkbox" id="is_current_employment" name="is_current_employment" value="1" 
+                               {{ old('is_current_employment', $user->profile?->employment_to === 'Present') ? 'checked' : '' }}
+                               onchange="toggleEmploymentToField()">
+                        <label for="is_current_employment" style="margin: 0; cursor: pointer; font-weight: 500; color: #0369a1;">
+                            ✓ Currently Working Here (Sets end date to "Present")
+                        </label>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; font-weight: 600; font-size: 14px; color: #475569;">Current Study Details</h4>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="study_institution">Institution / College</label>
+                        <input type="text" id="study_institution" name="study_institution" value="{{ old('study_institution', $user->profile?->study_institution ?? '') }}">
+                        @error('study_institution')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="study_degree">Study Degree</label>
+                        <input type="text" id="study_degree" name="study_degree" value="{{ old('study_degree', $user->profile?->study_degree ?? '') }}">
+                        @error('study_degree')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="study_branch">Study Branch</label>
+                        <input type="text" id="study_branch" name="study_branch" value="{{ old('study_branch', $user->profile?->study_branch ?? '') }}">
+                        @error('study_branch')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="study_from">Study From</label>
+                        <input type="date" id="study_from" name="study_from" value="{{ old('study_from', $user->profile?->study_from ?? '') }}">
+                        @error('study_from')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label for="study_to">Study To (Date or Present)</label>
+                        <input type="text" id="study_to" name="study_to" value="{{ old('study_to', $user->profile?->study_to ?? '') }}" placeholder="YYYY-MM-DD or Present">
+                        @error('study_to')<span class="error-text">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="description">Bio / Description</label>
+                    <textarea id="description" name="description" rows="3" style="width:100%;border:1px solid #cbd5e1;border-radius:0.5rem;padding:0.75rem;">{{ old('description', $user->profile?->description ?? '') }}</textarea>
+                    @error('description')<span class="error-text">{{ $message }}</span>@enderror
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="previous_education_text">Previous Education (one row per line)</label>
+                    <textarea id="previous_education_text" name="previous_education_text" rows="4" style="width:100%;border:1px solid #cbd5e1;border-radius:0.5rem;padding:0.75rem;" placeholder="Institution | Degree | Branch | From | To">{{ old('previous_education_text', $previousEducationTextDefault) }}</textarea>
+                    <p style="margin-top:0.4rem;font-size:12px;color:#94a3b8;">Format each line as: Institution | Degree | Branch | From | To</p>
+                    @error('previous_education_text')<span class="error-text">{{ $message }}</span>@enderror
                 </div>
             </div>
 
@@ -565,10 +658,28 @@ function toggleToField() {
     }
 }
 
+// Disable "employment_to" date when currently working in current employment is checked.
+function toggleEmploymentToField() {
+    const checkbox = document.getElementById('is_current_employment');
+    const toField = document.getElementById('employment_to');
+    
+    if (checkbox.checked) {
+        toField.disabled = true;
+        toField.value = '';
+        toField.style.backgroundColor = '#f1f5f9';
+        toField.style.cursor = 'not-allowed';
+    } else {
+        toField.disabled = false;
+        toField.style.backgroundColor = '';
+        toField.style.cursor = 'pointer';
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     populateBranchOptions();
     toggleToField();
+    toggleEmploymentToField();
 });
 </script>
 

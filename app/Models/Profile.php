@@ -23,6 +23,8 @@ class Profile extends Model
         'passing_year',
         'current_status',
         'company',
+        'employment_from',
+        'employment_to',
         'study_institution',
         'study_degree',
         'study_branch',
