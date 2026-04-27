@@ -47,6 +47,10 @@
                             <span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-white text-[11px] font-bold bg-[#0a1f44]">{{ $avatarInitial }}</span>
                             <span class="max-w-[130px] truncate">{{ $displayName }}</span>
                         </a>
+                        <form method="POST" action="/logout" class="hidden md:inline">
+                            @csrf
+                            <button type="submit" class="ml-2 px-3 py-2 rounded-full text-white text-xs font-semibold bg-[#0a1f44] hover:bg-[#c0006a] transition-colors">Logout</button>
+                        </form>
                     @else
                         <a href="{{ route('register') }}"
                             class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold bg-[#0a1f44]">
