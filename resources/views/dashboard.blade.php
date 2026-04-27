@@ -95,6 +95,11 @@
     ])->filter(fn ($value) => filled($value))->count();
     $profilePercent = (int) round(($profileCompletion / 7) * 100);
 
+    $latestPosts = collect($latestPosts ?? []);
+    $latestNews = collect($latestNews ?? []);
+    $upcomingEvents = collect($upcomingEvents ?? []);
+    $latestTestimonials = collect($latestTestimonials ?? []);
+
     $feedItems = collect();
 
     foreach ($latestPosts as $post) {

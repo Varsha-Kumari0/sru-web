@@ -2,12 +2,9 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventController;
-<<<<<<< HEAD
 use App\Http\Controllers\GalleryAdminController;
 use App\Http\Controllers\GalleryController;
-=======
 use App\Http\Controllers\JobOpportunityController;
->>>>>>> e53461b9fea835974689db871b1a319a8ddfd101
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\MessageController;
