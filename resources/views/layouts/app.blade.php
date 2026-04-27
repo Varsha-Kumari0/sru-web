@@ -60,29 +60,24 @@
                 </div>
             </div>
 
-            <div id="mobile-menu" class="md:hidden hidden border-t border-slate-200 bg-white">
-                <div class="px-4 py-3 space-y-2 text-sm font-semibold text-slate-700">
-                    <a href="{{ url('/') }}" class="block">Home</a>
-                    <a href="{{ route('about') }}" class="block">About</a>
-                    <a href="{{ route('events.index') }}" class="block">Events</a>
-                    <a href="{{ route('newsroom') }}" class="block">Newsroom</a>
-                    <a href="{{ route('gallery') }}" class="block">Gallery</a>
-                    <a href="{{ route('engage') }}" class="block">Engage</a>
-                    <a href="{{ route('contact') }}" class="block">Contact</a>
-                    @auth
-                        <a href="{{ route('profile') }}" class="inline-block mt-2 px-4 py-2 rounded-full border border-[#dbe5f5] text-[#0a1f44] bg-white">Profile</a>
-                        <form method="POST" action="{{ route('logout') }}" class="inline">
-                            @csrf
-                            <button type="submit" class="inline-block mt-2 px-4 py-2 rounded-full text-white bg-[#0a1f44]">Logout</button>
-                        </form>
-                    @else
-                        <a href="{{ route('register') }}" class="inline-block mt-2 px-4 py-2 rounded-full text-white bg-[#0a1f44]">Register</a>
-                        <a href="{{ route('login') }}" class="inline-block mt-2 px-4 py-2 rounded-full text-white bg-[#0a1f44]">Login</a>
-                    @endauth
-                </div>
-            </div>
-        </nav>
-    </header>
+    <div class="hidden lg:flex items-center space-x-5 text-sm">
+        <a href="{{ route('about') }}" class="hover:underline">About</a>
+        <a href="{{ route('testimonials.index') }}" class="hover:underline">Testimonials</a>
+        <a href="{{ route('gallery') }}" class="hover:underline">Gallery</a>
+        <a href="{{ route('engage') }}" class="hover:underline">Engage</a>
+        <a href="{{ route('newsroom') }}" class="hover:underline">Newsroom</a>
+        <a href="{{ route('events.index') }}" class="hover:underline">Events</a>
+        <a href="{{ route('jobs.index') }}" class="hover:underline">Jobs</a>
+        <a href="{{ route('contact') }}" class="hover:underline">Contact</a>
+        <a href="/profile" class="hover:underline">Profile</a>
+
+        <form method="POST" action="/logout" class="inline">
+            @csrf
+            <button class="hover:underline">Logout</button>
+        </form>
+    </div>
+
+</nav>
 
     <div class="p-6">
         @yield('content')

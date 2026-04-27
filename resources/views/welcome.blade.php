@@ -119,25 +119,9 @@
 
 <body class="antialiased">
     @php
-        $newsItems = [
-            ['Alumni Meet 2026 Highlights', '6 hours ago'],
-            ['Startup Spotlight: SRU Innovators', '1 day ago'],
-            ['School of Business Newsletter Vol. 4', '2 days ago'],
-            ['Research Grants Announced for Alumni Mentors', '3 days ago'],
-        ];
-
-        $eventItems = [
-            ['Networking Mixer', 'Oct 12', 'Sangareddy Campus, Hyderabad'],
-            ['Annual Homecoming', 'Nov 05', 'Main Auditorium, SRU'],
-            ['Webinar: Future of Tech', 'Oct 20', 'Online - Zoom'],
-        ];
-
-        $jobItems = [
-            ['Technical Lead', 'TechCorp', 'Full-time · Hyderabad'],
-            ['Marketing Manager', 'ArcelorMittal', 'Full-time · Mumbai'],
-            ['Data Engineer', 'Aster Labs', 'Contract · Pune'],
-            ['Product Analyst', 'Bluestone Digital', 'Remote · Bangalore'],
-        ];
+        $homeNewsItems = collect($news ?? []);
+        $homeEventItems = collect($events ?? []);
+        $homeJobItems = collect($jobs ?? []);
 
         $testimonialItems = [
             ['Priya Sharma', "'12", 'B.Tech', 'SRU gave me mentors, confidence, and a global network that still supports my work.'],
@@ -167,6 +151,7 @@
                     <li><a class="hover:text-teal-600" href="/events">Events</a></li>
                     <li><a class="hover:text-teal-600" href="/newsroom">Newsroom</a></li>
                     <li><a class="hover:text-teal-600" href="{{ route('gallery') }}">Gallery</a></li>
+                    <li><a class="hover:text-teal-600" href="{{ route('jobs.index') }}">Jobs</a></li>
                     <li><a class="hover:text-teal-600" href="#directory">Directory</a></li>
                     <li><a class="hover:text-teal-600" href="#giving">Giving</a></li>
                     <li><a class="hover:text-teal-600" href="#contact">Contact</a></li>
@@ -211,6 +196,7 @@
                     <a href="/events" class="block">Events</a>
                     <a href="/newsroom" class="block">Newsroom</a>
                     <a href="{{ route('gallery') }}" class="block">Gallery</a>
+                    <a href="{{ route('jobs.index') }}" class="block">Jobs</a>
                     <a href="#directory" class="block">Directory</a>
                     <a href="#giving" class="block">Giving</a>
                     <a href="#contact" class="block">Contact</a>
@@ -321,18 +307,29 @@
                 <span class="section-heading">Newsroom</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                @foreach($newsItems as $item)
-                    <article class="glass rounded-2xl overflow-hidden hover-lift reveal">
-                        <div
-                            class="h-40 bg-gradient-to-br from-sky-100 via-cyan-100 to-teal-100 flex items-center justify-center">
-                            <span class="text-sm font-bold text-teal-700">SRU Update</span>
-                        </div>
+                @forelse($homeNewsItems as $item)
+                    <a href="{{ route('news.show', $item->id) }}" class="glass rounded-2xl overflow-hidden hover-lift reveal block">
+                        @if($item->image)
+                            <div class="h-40 bg-cover bg-center"
+                                style="background-image: url('{{ asset('images/' . $item->image) }}');"></div>
+                        @else
+                            <div
+                                class="h-40 bg-gradient-to-br from-sky-100 via-cyan-100 to-teal-100 flex items-center justify-center">
+                                <span class="text-sm font-bold text-teal-700">SRU Update</span>
+                            </div>
+                        @endif
                         <div class="p-5">
-                            <h3 class="font-semibold text-[15px] leading-6">{{ $item[0] }}</h3>
-                            <p class="text-xs text-slate-500 mt-2">{{ $item[1] }}</p>
+                            <h3 class="font-semibold text-[15px] leading-6">{{ $item->title }}</h3>
+                            <p class="text-xs text-slate-500 mt-2">
+                                {{ $item->published_at?->diffForHumans() ?? $item->created_at?->diffForHumans() }}
+                            </p>
                         </div>
-                    </article>
-                @endforeach
+                    </a>
+                @empty
+                    <div class="sm:col-span-2 xl:col-span-4 glass rounded-2xl p-8 text-center reveal">
+                        <p class="text-sm font-semibold text-slate-700">No newsroom updates yet.</p>
+                    </div>
+                @endforelse
             </div>
         </section>
 
@@ -349,17 +346,22 @@
                             Upcoming Events
                         </h3>
                         <div class="space-y-4">
-                            @foreach($eventItems as $event)
-                                <div
+                            @forelse($homeEventItems as $event)
+                                <a href="{{ route('events.show', $event->id) }}"
                                     class="border-l-4 border-teal-500 bg-slate-50 rounded-r-xl px-5 py-4 flex items-center justify-between gap-4 hover-lift">
                                     <div>
-                                        <p class="font-semibold text-sm">{{ $event[0] }}</p>
-                                        <p class="text-xs text-slate-500 mt-1">{{ $event[2] }}</p>
+                                        <p class="font-semibold text-sm">{{ $event->title }}</p>
+                                        <p class="text-xs text-slate-500 mt-1">{{ $event->location ?? 'Location to be announced' }}</p>
                                     </div>
                                     <span
-                                        class="text-xs font-bold px-3 py-1.5 rounded-full bg-teal-50 text-teal-700 whitespace-nowrap">{{ $event[1] }}</span>
+                                        class="text-xs font-bold px-3 py-1.5 rounded-full bg-teal-50 text-teal-700 whitespace-nowrap">{{ $event->start_at?->format('M d') }}</span>
+                                </a>
+                            @empty
+                                <div class="border-l-4 border-teal-500 bg-slate-50 rounded-r-xl px-5 py-4">
+                                    <p class="font-semibold text-sm text-slate-700">No upcoming events yet.</p>
+                                    <p class="text-xs text-slate-500 mt-1">Check back soon for new alumni events.</p>
                                 </div>
-                            @endforeach
+                            @endforelse
                         </div>
                     </div>
 
@@ -369,17 +371,25 @@
                             Curated Job Openings from Partners
                         </h3>
                         <div class="space-y-4">
-                            @foreach($jobItems as $job)
-                                <div class="border-l-4 rounded-r-xl px-5 py-4 flex items-center justify-between gap-4 hover-lift"
+                            @forelse($homeJobItems as $job)
+                                <a href="{{ route('jobs.index', ['type' => $job->type]) }}" class="border-l-4 rounded-r-xl px-5 py-4 flex items-center justify-between gap-4 hover-lift"
                                     style="border-color: var(--gold); background: #fffaf0;">
                                     <div>
-                                        <p class="font-semibold text-sm">{{ $job[0] }}</p>
-                                        <p class="text-xs text-slate-500 mt-1">{{ $job[2] }}</p>
+                                        <p class="font-semibold text-sm">{{ $job->title }}</p>
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            {{ ucfirst($job->type) }} · {{ $job->location ?: 'Remote' }}
+                                        </p>
                                     </div>
                                     <span class="text-xs font-bold px-3 py-1.5 rounded-full"
-                                        style="background: #fff2cf; color: #8d6a00;">{{ $job[1] }}</span>
-                                </div>
-                            @endforeach
+                                        style="background: #fff2cf; color: #8d6a00;">{{ $job->company_name }}</span>
+                                </a>
+                            @empty
+                                <a href="{{ route('jobs.index') }}" class="border-l-4 rounded-r-xl px-5 py-4 block hover-lift"
+                                    style="border-color: var(--gold); background: #fffaf0;">
+                                    <p class="font-semibold text-sm">No jobs posted yet.</p>
+                                    <p class="text-xs text-slate-500 mt-1">Explore the jobs board or post an opportunity.</p>
+                                </a>
+                            @endforelse
                         </div>
                     </div>
                 </div>

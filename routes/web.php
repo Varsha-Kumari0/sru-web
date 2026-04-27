@@ -2,15 +2,21 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventController;
+<<<<<<< HEAD
 use App\Http\Controllers\GalleryAdminController;
 use App\Http\Controllers\GalleryController;
+=======
+use App\Http\Controllers\JobOpportunityController;
+>>>>>>> e53461b9fea835974689db871b1a319a8ddfd101
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\SkillController;
 use App\Models\ActivityLog;
 use App\Models\Event;
+use App\Models\JobOpportunity;
 use App\Models\FeedComment;
+use App\Models\FeedPost;
 use App\Models\FeedReaction;
 use App\Models\FeedShare;
 use App\Models\News;
@@ -25,6 +31,7 @@ if (! function_exists('resolveFeedTarget')) {
     function resolveFeedTarget(string $feedType, int $feedId): bool
     {
         return match ($feedType) {
+            'post' => FeedPost::query()->whereKey($feedId)->exists(),
             'news' => News::query()->whereKey($feedId)->exists(),
             'event' => Event::query()->whereKey($feedId)->exists(),
             'testimonial' => Testimonial::query()->whereKey($feedId)->exists(),
@@ -46,10 +53,27 @@ Route::get('/', function () {
             ? redirect()->route('admin.dashboard')
             : redirect()->route('dashboard');
     }
+
+    $news = News::query()
+        ->latest('published_at')
+        ->take(4)
+        ->get();
+
+    $events = Event::query()
+        ->where('start_at', '>=', now())
+        ->orderBy('start_at', 'asc')
+        ->take(3)
+        ->get();
+
+    $jobs = JobOpportunity::query()
+        ->latest()
+        ->take(4)
+        ->get();
+
     return view('welcome', [
-        'news' => [],
-        'events' => [],
-        'jobs' => [],
+        'news' => $news,
+        'events' => $events,
+        'jobs' => $jobs,
     ]);
 });
 
@@ -66,6 +90,7 @@ Route::get('/newsroom', [NewsController::class, 'index'])->name('newsroom');
 Route::get('/newsroom/{id}', [NewsController::class, 'show'])->name('news.show');
 Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
 Route::get('/events/{id}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
+Route::get('/jobs', [JobOpportunityController::class, 'index'])->name('jobs.index');
 Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials.index');
 Route::view('/about', 'pages.about')->name('about');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
@@ -111,7 +136,13 @@ Route::get('/dashboard', function () {
         ->take(2)
         ->get();
 
-    $feedTypes = ['news', 'event', 'testimonial'];
+    $latestPosts = FeedPost::query()
+        ->with(['user.profile'])
+        ->latest()
+        ->take(10)
+        ->get();
+
+    $feedTypes = ['post', 'news', 'event', 'testimonial'];
 
     $reactionCounts = FeedReaction::query()
         ->whereIn('feed_type', $feedTypes)
@@ -152,6 +183,7 @@ Route::get('/dashboard', function () {
         'upcomingEvents',
         'latestNews',
         'latestTestimonials',
+        'latestPosts',
         'reactionCounts',
         'commentCounts',
         'shareCounts',
@@ -161,6 +193,46 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
+    Route::post('/dashboard/feed/posts', function (Request $request) {
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:1200'],
+            'post_type' => ['required', 'string', 'in:opportunity,meetup,memory,mentoring,update'],
+        ]);
+
+        $post = FeedPost::create([
+            'user_id' => Auth::id(),
+            'post_type' => $validated['post_type'],
+            'body' => $validated['body'],
+        ]);
+
+        $post->load(['user.profile']);
+
+        if ($request->expectsJson()) {
+            $authorName = $post->user?->profile?->full_name ?: ($post->user?->name ?? 'Alumni');
+
+            return response()->json([
+                'post' => [
+                    'id' => $post->id,
+                    'feed_type' => 'post',
+                    'feed_id' => $post->id,
+                    'kind' => ucwords($post->post_type),
+                    'source' => $authorName,
+                    'time' => 'Just now',
+                    'title' => 'Shared by ' . $authorName,
+                    'body' => $post->body,
+                    'href' => route('profile'),
+                    'cta' => 'View profile',
+                    'accent' => '#2a9d8f',
+                    'like_url' => route('dashboard.feed.like', ['post', $post->id]),
+                    'comment_url' => route('dashboard.feed.comments.store', ['post', $post->id]),
+                    'share_url' => route('dashboard.feed.share', ['post', $post->id]),
+                ],
+            ], 201);
+        }
+
+        return back()->with('status', 'Post shared.');
+    })->name('dashboard.feed.posts.store');
+
     Route::post('/dashboard/feed/{feedType}/{feedId}/like', function (string $feedType, int $feedId) {
         abort_unless(resolveFeedTarget($feedType, $feedId), 404);
 
@@ -175,10 +247,34 @@ Route::middleware(['auth'])->group(function () {
 
         if ($existing) {
             $existing->delete();
+            $count = FeedReaction::query()
+                ->where('feed_type', $feedType)
+                ->where('feed_id', $feedId)
+                ->count();
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'liked' => false,
+                    'count' => $count,
+                ]);
+            }
+
             return back()->with('status', 'Reaction removed.');
         }
 
         FeedReaction::create($attributes);
+
+        $count = FeedReaction::query()
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->count();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'liked' => true,
+                'count' => $count,
+            ]);
+        }
 
         return back()->with('status', 'Reaction added.');
     })->name('dashboard.feed.like');
@@ -190,12 +286,29 @@ Route::middleware(['auth'])->group(function () {
             'body' => ['required', 'string', 'max:500'],
         ]);
 
-        FeedComment::create([
+        $comment = FeedComment::create([
             'user_id' => Auth::id(),
             'feed_type' => $feedType,
             'feed_id' => $feedId,
             'body' => $validated['body'],
         ]);
+
+        $comment->load('user');
+
+        $count = FeedComment::query()
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->count();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'count' => $count,
+                'comment' => [
+                    'author' => $comment->user?->name ?? 'Alumni',
+                    'body' => $comment->body,
+                ],
+            ], 201);
+        }
 
         return back()->with('status', 'Comment posted.');
     })->name('dashboard.feed.comments.store');
@@ -208,6 +321,17 @@ Route::middleware(['auth'])->group(function () {
             'feed_type' => $feedType,
             'feed_id' => $feedId,
         ]);
+
+        $count = FeedShare::query()
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->count();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'count' => $count,
+            ]);
+        }
 
         return back()->with('status', 'Shared to your alumni activity.');
     })->name('dashboard.feed.share');
@@ -238,6 +362,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('skills', SkillController::class)->except(['show']);
     Route::post('/skills/{skill}/endorse', [SkillController::class, 'endorse'])->name('skills.endorse');
     Route::delete('/skills/{skill}/endorse', [SkillController::class, 'removeEndorsement'])->name('skills.remove-endorsement');
+
+    // 💼 JOBS AND INTERNSHIPS
+    Route::get('/jobs/create', [JobOpportunityController::class, 'create'])->name('jobs.create');
+    Route::post('/jobs', [JobOpportunityController::class, 'store'])->name('jobs.store');
 
     // 📝 BIO EDITING
     Route::get('/profile/edit-bio', [ProfileController::class, 'editBio'])->name('profile.edit-bio');

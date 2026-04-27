@@ -53,6 +53,30 @@
     .avatar-mark {
         background: linear-gradient(135deg, #1a2d4a, #2a9d8f);
     }
+    .compose-chip {
+        border-radius: 999px;
+        background: #f8f9fa;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #475569;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+    .compose-chip.is-selected {
+        background: #eefaf8;
+        color: #1a2d4a;
+        box-shadow: inset 0 0 0 1px #b2ece5;
+    }
+    .feed-toast {
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .feed-toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
 </style>
 
 @php
@@ -73,6 +97,24 @@
 
     $feedItems = collect();
 
+    foreach ($latestPosts as $post) {
+        $authorName = $post->user?->profile?->full_name ?: ($post->user?->name ?? 'Alumni');
+
+        $feedItems->push([
+            'feed_type' => 'post',
+            'feed_id' => $post->id,
+            'kind' => ucwords($post->post_type),
+            'source' => $authorName,
+            'time' => $post->created_at?->diffForHumans() ?? 'Recently',
+            'title' => 'Shared by ' . $authorName,
+            'body' => $post->body,
+            'href' => route('profile'),
+            'cta' => 'View profile',
+            'accent' => '#2a9d8f',
+            'sort_at' => $post->created_at,
+        ]);
+    }
+
     foreach ($latestNews as $item) {
         $feedItems->push([
             'feed_type' => 'news',
@@ -85,6 +127,7 @@
             'href' => route('news.show', $item->id),
             'cta' => 'Open note',
             'accent' => '#2a9d8f',
+            'sort_at' => $item->published_at ?? $item->created_at,
         ]);
     }
 
@@ -100,6 +143,7 @@
             'href' => route('events.show', $event->id),
             'cta' => 'Event details',
             'accent' => '#c9a84c',
+            'sort_at' => $event->start_at,
         ]);
     }
 
@@ -115,12 +159,13 @@
             'href' => route('testimonials.index'),
             'cta' => 'Read stories',
             'accent' => '#1a2d4a',
+            'sort_at' => $testimonial->created_at,
         ]);
     }
 
-    if ($feedItems->isEmpty()) {
-        $feedItems = collect();
-    }
+    $feedItems = $feedItems
+        ->sortByDesc(fn ($item) => $item['sort_at'] ?? now())
+        ->values();
 
     $currentPrompt = 'What is one thing you wish every current SRU student knew before graduating?';
 @endphp
@@ -203,7 +248,8 @@
                 </div>
 
                 <div class="pulse-card p-4">
-                    <div class="flex gap-3">
+                    <form method="POST" action="{{ route('dashboard.feed.posts.store') }}" class="js-compose-form flex gap-3">
+                        @csrf
                         <div class="h-12 w-12 rounded-2xl overflow-hidden inline-flex items-center justify-center text-white font-black avatar-mark shrink-0">
                             @if($avatarUrl)
                                 <img src="{{ $avatarUrl }}" alt="{{ $displayName }}" class="h-full w-full object-cover">
@@ -212,26 +258,30 @@
                             @endif
                         </div>
                         <div class="flex-1">
-                            <button type="button" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-left text-sm text-slate-500 hover:border-[#2a9d8f] hover:bg-[#f8fffe]">
-                                Share an achievement, question, referral, memory, or campus update
-                            </button>
+                            <textarea name="body" rows="1" maxlength="1200" required
+                                      class="js-compose-body w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm text-slate-700 focus:border-[#2a9d8f] focus:ring-[#2a9d8f]"
+                                      placeholder="Share an achievement, question, referral, memory, or campus update"></textarea>
+                            <input type="hidden" name="post_type" value="opportunity" class="js-compose-type">
                             <div class="mt-3 flex flex-wrap gap-2">
-                                <a href="{{ route('jobs.index') }}" class="rounded-full bg-[#f8f9fa] px-3 py-2 text-xs font-bold text-slate-600 hover:bg-[#eefaf8]">Opportunity</a>
-                                <a href="{{ route('events.index') }}" class="rounded-full bg-[#f8f9fa] px-3 py-2 text-xs font-bold text-slate-600 hover:bg-[#eefaf8]">Meetup</a>
-                                <a href="{{ route('gallery') }}" class="rounded-full bg-[#f8f9fa] px-3 py-2 text-xs font-bold text-slate-600 hover:bg-[#eefaf8]">Memory</a>
-                                <a href="{{ route('engage') }}" class="rounded-full bg-[#f8f9fa] px-3 py-2 text-xs font-bold text-slate-600 hover:bg-[#eefaf8]">Mentoring</a>
+                                <button type="button" class="compose-chip is-selected" data-compose-type="opportunity">Opportunity</button>
+                                <button type="button" class="compose-chip" data-compose-type="meetup">Meetup</button>
+                                <button type="button" class="compose-chip" data-compose-type="memory">Memory</button>
+                                <button type="button" class="compose-chip" data-compose-type="mentoring">Mentoring</button>
+                                <button type="submit" class="ml-auto rounded-full px-5 py-2 text-xs font-black text-white sru-hero-gradient">Post</button>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
 
+                <div class="js-feed-list space-y-5">
                 @forelse($feedItems as $item)
                     @php
                         $feedKey = $item['feed_type'] . ':' . $item['feed_id'];
+                        $feedDomId = $item['feed_type'] . '-' . $item['feed_id'];
                         $isLiked = $viewerReactionKeys->has($feedKey);
                         $comments = $commentGroups->get($feedKey, collect())->take(3);
                     @endphp
-                    <article class="pulse-post">
+                    <article class="pulse-post" data-feed-item data-feed-type="{{ $item['feed_type'] }}" data-feed-id="{{ $item['feed_id'] }}">
                         <div class="absolute left-0 top-0 h-full w-1.5" style="background:{{ $item['accent'] }};"></div>
                         <div class="p-5 md:p-6">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -252,33 +302,35 @@
                             <p class="mt-3 text-sm leading-7 text-slate-600">{{ $item['body'] }}</p>
 
                             <div class="mt-5 grid grid-cols-3 gap-2 border-y border-gray-100 py-3">
-                                <form method="POST" action="{{ route('dashboard.feed.like', [$item['feed_type'], $item['feed_id']]) }}">
+                                <form method="POST" action="{{ route('dashboard.feed.like', [$item['feed_type'], $item['feed_id']]) }}" class="js-like-form">
                                     @csrf
-                                    <button type="submit" class="pulse-action w-full {{ $isLiked ? 'is-active' : '' }}">
-                                        {{ $isLiked ? 'Liked' : 'Like' }}
-                                        <span class="font-black">{{ $reactionCounts->get($feedKey, 0) }}</span>
+                                    <button type="submit" class="pulse-action w-full {{ $isLiked ? 'is-active' : '' }}" data-liked="{{ $isLiked ? '1' : '0' }}">
+                                        <span class="js-like-label">{{ $isLiked ? 'Liked' : 'Like' }}</span>
+                                        <span class="font-black js-like-count">{{ $reactionCounts->get($feedKey, 0) }}</span>
                                     </button>
                                 </form>
-                                <a href="#comments-{{ $feedKey }}" class="pulse-action text-center">
-                                    Comment <span class="font-black">{{ $commentCounts->get($feedKey, 0) }}</span>
+                                <a href="#comments-{{ $feedDomId }}" class="pulse-action text-center js-focus-comment">
+                                    Comment <span class="font-black js-comment-count">{{ $commentCounts->get($feedKey, 0) }}</span>
                                 </a>
-                                <form method="POST" action="{{ route('dashboard.feed.share', [$item['feed_type'], $item['feed_id']]) }}">
+                                <form method="POST" action="{{ route('dashboard.feed.share', [$item['feed_type'], $item['feed_id']]) }}" class="js-share-form">
                                     @csrf
                                     <button type="submit" class="pulse-action w-full">
-                                        Share <span class="font-black">{{ $shareCounts->get($feedKey, 0) }}</span>
+                                        Share <span class="font-black js-share-count">{{ $shareCounts->get($feedKey, 0) }}</span>
                                     </button>
                                 </form>
                             </div>
 
-                            <div id="comments-{{ $feedKey }}" class="mt-4 space-y-3">
+                            <div id="comments-{{ $feedDomId }}" class="mt-4 space-y-3">
+                                <div class="js-comments-list space-y-3">
                                 @foreach($comments as $comment)
                                     <div class="rounded-2xl bg-[#f8f9fa] px-4 py-3">
                                         <p class="text-xs font-bold" style="color:#1a2d4a;">{{ $comment->user?->name ?? 'Alumni' }}</p>
                                         <p class="mt-1 text-sm leading-6 text-slate-600">{{ $comment->body }}</p>
                                     </div>
                                 @endforeach
+                                </div>
 
-                                <form method="POST" action="{{ route('dashboard.feed.comments.store', [$item['feed_type'], $item['feed_id']]) }}" class="flex flex-col gap-2 sm:flex-row">
+                                <form method="POST" action="{{ route('dashboard.feed.comments.store', [$item['feed_type'], $item['feed_id']]) }}" class="js-comment-form flex flex-col gap-2 sm:flex-row">
                                     @csrf
                                     <input name="body" maxlength="500" required
                                            class="min-w-0 flex-1 rounded-xl border-gray-200 text-sm focus:border-[#2a9d8f] focus:ring-[#2a9d8f]"
@@ -291,11 +343,12 @@
                         </div>
                     </article>
                 @empty
-                    <div class="pulse-card p-8 text-center">
+                    <div class="pulse-card p-8 text-center js-empty-feed">
                         <p class="text-lg font-bold" style="color:#1a2d4a;">Your alumni pulse is warming up.</p>
                         <p class="mt-2 text-sm text-slate-600">News, events, and alumni stories will appear here after they are published.</p>
                     </div>
                 @endforelse
+                </div>
             </section>
 
             <aside class="space-y-5 xl:sticky xl:top-5">
@@ -360,5 +413,227 @@
             </aside>
         </div>
     </main>
+
+    <div class="feed-toast fixed right-5 top-5 z-50 rounded-2xl border border-[#b2ece5] bg-white px-5 py-3 text-sm font-bold shadow-lg" style="color:#1a2d4a;" data-feed-toast></div>
 </div>
+
+<script>
+    (function () {
+        const feedList = document.querySelector('.js-feed-list');
+        const toast = document.querySelector('[data-feed-toast]');
+
+        function showToast(message) {
+            if (!toast) {
+                return;
+            }
+
+            toast.textContent = message;
+            toast.classList.add('is-visible');
+            window.setTimeout(function () {
+                toast.classList.remove('is-visible');
+            }, 2200);
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function csrfInput() {
+            const token = document.querySelector('input[name="_token"]')?.value || '';
+            return '<input type="hidden" name="_token" value="' + escapeHtml(token) + '">';
+        }
+
+        async function submitJson(form) {
+            const response = await fetch(form.action, {
+                method: form.method || 'POST',
+                body: new FormData(form),
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!response.ok) {
+                const data = await response.json().catch(function () {
+                    return {};
+                });
+                throw new Error(data.message || 'Something went wrong.');
+            }
+
+            return response.json();
+        }
+
+        function feedArticle(post) {
+            const domId = post.feed_type + '-' + post.feed_id;
+
+            return `
+                <article class="pulse-post" data-feed-item data-feed-type="${escapeHtml(post.feed_type)}" data-feed-id="${escapeHtml(post.feed_id)}">
+                    <div class="absolute left-0 top-0 h-full w-1.5" style="background:${escapeHtml(post.accent)};"></div>
+                    <div class="p-5 md:p-6">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <span class="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wide" style="background:#f8f9fa; color:${escapeHtml(post.accent)};">
+                                    ${escapeHtml(post.kind)}
+                                </span>
+                                <p class="mt-3 font-bold" style="color:#1a2d4a;">${escapeHtml(post.source)}</p>
+                                <p class="text-xs text-slate-500">${escapeHtml(post.time)}</p>
+                            </div>
+                            <a href="${escapeHtml(post.href)}" class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#2a9d8f]">
+                                ${escapeHtml(post.cta)}
+                            </a>
+                        </div>
+
+                        <h2 class="mt-5 text-xl md:text-2xl font-bold leading-snug" style="color:#1a2d4a;">${escapeHtml(post.title)}</h2>
+                        <p class="mt-3 text-sm leading-7 text-slate-600">${escapeHtml(post.body)}</p>
+
+                        <div class="mt-5 grid grid-cols-3 gap-2 border-y border-gray-100 py-3">
+                            <form method="POST" action="${escapeHtml(post.like_url)}" class="js-like-form">
+                                ${csrfInput()}
+                                <button type="submit" class="pulse-action w-full" data-liked="0">
+                                    <span class="js-like-label">Like</span>
+                                    <span class="font-black js-like-count">0</span>
+                                </button>
+                            </form>
+                            <a href="#comments-${escapeHtml(domId)}" class="pulse-action text-center js-focus-comment">
+                                Comment <span class="font-black js-comment-count">0</span>
+                            </a>
+                            <form method="POST" action="${escapeHtml(post.share_url)}" class="js-share-form">
+                                ${csrfInput()}
+                                <button type="submit" class="pulse-action w-full">
+                                    Share <span class="font-black js-share-count">0</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div id="comments-${escapeHtml(domId)}" class="mt-4 space-y-3">
+                            <div class="js-comments-list space-y-3"></div>
+                            <form method="POST" action="${escapeHtml(post.comment_url)}" class="js-comment-form flex flex-col gap-2 sm:flex-row">
+                                ${csrfInput()}
+                                <input name="body" maxlength="500" required class="min-w-0 flex-1 rounded-xl border-gray-200 text-sm focus:border-[#2a9d8f] focus:ring-[#2a9d8f]" placeholder="Add a thoughtful comment">
+                                <button type="submit" class="rounded-xl px-4 py-2 text-sm font-bold text-white sru-hero-gradient">Post</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        document.querySelectorAll('[data-compose-type]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const form = button.closest('.js-compose-form');
+                form.querySelector('.js-compose-type').value = button.dataset.composeType;
+                form.querySelectorAll('[data-compose-type]').forEach(function (chip) {
+                    chip.classList.toggle('is-selected', chip === button);
+                });
+            });
+        });
+
+        const composeBody = document.querySelector('.js-compose-body');
+        if (composeBody) {
+            composeBody.addEventListener('input', function () {
+                composeBody.style.height = 'auto';
+                composeBody.style.height = Math.min(composeBody.scrollHeight, 170) + 'px';
+            });
+        }
+
+        document.addEventListener('submit', async function (event) {
+            const composeForm = event.target.closest('.js-compose-form');
+            const likeForm = event.target.closest('.js-like-form');
+            const commentForm = event.target.closest('.js-comment-form');
+            const shareForm = event.target.closest('.js-share-form');
+
+            if (composeForm) {
+                event.preventDefault();
+                const submitButton = composeForm.querySelector('[type="submit"]');
+                submitButton.disabled = true;
+
+                try {
+                    const data = await submitJson(composeForm);
+                    document.querySelector('.js-empty-feed')?.remove();
+                    feedList.insertAdjacentHTML('afterbegin', feedArticle(data.post));
+                    composeForm.reset();
+                    composeForm.querySelector('.js-compose-type').value = 'opportunity';
+                    composeForm.querySelectorAll('[data-compose-type]').forEach(function (chip, index) {
+                        chip.classList.toggle('is-selected', index === 0);
+                    });
+                    if (composeBody) {
+                        composeBody.style.height = 'auto';
+                    }
+                    showToast('Post shared.');
+                } catch (error) {
+                    showToast(error.message);
+                } finally {
+                    submitButton.disabled = false;
+                }
+            }
+
+            if (likeForm) {
+                event.preventDefault();
+                const button = likeForm.querySelector('button');
+
+                try {
+                    const data = await submitJson(likeForm);
+                    button.classList.toggle('is-active', data.liked);
+                    button.dataset.liked = data.liked ? '1' : '0';
+                    button.querySelector('.js-like-label').textContent = data.liked ? 'Liked' : 'Like';
+                    button.querySelector('.js-like-count').textContent = data.count;
+                } catch (error) {
+                    showToast(error.message);
+                }
+            }
+
+            if (commentForm) {
+                event.preventDefault();
+                const input = commentForm.querySelector('input[name="body"]');
+                const article = commentForm.closest('[data-feed-item]');
+
+                try {
+                    const data = await submitJson(commentForm);
+                    article.querySelector('.js-comment-count').textContent = data.count;
+                    article.querySelector('.js-comments-list').insertAdjacentHTML('beforeend', `
+                        <div class="rounded-2xl bg-[#f8f9fa] px-4 py-3">
+                            <p class="text-xs font-bold" style="color:#1a2d4a;">${escapeHtml(data.comment.author)}</p>
+                            <p class="mt-1 text-sm leading-6 text-slate-600">${escapeHtml(data.comment.body)}</p>
+                        </div>
+                    `);
+                    input.value = '';
+                } catch (error) {
+                    showToast(error.message);
+                }
+            }
+
+            if (shareForm) {
+                event.preventDefault();
+
+                try {
+                    const data = await submitJson(shareForm);
+                    shareForm.querySelector('.js-share-count').textContent = data.count;
+                    showToast('Shared to your alumni activity.');
+                } catch (error) {
+                    showToast(error.message);
+                }
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            const focusLink = event.target.closest('.js-focus-comment');
+
+            if (!focusLink) {
+                return;
+            }
+
+            const article = focusLink.closest('[data-feed-item]');
+            const input = article.querySelector('.js-comment-form input[name="body"]');
+
+            if (input) {
+                input.focus();
+            }
+        });
+    })();
+</script>
 @endsection
