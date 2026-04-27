@@ -244,7 +244,7 @@
                 <div class="overflow-hidden">
                     <div class="carousel-track">
                         <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center"
-                            style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&q=80') center/cover no-repeat;">
+                            style="background: linear-gradient(110deg, rgba(10,31,68,.58), rgba(13,148,136,.34)), url('{{ asset('images/home-carosel1.jpeg') }}') center/cover no-repeat;">
                             <div class="max-w-7xl mx-auto px-6 sm:px-10 w-full reveal">
                                 <h1
                                     class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">
@@ -263,7 +263,7 @@
                         </article>
 
                         <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center"
-                            style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600&q=80') center/cover no-repeat;">
+                            style="background: linear-gradient(110deg, rgba(10,31,68,.58), rgba(13,148,136,.34)), url('{{ asset('images/home-carosel2.jpeg') }}') center/cover no-repeat;">
                             <div class="max-w-7xl mx-auto px-6 sm:px-10 w-full reveal">
                                 <h2
                                     class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">
@@ -274,7 +274,7 @@
                         </article>
 
                         <article class="carousel-slide min-h-[500px] md:min-h-[560px] flex items-center"
-                            style="background: linear-gradient(110deg, rgba(10,31,68,.86), rgba(13,148,136,.58)), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=80') center/cover no-repeat;">
+                            style="background: linear-gradient(110deg, rgba(10,31,68,.58), rgba(13,148,136,.34)), url('{{ asset('images/home-carosel3.jpeg') }}') center/cover no-repeat;">
                             <div class="max-w-7xl mx-auto px-6 sm:px-10 w-full reveal">
                                 <h2
                                     class="font-display text-white text-4xl sm:text-5xl md:text-6xl leading-tight max-w-3xl">
