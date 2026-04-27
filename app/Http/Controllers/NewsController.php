@@ -51,7 +51,7 @@ class NewsController extends Controller
         $recentUpdatedNews = News::query()
             ->latest('updated_at')
             ->limit(6)
-            ->get(['id', 'title', 'excerpt', 'published_at', 'updated_at']);
+            ->get(['id', 'title', 'excerpt', 'published_at', 'created_at', 'updated_at']);
 
         ActivityLog::record(
             $actor?->id,

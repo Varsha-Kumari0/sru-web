@@ -10,11 +10,28 @@ use App\Http\Controllers\SkillController;
 use App\Models\ActivityLog;
 use App\Models\Event;
 use App\Models\JobOpportunity;
+use App\Models\FeedComment;
+use App\Models\FeedReaction;
+use App\Models\FeedShare;
 use App\Models\News;
+use App\Models\Testimonial;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Http\Controllers\NewsController;
+
+if (! function_exists('resolveFeedTarget')) {
+    function resolveFeedTarget(string $feedType, int $feedId): bool
+    {
+        return match ($feedType) {
+            'news' => News::query()->whereKey($feedId)->exists(),
+            'event' => Event::query()->whereKey($feedId)->exists(),
+            'testimonial' => Testimonial::query()->whereKey($feedId)->exists(),
+            default => false,
+        };
+    }
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +42,9 @@ use App\Http\Controllers\NewsController;
 // 🏠 Home
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect()->route('admin.dashboard');
+        return Auth::user()?->role === 'admin'
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('dashboard');
     }
 
     $news = News::query()
@@ -66,6 +85,151 @@ Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->
 Route::get('/events/{id}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
 Route::get('/jobs', [JobOpportunityController::class, 'index'])->name('jobs.index');
 Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials.index');
+Route::view('/about', 'pages.about')->name('about');
+Route::view('/gallery', 'pages.gallery')->name('gallery');
+Route::view('/engage', 'pages.engage')->name('engage');
+Route::view('/contact', 'pages.contact')->name('contact');
+Route::view('/jobs', 'pages.jobs')->name('jobs.index');
+
+Route::get('/dashboard', function () {
+    $user = Auth::user();
+
+    if ($user?->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+
+    $profile = $user->profile;
+
+    $latestMembers = User::query()
+        ->where('role', 'user')
+        ->with('profile')
+        ->latest()
+        ->take(6)
+        ->get();
+
+    $memberCount = User::query()
+        ->where('role', 'user')
+        ->count();
+
+    $upcomingEvents = Event::query()
+        ->where('start_at', '>=', now())
+        ->orderBy('start_at')
+        ->take(3)
+        ->get();
+
+    $latestNews = News::query()
+        ->latest('published_at')
+        ->latest('created_at')
+        ->take(3)
+        ->get();
+
+    $latestTestimonials = Testimonial::query()
+        ->where('status', 'active')
+        ->latest()
+        ->take(2)
+        ->get();
+
+    $feedTypes = ['news', 'event', 'testimonial'];
+
+    $reactionCounts = FeedReaction::query()
+        ->whereIn('feed_type', $feedTypes)
+        ->get()
+        ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
+        ->map(fn ($items) => $items->count());
+
+    $commentCounts = FeedComment::query()
+        ->whereIn('feed_type', $feedTypes)
+        ->get()
+        ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
+        ->map(fn ($items) => $items->count());
+
+    $shareCounts = FeedShare::query()
+        ->whereIn('feed_type', $feedTypes)
+        ->get()
+        ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
+        ->map(fn ($items) => $items->count());
+
+    $viewerReactionKeys = FeedReaction::query()
+        ->where('user_id', $user->id)
+        ->whereIn('feed_type', $feedTypes)
+        ->get()
+        ->mapWithKeys(fn ($item) => [$item->feed_type . ':' . $item->feed_id => true]);
+
+    $commentGroups = FeedComment::query()
+        ->with('user')
+        ->whereIn('feed_type', $feedTypes)
+        ->latest()
+        ->get()
+        ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id);
+
+    return view('dashboard', compact(
+        'user',
+        'profile',
+        'latestMembers',
+        'memberCount',
+        'upcomingEvents',
+        'latestNews',
+        'latestTestimonials',
+        'reactionCounts',
+        'commentCounts',
+        'shareCounts',
+        'viewerReactionKeys',
+        'commentGroups'
+    ));
+})->middleware(['auth'])->name('dashboard');
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/dashboard/feed/{feedType}/{feedId}/like', function (string $feedType, int $feedId) {
+        abort_unless(resolveFeedTarget($feedType, $feedId), 404);
+
+        $attributes = [
+            'user_id' => Auth::id(),
+            'feed_type' => $feedType,
+            'feed_id' => $feedId,
+            'reaction' => 'like',
+        ];
+
+        $existing = FeedReaction::query()->where($attributes)->first();
+
+        if ($existing) {
+            $existing->delete();
+            return back()->with('status', 'Reaction removed.');
+        }
+
+        FeedReaction::create($attributes);
+
+        return back()->with('status', 'Reaction added.');
+    })->name('dashboard.feed.like');
+
+    Route::post('/dashboard/feed/{feedType}/{feedId}/comments', function (Request $request, string $feedType, int $feedId) {
+        abort_unless(resolveFeedTarget($feedType, $feedId), 404);
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:500'],
+        ]);
+
+        FeedComment::create([
+            'user_id' => Auth::id(),
+            'feed_type' => $feedType,
+            'feed_id' => $feedId,
+            'body' => $validated['body'],
+        ]);
+
+        return back()->with('status', 'Comment posted.');
+    })->name('dashboard.feed.comments.store');
+
+    Route::post('/dashboard/feed/{feedType}/{feedId}/share', function (string $feedType, int $feedId) {
+        abort_unless(resolveFeedTarget($feedType, $feedId), 404);
+
+        FeedShare::create([
+            'user_id' => Auth::id(),
+            'feed_type' => $feedType,
+            'feed_id' => $feedId,
+        ]);
+
+        return back()->with('status', 'Shared to your alumni activity.');
+    })->name('dashboard.feed.share');
+});
 
 // 🔐 AUTH REQUIRED ROUTES
 Route::middleware(['auth'])->group(function () {

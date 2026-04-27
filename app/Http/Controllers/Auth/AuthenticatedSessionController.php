@@ -45,7 +45,7 @@ class AuthenticatedSessionController extends Controller
         $profile = Profile::where('user_id', $user->id)->first();
 
         if ($profile) {
-            return redirect()->route('profile');
+            return redirect()->route('dashboard');
         }
 
         return redirect()->route('profile.create');

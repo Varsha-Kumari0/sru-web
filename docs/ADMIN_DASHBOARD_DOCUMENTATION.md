@@ -160,8 +160,12 @@ The profile record currently includes additional personal/social fields such as:
 - The panel is ordered by latest updated_at and shows:
   - title
   - excerpt
-  - updated timestamp
+  - created or updated timestamp (see badge logic below)
   - published date
+- Badge logic in the Recent News panel:
+  - If created_at equals updated_at, a green "Created" badge is shown and the timestamp is labeled "Created:"
+  - If created_at differs from updated_at, a blue "Updated" badge is shown and the timestamps are labeled "Updated:" and "Created:" (both shown)
+  - This is determined at render time by fetching both created_at and updated_at for each item
 - News manage page lists existing news items with per-item Update and Delete buttons.
 - News edit page supports updating title, excerpt, content, published date, and optional image replacement.
 - Replacing an image removes the previous file from public/images.
@@ -184,8 +188,12 @@ The profile record currently includes additional personal/social fields such as:
 - The panel is ordered by latest updated_at and shows:
   - title
   - excerpt
-  - updated timestamp
+  - created or updated timestamp (see badge logic below)
   - start date/time
+- Badge logic in the Recent Events panel:
+  - If created_at equals updated_at, a green "Created" badge is shown and the timestamp is labeled "Created:"
+  - If created_at differs from updated_at, a blue "Updated" badge is shown and the timestamps are labeled "Updated:" and "Created:" (both shown)
+  - This is determined at render time by fetching both created_at and updated_at for each item
 - Events manage page lists existing events with per-item Update and Delete buttons.
 - Events are displayed as cards with title, excerpt, event type badge, and date/time information.
 - Event type values: campus-events, hackathons, reunions, webinars.
@@ -378,6 +386,10 @@ Recommended checks:
 15. Use the Export CSV button on All SRU Alumni; verify the file has the documented 24 columns and filtered exports only include matching rows.
 16. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
+17. Create a new News item and verify the Recent News panel shows a green "Created" badge with a "Created:" timestamp.
+    Then edit that News item and verify the panel now shows a blue "Updated" badge with both "Updated:" and "Created:" timestamps.
+18. Create a new Event and verify the Recent Events panel shows a green "Created" badge with a "Created:" timestamp.
+    Then edit that Event and verify the panel now shows a blue "Updated" badge with both "Updated:" and "Created:" timestamps.
 17. Open Activity Logs with various filters (date range, actor, action type); verify filters work correctly and Export CSV respects the filtered results.
 18. On Activity Logs page, verify the layout fits within a standard browser window without horizontal scroll; verify sidebar logo area aligns with top header.
 19. Open Events -> New and verify the right-side "Recent Events" panel is visible and ordered by latest update time.

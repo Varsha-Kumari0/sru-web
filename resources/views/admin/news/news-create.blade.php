@@ -235,11 +235,20 @@
                                     <p class="truncate text-sm font-semibold text-slate-900">{{ $recentNews->title }}</p>
                                     <p class="mt-1 line-clamp-2 text-xs text-slate-600">{{ $recentNews->excerpt }}</p>
                                 </div>
-                                <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">Updated</span>
+                                @if($recentNews->created_at?->eq($recentNews->updated_at))
+                                    <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-green-50 px-2 py-1 text-[11px] font-semibold text-green-700">Created</span>
+                                @else
+                                    <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">Updated</span>
+                                @endif
                             </div>
 
                             <div class="mt-3 space-y-1 text-xs text-slate-500">
-                                <div>Updated: {{ $recentNews->updated_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                @if($recentNews->created_at?->eq($recentNews->updated_at))
+                                    <div>Created: {{ $recentNews->created_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                @else
+                                    <div>Updated: {{ $recentNews->updated_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                    <div>Created: {{ $recentNews->created_at?->format('d M Y, h:i A') ?? '-' }}</div>
+                                @endif
                                 <div>Published: {{ $recentNews->published_at?->format('d M Y') ?? '-' }}</div>
                             </div>
                         </div>
