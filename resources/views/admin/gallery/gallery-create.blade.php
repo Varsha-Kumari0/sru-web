@@ -122,8 +122,10 @@
 
                     @if($section === 'albums')
                         <div>
-                            <label for="photo_count" class="mb-1.5 block text-sm font-semibold text-slate-700">Photo Count</label>
-                            <input type="number" min="0" id="photo_count" name="photo_count" value="{{ old('photo_count', 0) }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                            <label for="photos" class="mb-1.5 block text-sm font-semibold text-slate-700">Album Photos <span class="text-slate-400 font-normal">(select multiple)</span></label>
+                            <input type="file" id="photos" name="photos[]" accept="image/jpeg,image/png,image/jpg,image/webp" multiple
+                                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                            <p id="photo-count-hint" class="mt-1 text-xs text-slate-400">No photos selected.</p>
                         </div>
                     @endif
 
@@ -150,7 +152,7 @@
                             <input type="number" min="0" id="display_order" name="display_order" value="{{ old('display_order', 0) }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">Image <span class="text-slate-400 font-normal">(optional)</span></label>
+                            <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">{{ $section === 'albums' ? 'Cover Image' : 'Image' }} <span class="text-slate-400 font-normal">(optional)</span></label>
                             <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/jpg,image/webp" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                         </div>
                     </div>
@@ -193,5 +195,15 @@
         </div>
     </div>
 </main>
+<script>
+    const photosInput = document.getElementById('photos');
+    if (photosInput) {
+        photosInput.addEventListener('change', function () {
+            const hint = document.getElementById('photo-count-hint');
+            const count = photosInput.files.length;
+            hint.textContent = count > 0 ? count + ' photo' + (count !== 1 ? 's' : '') + ' selected.' : 'No photos selected.';
+        });
+    }
+</script>
 </body>
 </html>

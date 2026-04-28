@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GalleryAlbum extends Model
 {
@@ -27,4 +28,21 @@ class GalleryAlbum extends Model
         'published_at' => 'date',
         'display_order' => 'integer',
     ];
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(GalleryAlbumPhoto::class)->orderBy('display_order');
+    }
+
+    public function getCoverImageUrl(): ?string
+    {
+        if ($this->cover_image) {
+            return asset('images/' . $this->cover_image);
+        }
+        $photo = $this->photos()->inRandomOrder()->first();
+        if ($photo) {
+            return asset('images/albums/' . $photo->file_name);
+        }
+        return null;
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\GalleryAlbum;
+use App\Models\GalleryAlbumPhoto;
 use App\Models\GalleryMemory;
 use App\Models\GalleryVideo;
 use Illuminate\Http\Request;
@@ -54,10 +55,13 @@ class GalleryAdminController extends Controller
             return $request->validate([
                 'title' => 'required|string|max:255',
                 'summary' => 'nullable|string',
-                'photo_count' => 'nullable|integer|min:0',
                 'published_at' => 'nullable|date',
                 'display_order' => 'nullable|integer|min:0',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+                'photos' => 'nullable|array',
+                'photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+                'delete_photos' => 'nullable|array',
+                'delete_photos.*' => 'integer',
             ]);
         }
 
@@ -117,7 +121,6 @@ class GalleryAdminController extends Controller
             return [
                 'title' => $validated['title'],
                 'summary' => $validated['summary'] ?? null,
-                'photo_count' => (int) ($validated['photo_count'] ?? 0),
                 'is_featured' => $request->boolean('is_featured'),
                 'is_active' => $request->boolean('is_active', true),
                 'published_at' => $validated['published_at'] ?? null,
@@ -193,6 +196,20 @@ class GalleryAdminController extends Controller
 
         $item = $modelClass::create($payload);
 
+        if ($section === 'albums' && $request->hasFile('photos')) {
+            $order = 0;
+            foreach ($request->file('photos') as $photo) {
+                $photoName = time() . '_' . $order . '_' . preg_replace('/[^A-Za-z0-9_.-]/', '_', $photo->getClientOriginalName());
+                $photo->move(public_path('images/albums'), $photoName);
+                GalleryAlbumPhoto::create([
+                    'gallery_album_id' => $item->id,
+                    'file_name' => $photoName,
+                    'display_order' => $order++,
+                ]);
+            }
+            $item->update(['photo_count' => $item->photos()->count()]);
+        }
+
         $actor = Auth::user();
         $itemTitle = (string) ($item->{$sectionInfo['title_field']} ?? 'Gallery Item');
 
@@ -226,6 +243,38 @@ class GalleryAdminController extends Controller
         $payload[$sectionInfo['image_field']] = $this->storeImage($request, $sectionInfo['image_field'], $item->{$sectionInfo['image_field']});
 
         $item->update($payload);
+
+        if ($section === 'albums') {
+            // Delete selected photos
+            if (!empty($validated['delete_photos'])) {
+                $toDelete = GalleryAlbumPhoto::query()
+                    ->where('gallery_album_id', $item->id)
+                    ->whereIn('id', $validated['delete_photos'])
+                    ->get();
+                foreach ($toDelete as $photo) {
+                    $path = public_path('images/albums/' . $photo->file_name);
+                    if (File::exists($path)) {
+                        File::delete($path);
+                    }
+                    $photo->delete();
+                }
+            }
+            // Store new uploaded photos
+            if ($request->hasFile('photos')) {
+                $order = (int) ($item->photos()->max('display_order') ?? -1) + 1;
+                foreach ($request->file('photos') as $photo) {
+                    $photoName = time() . '_' . $order . '_' . preg_replace('/[^A-Za-z0-9_.-]/', '_', $photo->getClientOriginalName());
+                    $photo->move(public_path('images/albums'), $photoName);
+                    GalleryAlbumPhoto::create([
+                        'gallery_album_id' => $item->id,
+                        'file_name' => $photoName,
+                        'display_order' => $order++,
+                    ]);
+                }
+            }
+            // Sync photo count
+            $item->update(['photo_count' => $item->photos()->count()]);
+        }
 
         $actor = Auth::user();
         $itemTitle = (string) ($item->{$sectionInfo['title_field']} ?? 'Gallery Item');
@@ -262,6 +311,16 @@ class GalleryAdminController extends Controller
             $imagePath = public_path('images/' . $item->{$imageField});
             if (File::exists($imagePath)) {
                 File::delete($imagePath);
+            }
+        }
+
+        // Delete all album photos from disk
+        if ($section === 'albums') {
+            foreach ($item->photos as $photo) {
+                $path = public_path('images/albums/' . $photo->file_name);
+                if (File::exists($path)) {
+                    File::delete($path);
+                }
             }
         }
 

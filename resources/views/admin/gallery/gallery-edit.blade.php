@@ -110,9 +110,29 @@
                 @endif
 
                 @if($section === 'albums')
+                    @php $existingPhotos = $item->photos; @endphp
+                    @if($existingPhotos->isNotEmpty())
+                        <div>
+                            <label class="mb-1.5 block text-sm font-semibold text-slate-700">Existing Photos ({{ $existingPhotos->count() }})</label>
+                            <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+                                @foreach($existingPhotos as $photo)
+                                    <div class="relative">
+                                        <img src="{{ asset('images/albums/' . $photo->file_name) }}" alt="Photo" class="h-20 w-full rounded-lg object-cover ring-1 ring-slate-200">
+                                        <label class="absolute top-1 right-1 cursor-pointer">
+                                            <input type="checkbox" name="delete_photos[]" value="{{ $photo->id }}" class="sr-only peer">
+                                            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-xs text-red-600 ring-1 ring-red-300 peer-checked:bg-red-600 peer-checked:text-white">✕</span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <p class="mt-1 text-xs text-slate-400">Click the ✕ on a photo to mark it for deletion.</p>
+                        </div>
+                    @endif
                     <div>
-                        <label for="photo_count" class="mb-1.5 block text-sm font-semibold text-slate-700">Photo Count</label>
-                        <input type="number" min="0" id="photo_count" name="photo_count" value="{{ old('photo_count', $item->photo_count) }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        <label for="photos" class="mb-1.5 block text-sm font-semibold text-slate-700">Add More Photos <span class="text-slate-400 font-normal">(optional)</span></label>
+                        <input type="file" id="photos" name="photos[]" accept="image/jpeg,image/png,image/jpg,image/webp" multiple
+                               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                        <p id="photo-count-hint" class="mt-1 text-xs text-slate-400">No new photos selected.</p>
                     </div>
                 @endif
 
@@ -139,7 +159,7 @@
                         <input type="number" min="0" id="display_order" name="display_order" value="{{ old('display_order', $item->display_order) }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                     </div>
                     <div>
-                        <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">Replace Image</label>
+                        <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">{{ $section === 'albums' ? 'Replace Cover Image' : 'Replace Image' }}</label>
                         <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/jpg,image/webp" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                     </div>
                 </div>
@@ -166,5 +186,15 @@
         </div>
     </div>
 </main>
+<script>
+    const photosInput = document.getElementById('photos');
+    if (photosInput) {
+        photosInput.addEventListener('change', function () {
+            const hint = document.getElementById('photo-count-hint');
+            const count = photosInput.files.length;
+            hint.textContent = count > 0 ? count + ' new photo' + (count !== 1 ? 's' : '') + ' selected.' : 'No new photos selected.';
+        });
+    }
+</script>
 </body>
 </html>

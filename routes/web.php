@@ -91,6 +91,7 @@ Route::get('/jobs', [JobOpportunityController::class, 'index'])->name('jobs.inde
 Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials.index');
 Route::view('/about', 'pages.about')->name('about');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
+Route::get('/gallery/albums/{id}', [GalleryController::class, 'albumShow'])->name('gallery.album.show');
 Route::view('/engage', 'pages.engage')->name('engage');
 Route::view('/contact', 'pages.contact')->name('contact');
 Route::view('/jobs', 'pages.jobs')->name('jobs.index');

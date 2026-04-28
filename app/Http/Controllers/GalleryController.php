@@ -33,4 +33,14 @@ class GalleryController extends Controller
 
         return view('pages.gallery', compact('albums', 'videos', 'memories', 'featuredAlbum'));
     }
+
+    public function albumShow(int $id)
+    {
+        $album = GalleryAlbum::query()
+            ->where('is_active', true)
+            ->with('photos')
+            ->findOrFail($id);
+
+        return view('pages.gallery-album', compact('album'));
+    }
 }
