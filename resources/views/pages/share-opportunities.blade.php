@@ -28,7 +28,7 @@
                     <div class="rounded-3xl bg-slate-50 border border-slate-200 p-6">
                         <h2 class="text-lg font-bold text-[#1a2d4a]">Share now</h2>
                         <p class="mt-3 text-sm text-slate-600">Have an opportunity ready? Tell us the role and the ideal candidate profile, and we’ll promote it to SRU alumni.</p>
-                        <a href="{{ route('contact') }}" class="mt-4 inline-flex items-center justify-center rounded-xl bg-[#2a9d8f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#237f72]">Submit an opportunity</a>
+                        <a href="{{ route('jobs.index') }}" class="mt-4 inline-flex items-center justify-center rounded-xl bg-[#2a9d8f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#237f72]">Submit an opportunity</a>
                     </div>
                 </div>
                 <div class="rounded-3xl bg-[#f8faf9] border border-slate-200 p-8">
