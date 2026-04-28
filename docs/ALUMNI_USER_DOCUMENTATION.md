@@ -250,6 +250,10 @@ Authenticated alumni:
   - hard-refresh login page
   - clear cookies for both host variants if stale sessions remain
 
+### Documentation Sync Note (2026-04-28)
+- Documentation was refreshed after admin navigation consistency fixes.
+- Cross-role behavior for alumni routes is unchanged; this note keeps user docs aligned with the latest admin-side navigation and local-auth troubleshooting updates.
+
 ## 8. Common Issues and Fixes
 
 ### 8.1 Unknown column father_name

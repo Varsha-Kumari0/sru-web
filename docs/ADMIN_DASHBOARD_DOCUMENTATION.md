@@ -303,6 +303,14 @@ The profile record currently includes additional personal/social fields such as:
   - jobs create/manage/edit
 - Gallery and Jobs links now remain visible even when navigating from non-module pages (for example Activity Logs and Alumni pages).
 
+### 2.12 Documentation Refresh Sync (2026-04-28)
+- Final consistency pass completed for admin sidebar navigation coverage.
+- Confirmed Gallery flyout visibility on previously missing admin surfaces:
+  - Activity Logs page
+  - All Alumni page
+  - Edit Alumni page
+- Confirmed Jobs and Gallery flyouts are now consistently available across the full admin page set.
+
 ## 3. Permanent Activity Audit
 
 ### 3.1 activity_logs Table

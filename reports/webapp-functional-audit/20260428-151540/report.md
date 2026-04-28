@@ -107,3 +107,11 @@
 	- Gallery flyout present across non-gallery admin pages.
 - Local login reliability note documented:
 	- local host consistency (127.0.0.1) used to avoid local-session 419 mismatches.
+
+# Latest Sync Refresh (2026-04-28)
+
+- Added final documentation alignment after admin sidebar visibility corrections.
+- Gallery flyout availability on non-gallery admin pages is now explicitly captured as completed:
+	- Activity Logs
+	- All Alumni
+	- Edit Alumni

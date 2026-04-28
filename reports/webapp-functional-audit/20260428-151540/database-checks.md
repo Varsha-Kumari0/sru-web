@@ -50,6 +50,11 @@
 	- no schema impact
 	- no persistent data model change
 
+# Latest Documentation Refresh Note (2026-04-28)
+
+- Gallery sidebar visibility fixes (Activity Logs / Alumni pages) are UI navigation changes only.
+- Confirmed no database migration or data mutation requirement for this refresh.
+
 # Blockers or Risks
 
 - `php artisan db:show --counts` failed due to missing `performance_schema.session_status` table in this MySQL setup. Used safe fallback checks via `tinker`.
