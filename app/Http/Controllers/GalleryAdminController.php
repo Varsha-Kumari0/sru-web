@@ -169,6 +169,17 @@ class GalleryAdminController extends Controller
 
         $recentItems = $this->listSectionItems($section)->take(6);
 
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_gallery_create_opened',
+            ($actor?->name ?? 'Admin') . ' opened gallery create page (' . strtolower($sectionLabel) . ')',
+            [
+                'section' => $section,
+            ]
+        );
+
         return view('admin.gallery.gallery-create', compact('section', 'sections', 'sectionLabel', 'recentItems'));
     }
 
@@ -178,6 +189,17 @@ class GalleryAdminController extends Controller
         $sections = $this->sectionMap();
         $sectionLabel = $sections[$section]['label'];
         $items = $this->listSectionItems($section);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_gallery_manage_opened',
+            ($actor?->name ?? 'Admin') . ' opened gallery manage page (' . strtolower($sectionLabel) . ')',
+            [
+                'section' => $section,
+            ]
+        );
 
         return view('admin.gallery.gallery-manage', compact('section', 'sections', 'sectionLabel', 'items'));
     }
@@ -190,6 +212,20 @@ class GalleryAdminController extends Controller
 
         $modelClass = $sections[$section]['model'];
         $item = $modelClass::query()->findOrFail($id);
+
+        $actor = Auth::user();
+        $itemTitle = (string) ($item->{$sections[$section]['title_field']} ?? 'Gallery Item');
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_gallery_edit_opened',
+            ($actor?->name ?? 'Admin') . ' opened gallery edit page for ' . strtolower($sectionLabel) . ': ' . $itemTitle,
+            [
+                'section' => $section,
+                'item_id' => $id,
+                'title' => $itemTitle,
+            ]
+        );
 
         return view('admin.gallery.gallery-edit', compact('section', 'sections', 'sectionLabel', 'item'));
     }

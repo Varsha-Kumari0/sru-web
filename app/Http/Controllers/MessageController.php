@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
@@ -40,10 +42,25 @@ class MessageController extends Controller
     public function show(User $user): View
     {
         // Mark messages as read
-        Message::where('sender_id', $user->id)
+        $markedAsRead = Message::where('sender_id', $user->id)
             ->where('receiver_id', auth()->id())
             ->where('is_read', false)
             ->update(['is_read' => true, 'read_at' => now()]);
+
+        if ($markedAsRead > 0) {
+            $actor = Auth::user();
+            ActivityLog::record(
+                $actor?->id,
+                $user->id,
+                'messages_marked_read',
+                ($actor?->name ?? 'Alumni') . ' read messages from ' . ($user->name ?? 'User'),
+                [
+                    'counterpart_user_id' => $user->id,
+                    'counterpart_name' => $user->name,
+                    'messages_marked_read' => $markedAsRead,
+                ]
+            );
+        }
 
         // Get conversation
         $messages = Message::betweenUsers(auth()->id(), $user->id)
@@ -61,13 +78,27 @@ class MessageController extends Controller
             'subject' => 'nullable|string|max:255',
         ]);
 
-        Message::create([
+        $message = Message::create([
             'sender_id' => auth()->id(),
             'receiver_id' => $user->id,
             'subject' => $request->subject,
             'content' => $request->content,
             'is_read' => false,
         ]);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $user->id,
+            'message_sent',
+            ($actor?->name ?? 'Alumni') . ' sent a message to ' . ($user->name ?? 'User'),
+            [
+                'message_id' => $message->id,
+                'receiver_user_id' => $user->id,
+                'receiver_name' => $user->name,
+                'has_subject' => !empty($request->subject),
+            ]
+        );
 
         return redirect()->back()->with('success', 'Message sent successfully!');
     }
@@ -84,6 +115,20 @@ class MessageController extends Controller
             'content' => $request->content,
             'is_read' => false,
         ]);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $user->id,
+            'message_sent',
+            ($actor?->name ?? 'Alumni') . ' sent a message to ' . ($user->name ?? 'User'),
+            [
+                'message_id' => $message->id,
+                'receiver_user_id' => $user->id,
+                'receiver_name' => $user->name,
+                'has_subject' => false,
+            ]
+        );
 
         return response()->json([
             'success' => true,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\JobOpportunity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -176,6 +177,21 @@ class JobOpportunityController extends Controller
             'attachment_original_name' => $attachmentName,
         ]);
 
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'job_opportunity_created',
+            ($actor?->name ?? 'Alumni') . ' created ' . $job->type . ' opportunity: ' . $job->title,
+            [
+                'job_id' => $job->id,
+                'type' => $job->type,
+                'title' => $job->title,
+                'company_name' => $job->company_name,
+                'work_mode' => $job->work_mode,
+            ]
+        );
+
         return redirect()
             ->route('jobs.index', ['type' => $job->type])
             ->with('success', ucfirst($job->type) . ' posted successfully.');
@@ -252,6 +268,21 @@ class JobOpportunityController extends Controller
             'attachment' => $attachmentPath,
             'attachment_original_name' => $attachmentName,
         ]);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'job_opportunity_updated',
+            ($actor?->name ?? 'Alumni') . ' updated ' . $job->type . ' opportunity: ' . $job->title,
+            [
+                'job_id' => $job->id,
+                'type' => $job->type,
+                'title' => $job->title,
+                'company_name' => $job->company_name,
+                'work_mode' => $job->work_mode,
+            ]
+        );
 
         return redirect()
             ->route('jobs.index', ['type' => $job->type])

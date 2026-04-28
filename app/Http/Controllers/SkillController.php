@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -36,6 +37,18 @@ class SkillController extends Controller
             'endorsements_count' => 0,
         ]);
 
+        ActivityLog::record(
+            auth()->id(),
+            auth()->id(),
+            'skill_created',
+            (auth()->user()?->name ?? 'Alumni') . ' added skill: ' . $skill->name,
+            [
+                'skill_id' => $skill->id,
+                'name' => $skill->name,
+                'level' => $skill->level,
+            ]
+        );
+
         return response()->json([
             'success' => true,
             'skill' => $skill,
@@ -58,10 +71,24 @@ class SkillController extends Controller
             'level' => 'required|in:beginner,intermediate,advanced,expert',
         ]);
 
+        $previousData = $skill->only(['name', 'level']);
+
         $skill->update([
             'name' => $request->name,
             'level' => $request->level,
         ]);
+
+        ActivityLog::record(
+            auth()->id(),
+            auth()->id(),
+            'skill_updated',
+            (auth()->user()?->name ?? 'Alumni') . ' updated skill: ' . $skill->name,
+            [
+                'skill_id' => $skill->id,
+                'before' => $previousData,
+                'after' => $skill->only(['name', 'level']),
+            ]
+        );
 
         return redirect()->route('skills.index')->with('success', 'Skill updated successfully!');
     }
@@ -73,7 +100,19 @@ class SkillController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
+        $skillSnapshot = $skill->only(['id', 'name', 'level', 'endorsements_count']);
+
         $skill->delete();
+
+        ActivityLog::record(
+            auth()->id(),
+            auth()->id(),
+            'skill_deleted',
+            (auth()->user()?->name ?? 'Alumni') . ' removed skill: ' . ($skillSnapshot['name'] ?? 'Skill'),
+            [
+                'skill' => $skillSnapshot,
+            ]
+        );
 
         return response()->json([
             'success' => true,
@@ -97,6 +136,19 @@ class SkillController extends Controller
 
         $skill->increment('endorsements_count');
 
+        ActivityLog::record(
+            $user->id,
+            $skill->user_id,
+            'skill_endorsed',
+            ($user->name ?? 'Alumni') . ' endorsed skill ' . $skill->name,
+            [
+                'skill_id' => $skill->id,
+                'skill_name' => $skill->name,
+                'owner_user_id' => $skill->user_id,
+                'endorsements_count' => $skill->endorsements_count,
+            ]
+        );
+
         return response()->json([
             'success' => true,
             'endorsements_count' => $skill->endorsements_count,
@@ -115,6 +167,19 @@ class SkillController extends Controller
 
         $endorsement->delete();
         $skill->decrement('endorsements_count');
+
+        ActivityLog::record(
+            $user->id,
+            $skill->user_id,
+            'skill_endorsement_removed',
+            ($user->name ?? 'Alumni') . ' removed endorsement for skill ' . $skill->name,
+            [
+                'skill_id' => $skill->id,
+                'skill_name' => $skill->name,
+                'owner_user_id' => $skill->user_id,
+                'endorsements_count' => $skill->endorsements_count,
+            ]
+        );
 
         return response()->json([
             'success' => true,

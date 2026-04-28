@@ -72,12 +72,35 @@ class NewsController extends Controller
             ->latest('updated_at')
             ->get();
 
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_news_manage_opened',
+            ($actor?->name ?? 'Admin') . ' opened manage news page',
+            [
+                'mode' => $mode,
+            ]
+        );
+
         return view('admin.news.news-manage', compact('newsItems', 'mode'));
     }
 
     public function adminEdit($id)
     {
         $news = News::query()->findOrFail($id);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_news_edit_opened',
+            ($actor?->name ?? 'Admin') . ' opened edit news page for: ' . $news->title,
+            [
+                'news_id' => $news->id,
+                'title' => $news->title,
+            ]
+        );
 
         return view('admin.news.news-edit', compact('news'));
     }

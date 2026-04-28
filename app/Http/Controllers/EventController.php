@@ -145,12 +145,33 @@ class EventController extends Controller
     {
         $events = Event::query()->latest('start_at')->get();
 
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_event_manage_opened',
+            ($actor?->name ?? 'Admin') . ' opened manage events page',
+            []
+        );
+
         return view('admin.events.event-manage', compact('events'));
     }
 
     public function adminEdit($id)
     {
         $event = Event::query()->findOrFail($id);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_event_edit_opened',
+            ($actor?->name ?? 'Admin') . ' opened edit event page for: ' . $event->title,
+            [
+                'event_id' => $event->id,
+                'title' => $event->title,
+            ]
+        );
 
         return view('admin.events.event-edit', compact('event'));
     }

@@ -238,6 +238,17 @@ Route::middleware(['auth'])->group(function () {
             ], 403);
         }
 
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'dashboard_feed_density_updated',
+            ($actor?->name ?? 'Alumni') . ' updated feed density preference to ' . $validated['density'],
+            [
+                'density' => $validated['density'],
+            ]
+        );
+
         return response()
             ->json([
                 'message' => 'Feed density saved.',
@@ -257,6 +268,19 @@ Route::middleware(['auth'])->group(function () {
             'post_type' => $validated['post_type'],
             'body' => $validated['body'],
         ]);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'feed_post_created',
+            ($actor?->name ?? 'Alumni') . ' created a feed post',
+            [
+                'post_id' => $post->id,
+                'post_type' => $post->post_type,
+                'body_preview' => substr($post->body, 0, 120),
+            ]
+        );
 
         $post->load(['user.profile']);
         session(['dashboard_last_action' => 'Posted a ' . $validated['post_type'] . ' update.']);
@@ -303,6 +327,20 @@ Route::middleware(['auth'])->group(function () {
         if ($existing) {
             $existing->delete();
             session(['dashboard_last_action' => 'Removed a reaction.']);
+
+            $actor = Auth::user();
+            ActivityLog::record(
+                $actor?->id,
+                $actor?->id,
+                'feed_reaction_removed',
+                ($actor?->name ?? 'Alumni') . ' removed a reaction from feed item',
+                [
+                    'feed_type' => $feedType,
+                    'feed_id' => $feedId,
+                    'reaction' => 'like',
+                ]
+            );
+
             $count = FeedReaction::query()
                 ->where('feed_type', $feedType)
                 ->where('feed_id', $feedId)
@@ -320,6 +358,19 @@ Route::middleware(['auth'])->group(function () {
 
         FeedReaction::create($attributes);
         session(['dashboard_last_action' => 'Liked a feed item.']);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'feed_reaction_added',
+            ($actor?->name ?? 'Alumni') . ' liked a feed item',
+            [
+                'feed_type' => $feedType,
+                'feed_id' => $feedId,
+                'reaction' => 'like',
+            ]
+        );
 
         $count = FeedReaction::query()
             ->where('feed_type', $feedType)
@@ -349,6 +400,20 @@ Route::middleware(['auth'])->group(function () {
             'feed_id' => $feedId,
             'body' => $validated['body'],
         ]);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'feed_comment_added',
+            ($actor?->name ?? 'Alumni') . ' commented on a feed item',
+            [
+                'comment_id' => $comment->id,
+                'feed_type' => $feedType,
+                'feed_id' => $feedId,
+                'body_preview' => substr($comment->body, 0, 120),
+            ]
+        );
 
         $comment->load('user');
         session(['dashboard_last_action' => 'Commented on a feed item.']);
@@ -380,6 +445,18 @@ Route::middleware(['auth'])->group(function () {
             'feed_id' => $feedId,
         ]);
         session(['dashboard_last_action' => 'Shared a feed item.']);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'feed_shared',
+            ($actor?->name ?? 'Alumni') . ' shared a feed item',
+            [
+                'feed_type' => $feedType,
+                'feed_id' => $feedId,
+            ]
+        );
 
         $count = FeedShare::query()
             ->where('feed_type', $feedType)
@@ -685,6 +762,19 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         $users = $usersQuery->get();
         $filename = 'sru_alumni_export_' . now()->format('Y-m-d') . '.csv';
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'alumni_exported_csv',
+            ($actor?->name ?? 'Admin') . ' exported alumni CSV',
+            [
+                'filter_by' => $selectedFilterBy,
+                'filter_value' => $selectedFilterValue,
+                'exported_count' => $users->count(),
+            ]
+        );
 
         return response()->streamDownload(function () use ($users) {
             $handle = fopen('php://output', 'w');
