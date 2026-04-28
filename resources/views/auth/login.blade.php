@@ -28,6 +28,12 @@
                 </div>
             @endif
 
+            @if (session('auth_required'))
+                <div class="mb-4 text-red-600 text-sm font-medium text-center">
+                    {{ session('auth_required') }}
+                </div>
+            @endif
+
             <!-- Logo -->
             <h1 class="text-6xl font-extrabold text-center text-blue-900 mb-6">
                 SRU
@@ -57,12 +63,31 @@
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700">Password</label>
 
-                    <input 
-                        type="password" 
-                        name="password"
-                        required
-                        class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    >
+                    <div class="relative">
+                        <input 
+                            id="password"
+                            type="password" 
+                            name="password"
+                            required
+                            class="w-full mt-1 px-3 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        >
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            aria-label="Show password"
+                        >
+                            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2.062 12.348a1 1 0 0 1 0-.696C3.423 8.185 7.36 5 12 5s8.577 3.185 9.938 6.652a1 1 0 0 1 0 .696C20.577 15.815 16.64 19 12 19s-8.577-3.185-9.938-6.652"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.733 5.076A10.744 10.744 0 0 1 12 5c4.64 0 8.577 3.185 9.938 6.652a1 1 0 0 1 0 .696 10.69 10.69 0 0 1-1.673 2.888"/>
+                                <path d="M6.228 6.228A10.691 10.691 0 0 0 2.062 11.652a1 1 0 0 0 0 .696C3.423 15.815 7.36 19 12 19c1.708 0 3.33-.432 4.77-1.19"/>
+                                <path d="M3 3l18 18"/>
+                            </svg>
+                        </button>
+                    </div>
 
                     @error('password')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -91,10 +116,32 @@
                     Log in
                 </button>
 
+                <p class="mt-4 text-sm text-center text-gray-600">
+                    Not registered? 
+                    <a href="{{ route('register') }}" class="text-blue-700 hover:underline font-semibold">Create an account</a>
+                </p>
+
             </form>
 
         </div>
     </div>
 
 </body>
+
+<script>
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.getElementById('togglePassword');
+    const eyeOpen = document.getElementById('eyeOpen');
+    const eyeClosed = document.getElementById('eyeClosed');
+
+    if (passwordInput && toggleButton) {
+        toggleButton.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeOpen.classList.toggle('hidden', isPassword);
+            eyeClosed.classList.toggle('hidden', !isPassword);
+            toggleButton.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        });
+    }
+</script>
 </html>

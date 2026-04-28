@@ -27,6 +27,7 @@
                     <li><a class="hover:text-teal-600" href="{{ route('about') }}">About</a></li>
                     <li><a class="hover:text-teal-600" href="{{ route('events.index') }}">Events</a></li>
                     <li><a class="hover:text-teal-600" href="{{ route('newsroom') }}">Newsroom</a></li>
+                    <li><a class="hover:text-teal-600" href="{{ route('jobs.index') }}">Jobs</a></li>
                     <li><a class="hover:text-teal-600" href="{{ route('gallery') }}">Gallery</a></li>
                     <li><a class="hover:text-teal-600" href="{{ route('engage') }}">Engage</a></li>
                     <li><a class="hover:text-teal-600" href="{{ route('contact') }}">Contact</a></li>

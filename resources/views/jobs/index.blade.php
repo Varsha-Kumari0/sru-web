@@ -46,13 +46,11 @@
                 <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#2a9d8f;">SR University</p>
                 <h1 class="text-3xl font-bold text-white tracking-tight">Jobs and Internships</h1>
             </div>
-            @auth
-                <a href="{{ route('jobs.create') }}"
-                   class="hidden sm:inline-flex rounded-xl bg-white px-5 py-2.5 cursor-pointer text-sm font-bold hover:opacity-90"
-                   style="color:#1a2d4a;">
-                    Post Opportunity
-                </a>
-            @endauth
+            <a href="{{ route('jobs.create') }}"
+               class="hidden sm:inline-flex rounded-xl bg-white px-5 py-2.5 cursor-pointer text-sm font-bold hover:opacity-90"
+               style="color:#1a2d4a;">
+                Post Opportunity
+            </a>
         </div>
     </div>
 
@@ -140,20 +138,14 @@
                     </button>
                 </form>
 
-                @auth
-                    <div class="mt-5 grid grid-cols-1 gap-2">
-                        <a href="{{ route('jobs.create', ['type' => 'job']) }}"
-                           class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-center hover:bg-gray-50"
-                           style="color:#1a2d4a;">Post Job</a>
-                        <a href="{{ route('jobs.create', ['type' => 'internship']) }}"
-                           class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-center hover:bg-gray-50"
-                           style="color:#1a2d4a;">Post Internship</a>
-                    </div>
-                @else
-                    <p class="mt-5 text-xs leading-5" style="color:#64748b;">
-                        Alumni can log in to post new jobs and internships for the SRU network.
-                    </p>
-                @endauth
+                <div class="mt-5 grid grid-cols-1 gap-2">
+                    <a href="{{ route('jobs.create', ['type' => 'job']) }}"
+                       class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-center hover:bg-gray-50"
+                       style="color:#1a2d4a;">Post Job</a>
+                    <a href="{{ route('jobs.create', ['type' => 'internship']) }}"
+                       class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-center hover:bg-gray-50"
+                       style="color:#1a2d4a;">Post Internship</a>
+                </div>
             </aside>
 
             <section class="space-y-4">
@@ -161,11 +153,9 @@
                     <p class="text-sm" style="color:#64748b;">
                         Showing {{ $jobs->count() }} opportunit{{ $jobs->count() === 1 ? 'y' : 'ies' }}.
                     </p>
-                    @auth
-                        <a href="{{ route('jobs.create') }}"
-                           class="sm:hidden rounded-xl px-4 py-2 text-sm font-bold text-white text-center"
-                           style="background:#1a2d4a;">Post Opportunity</a>
-                    @endauth
+                    <a href="{{ route('jobs.create') }}"
+                       class="sm:hidden rounded-xl px-4 py-2 text-sm font-bold text-white text-center"
+                       style="background:#1a2d4a;">Post Opportunity</a>
                 </div>
 
                 @forelse($jobs as $index => $job)
@@ -221,6 +211,13 @@
                             </div>
 
                             <div class="flex flex-wrap gap-2">
+                                @auth
+                                    @if(auth()->id() === $job->user_id)
+                                        <a href="{{ route('jobs.edit', $job) }}"
+                                           class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold hover:bg-gray-50"
+                                           style="color:#1a2d4a;">Edit</a>
+                                    @endif
+                                @endauth
                                 @if($job->company_website)
                                     <a href="{{ $job->company_website }}" target="_blank" rel="noopener noreferrer"
                                        class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold hover:bg-gray-50"
