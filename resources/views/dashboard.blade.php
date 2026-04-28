@@ -77,6 +77,21 @@
         opacity: 1;
         transform: translateY(0);
     }
+    .feed-density-compact .pulse-post .p-5 {
+        padding: 1rem !important;
+    }
+    .feed-density-compact .pulse-post h2 {
+        font-size: 1.1rem;
+        margin-top: 0.9rem;
+    }
+    .feed-density-compact .pulse-post p {
+        line-height: 1.45rem;
+    }
+    .density-button.is-selected {
+        background: #eefaf8;
+        color: #1a2d4a;
+        box-shadow: inset 0 0 0 1px #b2ece5;
+    }
 </style>
 
 @php
@@ -175,7 +190,7 @@
     $currentPrompt = 'What is one thing you wish every current SRU student knew before graduating?';
 @endphp
 
-<div class="-m-6 min-h-screen" style="background:#f0f0ee;">
+<div class="-m-6 min-h-screen feed-density-{{ $feedDensity }}" data-dashboard-root style="background:#f0f0ee;">
     <section class="sru-hero-gradient">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-center">
@@ -405,6 +420,26 @@
                         <a href="{{ route('gallery') }}" class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Gallery</a>
                         <a href="{{ route('contact') }}" class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Contact</a>
                     </div>
+                    <div class="mt-4 rounded-2xl border border-[#b2ece5] bg-[#eefaf8] px-4 py-3">
+                        <p class="text-xs font-bold uppercase tracking-widest text-slate-500">This session</p>
+                        <p class="mt-1 text-sm font-semibold text-[#1a2d4a]" data-session-action>{{ $lastSessionAction }}</p>
+                    </div>
+                </section>
+
+                <section class="pulse-card p-5">
+                    <h2 class="sru-label">Display Preference</h2>
+                    <p class="mt-3 text-sm text-slate-600">Saved only if preference cookies are accepted.</p>
+                    <form method="POST" action="{{ route('dashboard.preferences.feed-density') }}" class="mt-4 grid grid-cols-2 gap-2 js-density-form">
+                        @csrf
+                        <button type="submit" name="density" value="comfortable"
+                                class="density-button rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-slate-600 {{ $feedDensity === 'comfortable' ? 'is-selected' : '' }}">
+                            Comfortable
+                        </button>
+                        <button type="submit" name="density" value="compact"
+                                class="density-button rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-slate-600 {{ $feedDensity === 'compact' ? 'is-selected' : '' }}">
+                            Compact
+                        </button>
+                    </form>
                 </section>
 
                 <section class="rounded-2xl p-5 text-white sru-hero-gradient">
@@ -437,6 +472,14 @@
             window.setTimeout(function () {
                 toast.classList.remove('is-visible');
             }, 2200);
+        }
+
+        function updateSessionAction(message) {
+            const sessionAction = document.querySelector('[data-session-action]');
+
+            if (sessionAction) {
+                sessionAction.textContent = message;
+            }
         }
 
         function escapeHtml(value) {
@@ -551,6 +594,7 @@
             const likeForm = event.target.closest('.js-like-form');
             const commentForm = event.target.closest('.js-comment-form');
             const shareForm = event.target.closest('.js-share-form');
+            const densityForm = event.target.closest('.js-density-form');
 
             if (composeForm) {
                 event.preventDefault();
@@ -562,14 +606,12 @@
                     document.querySelector('.js-empty-feed')?.remove();
                     feedList.insertAdjacentHTML('afterbegin', feedArticle(data.post));
                     composeForm.reset();
-                    composeForm.querySelector('.js-compose-type').value = 'opportunity';
-                    composeForm.querySelectorAll('[data-compose-type]').forEach(function (chip, index) {
-                        chip.classList.toggle('is-selected', index === 0);
-                    });
+                    composeForm.querySelector('.js-compose-type').value = data.post.raw_type || data.post.kind.toLowerCase();
                     if (composeBody) {
                         composeBody.style.height = 'auto';
                     }
                     showToast('Post shared.');
+                    updateSessionAction('Posted a ' + (data.post.raw_type || data.post.kind.toLowerCase()) + ' update.');
                 } catch (error) {
                     showToast(error.message);
                 } finally {
@@ -587,6 +629,7 @@
                     button.dataset.liked = data.liked ? '1' : '0';
                     button.querySelector('.js-like-label').textContent = data.liked ? 'Liked' : 'Like';
                     button.querySelector('.js-like-count').textContent = data.count;
+                    updateSessionAction(data.liked ? 'Liked a feed item.' : 'Removed a reaction.');
                 } catch (error) {
                     showToast(error.message);
                 }
@@ -607,6 +650,7 @@
                         </div>
                     `);
                     input.value = '';
+                    updateSessionAction('Commented on a feed item.');
                 } catch (error) {
                     showToast(error.message);
                 }
@@ -619,6 +663,44 @@
                     const data = await submitJson(shareForm);
                     shareForm.querySelector('.js-share-count').textContent = data.count;
                     showToast('Shared to your alumni activity.');
+                    updateSessionAction('Shared a feed item.');
+                } catch (error) {
+                    showToast(error.message);
+                }
+            }
+
+            if (densityForm) {
+                event.preventDefault();
+                const clickedButton = event.submitter;
+                const density = clickedButton?.value || 'comfortable';
+                const formData = new FormData(densityForm);
+                formData.set('density', density);
+
+                try {
+                    const response = await fetch(densityForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Could not save display preference.');
+                    }
+
+                    const root = document.querySelector('[data-dashboard-root]');
+                    root?.classList.remove('feed-density-comfortable', 'feed-density-compact');
+                    root?.classList.add('feed-density-' + data.density);
+
+                    densityForm.querySelectorAll('.density-button').forEach(function (button) {
+                        button.classList.toggle('is-selected', button.value === data.density);
+                    });
+
+                    showToast('Display preference saved.');
                 } catch (error) {
                     showToast(error.message);
                 }

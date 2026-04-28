@@ -19,6 +19,7 @@ use App\Models\FeedShare;
 use App\Models\News;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -96,6 +97,32 @@ Route::view('/engage', 'pages.engage')->name('engage');
 Route::view('/contact', 'pages.contact')->name('contact');
 // Route::view('/jobs', 'pages.jobs')->name('jobs.index');
 
+Route::post('/cookie-consent', function (Request $request) {
+    $validated = $request->validate([
+        'level' => ['required', 'string', 'in:essential,all,custom'],
+        'preferences' => ['nullable', 'boolean'],
+    ]);
+
+    $allowPreferences = $validated['level'] === 'all'
+        || ($validated['level'] === 'custom' && $request->boolean('preferences'));
+
+    $response = response()->json([
+        'message' => 'Cookie preferences saved.',
+        'preferences' => $allowPreferences,
+    ]);
+
+    $minutes = 60 * 24 * 180;
+
+    $response->cookie('sru_cookie_consent', $validated['level'], $minutes, null, null, false, false, false, 'Lax');
+    $response->cookie('sru_cookie_preferences', $allowPreferences ? '1' : '0', $minutes, null, null, false, false, false, 'Lax');
+
+    if (! $allowPreferences) {
+        Cookie::queue(Cookie::forget('sru_feed_density'));
+    }
+
+    return $response;
+})->name('cookie-consent.store');
+
 Route::get('/dashboard', function () {
     $user = Auth::user();
 
@@ -104,6 +131,9 @@ Route::get('/dashboard', function () {
     }
 
     $profile = $user->profile;
+    $lastSessionAction = session('dashboard_last_action', 'No feed action yet in this session.');
+    $feedDensity = request()->cookie('sru_feed_density', 'comfortable');
+    $feedDensity = in_array($feedDensity, ['comfortable', 'compact'], true) ? $feedDensity : 'comfortable';
 
     $latestMembers = User::query()
         ->where('role', 'user')
@@ -186,11 +216,32 @@ Route::get('/dashboard', function () {
         'commentCounts',
         'shareCounts',
         'viewerReactionKeys',
-        'commentGroups'
+        'commentGroups',
+        'lastSessionAction',
+        'feedDensity'
     ));
 })->middleware(['auth'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
+    Route::post('/dashboard/preferences/feed-density', function (Request $request) {
+        $validated = $request->validate([
+            'density' => ['required', 'string', 'in:comfortable,compact'],
+        ]);
+
+        if ($request->cookie('sru_cookie_preferences') !== '1') {
+            return response()->json([
+                'message' => 'Preference cookies must be enabled before saving dashboard display preferences.',
+            ], 403);
+        }
+
+        return response()
+            ->json([
+                'message' => 'Feed density saved.',
+                'density' => $validated['density'],
+            ])
+            ->cookie('sru_feed_density', $validated['density'], 60 * 24 * 180, null, null, false, false, false, 'Lax');
+    })->name('dashboard.preferences.feed-density');
+
     Route::post('/dashboard/feed/posts', function (Request $request) {
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:1200'],
@@ -204,6 +255,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
 
         $post->load(['user.profile']);
+        session(['dashboard_last_action' => 'Posted a ' . $validated['post_type'] . ' update.']);
 
         if ($request->expectsJson()) {
             $authorName = $post->user?->profile?->full_name ?: ($post->user?->name ?? 'Alumni');
@@ -213,6 +265,7 @@ Route::middleware(['auth'])->group(function () {
                     'id' => $post->id,
                     'feed_type' => 'post',
                     'feed_id' => $post->id,
+                    'raw_type' => $post->post_type,
                     'kind' => ucwords($post->post_type),
                     'source' => $authorName,
                     'time' => 'Just now',
@@ -245,6 +298,7 @@ Route::middleware(['auth'])->group(function () {
 
         if ($existing) {
             $existing->delete();
+            session(['dashboard_last_action' => 'Removed a reaction.']);
             $count = FeedReaction::query()
                 ->where('feed_type', $feedType)
                 ->where('feed_id', $feedId)
@@ -261,6 +315,7 @@ Route::middleware(['auth'])->group(function () {
         }
 
         FeedReaction::create($attributes);
+        session(['dashboard_last_action' => 'Liked a feed item.']);
 
         $count = FeedReaction::query()
             ->where('feed_type', $feedType)
@@ -292,6 +347,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
 
         $comment->load('user');
+        session(['dashboard_last_action' => 'Commented on a feed item.']);
 
         $count = FeedComment::query()
             ->where('feed_type', $feedType)
@@ -319,6 +375,7 @@ Route::middleware(['auth'])->group(function () {
             'feed_type' => $feedType,
             'feed_id' => $feedId,
         ]);
+        session(['dashboard_last_action' => 'Shared a feed item.']);
 
         $count = FeedShare::query()
             ->where('feed_type', $feedType)
