@@ -7,6 +7,7 @@
     .sru-hero-gradient {
         background: linear-gradient(135deg, #1a2d4a 0%, #1f4c55 48%, #2a9d8f 100%);
     }
+
     .sru-label {
         display: inline-block;
         font-size: 0.68rem;
@@ -17,12 +18,14 @@
         border-bottom: 3px solid #c9a84c;
         padding-bottom: 4px;
     }
+
     .pulse-card {
         background: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 18px;
         box-shadow: 0 8px 28px rgba(26, 45, 74, 0.065);
     }
+
     .pulse-post {
         position: relative;
         background: #ffffff;
@@ -32,11 +35,13 @@
         overflow: hidden;
         transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
     }
+
     .pulse-post:hover {
         border-color: #b2ece5;
         box-shadow: 0 12px 34px rgba(26, 45, 74, 0.11);
         transform: translateY(-2px);
     }
+
     .pulse-action {
         border-radius: 999px;
         padding: 0.55rem 0.9rem;
@@ -45,14 +50,17 @@
         color: #64748b;
         transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     }
+
     .pulse-action:hover,
     .pulse-action.is-active {
         background: #eefaf8;
         color: #1a2d4a;
     }
+
     .avatar-mark {
         background: linear-gradient(135deg, #1a2d4a, #2a9d8f);
     }
+
     .compose-chip {
         border-radius: 999px;
         background: #f8f9fa;
@@ -62,31 +70,38 @@
         color: #475569;
         transition: background 0.15s ease, color 0.15s ease;
     }
+
     .compose-chip.is-selected {
         background: #eefaf8;
         color: #1a2d4a;
         box-shadow: inset 0 0 0 1px #b2ece5;
     }
+
     .feed-toast {
         opacity: 0;
         transform: translateY(-6px);
         pointer-events: none;
         transition: opacity 0.18s ease, transform 0.18s ease;
     }
+
     .feed-toast.is-visible {
         opacity: 1;
         transform: translateY(0);
     }
+
     .feed-density-compact .pulse-post .p-5 {
         padding: 1rem !important;
     }
+
     .feed-density-compact .pulse-post h2 {
         font-size: 1.1rem;
         margin-top: 0.9rem;
     }
+
     .feed-density-compact .pulse-post p {
         line-height: 1.45rem;
     }
+
     .density-button.is-selected {
         background: #eefaf8;
         color: #1a2d4a;
@@ -97,7 +112,7 @@
 @php
     $displayName = trim((string) ($profile?->full_name ?? '')) ?: ($user->name ?? 'Alumni');
     $firstName = explode(' ', $displayName)[0] ?? 'Alumni';
-    $initials = collect(explode(' ', $displayName))->filter()->take(2)->map(fn ($part) => strtoupper(substr($part, 0, 1)))->implode('') ?: 'A';
+    $initials = collect(explode(' ', $displayName))->filter()->take(2)->map(fn($part) => strtoupper(substr($part, 0, 1)))->implode('') ?: 'A';
     $avatarUrl = $profile?->profile_photo ? asset('storage/' . $profile->profile_photo) : null;
     $profileCompletion = collect([
         $profile?->full_name,
@@ -107,7 +122,7 @@
         $profile?->passing_year,
         $profile?->city,
         $profile?->description,
-    ])->filter(fn ($value) => filled($value))->count();
+    ])->filter(fn($value) => filled($value))->count();
     $profilePercent = (int) round(($profileCompletion / 7) * 100);
 
     $latestPosts = collect($latestPosts ?? []);
@@ -184,7 +199,7 @@
     }
 
     $feedItems = $feedItems
-        ->sortByDesc(fn ($item) => $item['sort_at'] ?? now())
+        ->sortByDesc(fn($item) => $item['sort_at'] ?? now())
         ->values();
 
     $currentPrompt = 'What is one thing you wish every current SRU student knew before graduating?';
@@ -198,13 +213,15 @@
                     <p class="text-xs font-bold uppercase tracking-[0.18em]" style="color:#c9a84c;">SRU Alumni Pulse</p>
                     <h1 class="mt-2 text-3xl md:text-4xl font-bold text-white">Good to see you, {{ $firstName }}.</h1>
                     <p class="mt-3 max-w-2xl text-sm leading-7 text-white/75">
-                        A quieter community feed for campus updates, alumni voices, events, opportunities, and useful conversations.
+                        A quieter community feed for campus updates, alumni voices, events, opportunities, and useful
+                        conversations.
                     </p>
                 </div>
 
                 <div class="rounded-2xl border border-white/15 bg-white/10 p-4 text-white backdrop-blur">
                     <div class="flex items-center gap-3">
-                        <div class="h-14 w-14 rounded-2xl overflow-hidden inline-flex items-center justify-center font-black text-white avatar-mark shrink-0">
+                        <div
+                            class="h-14 w-14 rounded-2xl overflow-hidden inline-flex items-center justify-center font-black text-white avatar-mark shrink-0">
                             @if($avatarUrl)
                                 <img src="{{ $avatarUrl }}" alt="{{ $displayName }}" class="h-full w-full object-cover">
                             @else
@@ -213,12 +230,14 @@
                         </div>
                         <div class="min-w-0">
                             <p class="truncate font-bold">{{ $displayName }}</p>
-                            <p class="truncate text-xs text-white/65">{{ $profile?->branch ?? 'SRU Alumni' }} @if($profile?->passing_year) - {{ $profile->passing_year }} @endif</p>
+                            <p class="truncate text-xs text-white/65">{{ $profile?->branch ?? 'SRU Alumni' }}
+                                @if($profile?->passing_year) - {{ $profile->passing_year }} @endif</p>
                         </div>
                     </div>
                     <div class="mt-4 flex items-center gap-3">
                         <div class="h-2 flex-1 rounded-full bg-white/15 overflow-hidden">
-                            <div class="h-full rounded-full" style="width:{{ $profilePercent }}%; background:#c9a84c;"></div>
+                            <div class="h-full rounded-full" style="width:{{ $profilePercent }}%; background:#c9a84c;">
+                            </div>
                         </div>
                         <span class="text-xs font-black">{{ $profilePercent }}%</span>
                     </div>
@@ -229,7 +248,8 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
         @if(session('status'))
-            <div class="mb-5 rounded-2xl border border-[#b2ece5] bg-[#eefaf8] px-5 py-3 text-sm font-semibold text-[#1a2d4a]">
+            <div
+                class="mb-5 rounded-2xl border border-[#b2ece5] bg-[#eefaf8] px-5 py-3 text-sm font-semibold text-[#1a2d4a]">
                 {{ session('status') }}
             </div>
         @endif
@@ -259,18 +279,22 @@
                     <div class="flex flex-col gap-4 md:flex-row md:items-center">
                         <div class="flex-1">
                             <p class="sru-label">Community Prompt</p>
-                            <p class="mt-3 text-lg font-bold leading-snug" style="color:#1a2d4a;">{{ $currentPrompt }}</p>
+                            <p class="mt-3 text-lg font-bold leading-snug" style="color:#1a2d4a;">{{ $currentPrompt }}
+                            </p>
                         </div>
-                        <a href="{{ route('contact') }}" class="rounded-xl px-5 py-3 text-center text-sm font-bold text-white sru-hero-gradient">
+                        <a href="{{ route('contact') }}"
+                            class="rounded-xl px-5 py-3 text-center text-sm font-bold text-white sru-hero-gradient">
                             Suggest a prompt
                         </a>
                     </div>
                 </div>
 
                 <div class="pulse-card p-4">
-                    <form method="POST" action="{{ route('dashboard.feed.posts.store') }}" class="js-compose-form flex gap-3">
+                    <form method="POST" action="{{ route('dashboard.feed.posts.store') }}"
+                        class="js-compose-form flex gap-3">
                         @csrf
-                        <div class="h-12 w-12 rounded-2xl overflow-hidden inline-flex items-center justify-center text-white font-black avatar-mark shrink-0">
+                        <div
+                            class="h-12 w-12 rounded-2xl overflow-hidden inline-flex items-center justify-center text-white font-black avatar-mark shrink-0">
                             @if($avatarUrl)
                                 <img src="{{ $avatarUrl }}" alt="{{ $displayName }}" class="h-full w-full object-cover">
                             @else
@@ -279,95 +303,112 @@
                         </div>
                         <div class="flex-1">
                             <textarea name="body" rows="1" maxlength="1200" required
-                                      class="js-compose-body w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm text-slate-700 focus:border-[#2a9d8f] focus:ring-[#2a9d8f]"
-                                      placeholder="Share an achievement, question, referral, memory, or campus update"></textarea>
+                                class="js-compose-body w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm text-slate-700 focus:border-[#2a9d8f] focus:ring-[#2a9d8f]"
+                                placeholder="Share an achievement, question, referral, memory, or campus update"></textarea>
                             <input type="hidden" name="post_type" value="opportunity" class="js-compose-type">
                             <div class="mt-3 flex flex-wrap gap-2">
-                                <button type="button" class="compose-chip is-selected" data-compose-type="opportunity">Opportunity</button>
-                                <button type="button" class="compose-chip" data-compose-type="meetup">Meetup</button>
-                                <button type="button" class="compose-chip" data-compose-type="memory">Memory</button>
-                                <button type="button" class="compose-chip" data-compose-type="mentoring">Mentoring</button>
-                                <button type="submit" class="ml-auto rounded-full px-5 py-2 text-xs font-black text-white sru-hero-gradient">Post</button>
+                                <a href="{{ route('jobs.create') }}" class="compose-chip">Opportunity</a>
+                                <a href="{{ route('engage.host') }}" class="compose-chip">Meetup</a>
+                                
+                                <a href="{{ route('engage') }}" class="compose-chip">Mentoring</a>
+                                <button type="submit"
+                                    class="ml-auto rounded-full px-5 py-2 text-xs font-black text-white sru-hero-gradient">Post</button>
                             </div>
                         </div>
                     </form>
                 </div>
 
                 <div class="js-feed-list space-y-5">
-                @forelse($feedItems as $item)
-                    @php
-                        $feedKey = $item['feed_type'] . ':' . $item['feed_id'];
-                        $feedDomId = $item['feed_type'] . '-' . $item['feed_id'];
-                        $isLiked = $viewerReactionKeys->has($feedKey);
-                        $comments = $commentGroups->get($feedKey, collect())->take(3);
-                    @endphp
-                    <article class="pulse-post" data-feed-item data-feed-type="{{ $item['feed_type'] }}" data-feed-id="{{ $item['feed_id'] }}">
-                        <div class="absolute left-0 top-0 h-full w-1.5" style="background:{{ $item['accent'] }};"></div>
-                        <div class="p-5 md:p-6">
-                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                <div>
-                                    <span class="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wide"
-                                          style="background:#f8f9fa; color:{{ $item['accent'] }};">
-                                        {{ $item['kind'] }}
-                                    </span>
-                                    <p class="mt-3 font-bold" style="color:#1a2d4a;">{{ $item['source'] }}</p>
-                                    <p class="text-xs text-slate-500">{{ $item['time'] }}</p>
-                                </div>
-                                <a href="{{ $item['href'] }}" class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#2a9d8f]">
-                                    {{ $item['cta'] }}
-                                </a>
-                            </div>
-
-                            <h2 class="mt-5 text-xl md:text-2xl font-bold leading-snug" style="color:#1a2d4a;">{{ $item['title'] }}</h2>
-                            <p class="mt-3 text-sm leading-7 text-slate-600">{{ $item['body'] }}</p>
-
-                            <div class="mt-5 grid grid-cols-3 gap-2 border-y border-gray-100 py-3">
-                                <form method="POST" action="{{ route('dashboard.feed.like', [$item['feed_type'], $item['feed_id']]) }}" class="js-like-form">
-                                    @csrf
-                                    <button type="submit" class="pulse-action w-full {{ $isLiked ? 'is-active' : '' }}" data-liked="{{ $isLiked ? '1' : '0' }}">
-                                        <span class="js-like-label">{{ $isLiked ? 'Liked' : 'Like' }}</span>
-                                        <span class="font-black js-like-count">{{ $reactionCounts->get($feedKey, 0) }}</span>
-                                    </button>
-                                </form>
-                                <a href="#comments-{{ $feedDomId }}" class="pulse-action text-center js-focus-comment">
-                                    Comment <span class="font-black js-comment-count">{{ $commentCounts->get($feedKey, 0) }}</span>
-                                </a>
-                                <form method="POST" action="{{ route('dashboard.feed.share', [$item['feed_type'], $item['feed_id']]) }}" class="js-share-form">
-                                    @csrf
-                                    <button type="submit" class="pulse-action w-full">
-                                        Share <span class="font-black js-share-count">{{ $shareCounts->get($feedKey, 0) }}</span>
-                                    </button>
-                                </form>
-                            </div>
-
-                            <div id="comments-{{ $feedDomId }}" class="mt-4 space-y-3">
-                                <div class="js-comments-list space-y-3">
-                                @foreach($comments as $comment)
-                                    <div class="rounded-2xl bg-[#f8f9fa] px-4 py-3">
-                                        <p class="text-xs font-bold" style="color:#1a2d4a;">{{ $comment->user?->name ?? 'Alumni' }}</p>
-                                        <p class="mt-1 text-sm leading-6 text-slate-600">{{ $comment->body }}</p>
+                    @forelse($feedItems as $item)
+                        @php
+                            $feedKey = $item['feed_type'] . ':' . $item['feed_id'];
+                            $feedDomId = $item['feed_type'] . '-' . $item['feed_id'];
+                            $isLiked = $viewerReactionKeys->has($feedKey);
+                            $comments = $commentGroups->get($feedKey, collect())->take(3);
+                        @endphp
+                        <article class="pulse-post" data-feed-item data-feed-type="{{ $item['feed_type'] }}"
+                            data-feed-id="{{ $item['feed_id'] }}">
+                            <div class="absolute left-0 top-0 h-full w-1.5" style="background:{{ $item['accent'] }};"></div>
+                            <div class="p-5 md:p-6">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                        <span class="rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wide"
+                                            style="background:#f8f9fa; color:{{ $item['accent'] }};">
+                                            {{ $item['kind'] }}
+                                        </span>
+                                        <p class="mt-3 font-bold" style="color:#1a2d4a;">{{ $item['source'] }}</p>
+                                        <p class="text-xs text-slate-500">{{ $item['time'] }}</p>
                                     </div>
-                                @endforeach
+                                    <a href="{{ $item['href'] }}"
+                                        class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#2a9d8f]">
+                                        {{ $item['cta'] }}
+                                    </a>
                                 </div>
 
-                                <form method="POST" action="{{ route('dashboard.feed.comments.store', [$item['feed_type'], $item['feed_id']]) }}" class="js-comment-form flex flex-col gap-2 sm:flex-row">
-                                    @csrf
-                                    <input name="body" maxlength="500" required
-                                           class="min-w-0 flex-1 rounded-xl border-gray-200 text-sm focus:border-[#2a9d8f] focus:ring-[#2a9d8f]"
-                                           placeholder="Add a thoughtful comment">
-                                    <button type="submit" class="rounded-xl px-4 py-2 text-sm font-bold text-white sru-hero-gradient">
-                                        Post
-                                    </button>
-                                </form>
+                                <h2 class="mt-5 text-xl md:text-2xl font-bold leading-snug" style="color:#1a2d4a;">
+                                    {{ $item['title'] }}</h2>
+                                <p class="mt-3 text-sm leading-7 text-slate-600">{{ $item['body'] }}</p>
+
+                                <div class="mt-5 grid grid-cols-3 gap-2 border-y border-gray-100 py-3">
+                                    <form method="POST"
+                                        action="{{ route('dashboard.feed.like', [$item['feed_type'], $item['feed_id']]) }}"
+                                        class="js-like-form">
+                                        @csrf
+                                        <button type="submit" class="pulse-action w-full {{ $isLiked ? 'is-active' : '' }}"
+                                            data-liked="{{ $isLiked ? '1' : '0' }}">
+                                            <span class="js-like-label">{{ $isLiked ? 'Liked' : 'Like' }}</span>
+                                            <span
+                                                class="font-black js-like-count">{{ $reactionCounts->get($feedKey, 0) }}</span>
+                                        </button>
+                                    </form>
+                                    <a href="#comments-{{ $feedDomId }}" class="pulse-action text-center js-focus-comment">
+                                        Comment <span
+                                            class="font-black js-comment-count">{{ $commentCounts->get($feedKey, 0) }}</span>
+                                    </a>
+                                    <form method="POST"
+                                        action="{{ route('dashboard.feed.share', [$item['feed_type'], $item['feed_id']]) }}"
+                                        class="js-share-form">
+                                        @csrf
+                                        <button type="submit" class="pulse-action w-full">
+                                            Share <span
+                                                class="font-black js-share-count">{{ $shareCounts->get($feedKey, 0) }}</span>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div id="comments-{{ $feedDomId }}" class="mt-4 space-y-3">
+                                    <div class="js-comments-list space-y-3">
+                                        @foreach($comments as $comment)
+                                            <div class="rounded-2xl bg-[#f8f9fa] px-4 py-3">
+                                                <p class="text-xs font-bold" style="color:#1a2d4a;">
+                                                    {{ $comment->user?->name ?? 'Alumni' }}</p>
+                                                <p class="mt-1 text-sm leading-6 text-slate-600">{{ $comment->body }}</p>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <form method="POST"
+                                        action="{{ route('dashboard.feed.comments.store', [$item['feed_type'], $item['feed_id']]) }}"
+                                        class="js-comment-form flex flex-col gap-2 sm:flex-row">
+                                        @csrf
+                                        <input name="body" maxlength="500" required
+                                            class="min-w-0 flex-1 rounded-xl border-gray-200 text-sm focus:border-[#2a9d8f] focus:ring-[#2a9d8f]"
+                                            placeholder="Add a thoughtful comment">
+                                        <button type="submit"
+                                            class="rounded-xl px-4 py-2 text-sm font-bold text-white sru-hero-gradient">
+                                            Post
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
+                        </article>
+                    @empty
+                        <div class="pulse-card p-8 text-center js-empty-feed">
+                            <p class="text-lg font-bold" style="color:#1a2d4a;">Your alumni pulse is warming up.</p>
+                            <p class="mt-2 text-sm text-slate-600">News, events, and alumni stories will appear here after
+                                they are published.</p>
                         </div>
-                    </article>
-                @empty
-                    <div class="pulse-card p-8 text-center js-empty-feed">
-                        <p class="text-lg font-bold" style="color:#1a2d4a;">Your alumni pulse is warming up.</p>
-                        <p class="mt-2 text-sm text-slate-600">News, events, and alumni stories will appear here after they are published.</p>
-                    </div>
-                @endforelse
+                    @endforelse
                 </div>
             </section>
 
@@ -379,18 +420,21 @@
                     </div>
                     <div class="mt-4 space-y-4">
                         @forelse($latestMembers as $member)
-                            @php($memberName = $member->profile?->full_name ?: $member->name)
-                            <a href="{{ route('messages.show', $member->id) }}" class="flex items-center gap-3">
-                                <span class="h-10 w-10 rounded-2xl inline-flex items-center justify-center text-sm font-black text-white avatar-mark shrink-0">
-                                    {{ strtoupper(substr($memberName ?: 'A', 0, 1)) }}
-                                </span>
-                                <span class="min-w-0">
-                                    <span class="block truncate text-sm font-bold" style="color:#1a2d4a;">{{ $memberName }}</span>
-                                    <span class="block truncate text-xs text-slate-500">{{ $member->profile?->branch ?? 'SRU Alumni' }}</span>
-                                </span>
-                            </a>
+                        @php($memberName = $member->profile?->full_name ?: $member->name)
+                        <a href="{{ route('messages.show', $member->id) }}" class="flex items-center gap-3">
+                            <span
+                                class="h-10 w-10 rounded-2xl inline-flex items-center justify-center text-sm font-black text-white avatar-mark shrink-0">
+                                {{ strtoupper(substr($memberName ?: 'A', 0, 1)) }}
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block truncate text-sm font-bold"
+                                    style="color:#1a2d4a;">{{ $memberName }}</span>
+                                <span
+                                    class="block truncate text-xs text-slate-500">{{ $member->profile?->branch ?? 'SRU Alumni' }}</span>
+                            </span>
+                        </a>
                         @empty
-                            <p class="text-sm text-slate-500">New alumni will appear here.</p>
+                        <p class="text-sm text-slate-500">New alumni will appear here.</p>
                         @endforelse
                     </div>
                 </section>
@@ -398,13 +442,16 @@
                 <section class="pulse-card p-5">
                     <div class="flex items-center justify-between">
                         <h2 class="sru-label">Next Up</h2>
-                        <a href="{{ route('events.index') }}" class="text-xs font-bold" style="color:#2a9d8f;">All events</a>
+                        <a href="{{ route('events.index') }}" class="text-xs font-bold" style="color:#2a9d8f;">All
+                            events</a>
                     </div>
                     <div class="mt-4 space-y-4">
                         @forelse($upcomingEvents as $event)
-                            <a href="{{ route('events.show', $event->id) }}" class="block rounded-2xl border border-gray-100 bg-[#f8f9fa] p-4 hover:border-[#2a9d8f]">
+                            <a href="{{ route('events.show', $event->id) }}"
+                                class="block rounded-2xl border border-gray-100 bg-[#f8f9fa] p-4 hover:border-[#2a9d8f]">
                                 <p class="text-sm font-bold leading-snug" style="color:#1a2d4a;">{{ $event->title }}</p>
-                                <p class="mt-1 text-xs text-slate-500">{{ $event->start_at?->format('d M Y') }} - {{ $event->location }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ $event->start_at?->format('d M Y') }} -
+                                    {{ $event->location }}</p>
                             </a>
                         @empty
                             <p class="text-sm text-slate-500">No upcoming events yet.</p>
@@ -415,28 +462,34 @@
                 <section class="pulse-card p-5">
                     <h2 class="sru-label">Useful Doors</h2>
                     <div class="mt-4 grid grid-cols-2 gap-2">
-                        <a href="{{ route('profile') }}" class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Profile</a>
-                        <a href="{{ route('messages.index') }}" class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Messages</a>
-                        <a href="{{ route('gallery') }}" class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Gallery</a>
-                        <a href="{{ route('contact') }}" class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Contact</a>
+                        <a href="{{ route('profile') }}"
+                            class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Profile</a>
+                        <a href="{{ route('messages.index') }}"
+                            class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Messages</a>
+                        <a href="{{ route('gallery') }}"
+                            class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Gallery</a>
+                        <a href="{{ route('contact') }}"
+                            class="rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-[#1a2d4a] hover:bg-[#eefaf8]">Contact</a>
                     </div>
                     <div class="mt-4 rounded-2xl border border-[#b2ece5] bg-[#eefaf8] px-4 py-3">
                         <p class="text-xs font-bold uppercase tracking-widest text-slate-500">This session</p>
-                        <p class="mt-1 text-sm font-semibold text-[#1a2d4a]" data-session-action>{{ $lastSessionAction }}</p>
+                        <p class="mt-1 text-sm font-semibold text-[#1a2d4a]" data-session-action>
+                            {{ $lastSessionAction }}</p>
                     </div>
                 </section>
 
                 <section class="pulse-card p-5">
                     <h2 class="sru-label">Display Preference</h2>
                     <p class="mt-3 text-sm text-slate-600">Saved only if preference cookies are accepted.</p>
-                    <form method="POST" action="{{ route('dashboard.preferences.feed-density') }}" class="mt-4 grid grid-cols-2 gap-2 js-density-form">
+                    <form method="POST" action="{{ route('dashboard.preferences.feed-density') }}"
+                        class="mt-4 grid grid-cols-2 gap-2 js-density-form">
                         @csrf
                         <button type="submit" name="density" value="comfortable"
-                                class="density-button rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-slate-600 {{ $feedDensity === 'comfortable' ? 'is-selected' : '' }}">
+                            class="density-button rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-slate-600 {{ $feedDensity === 'comfortable' ? 'is-selected' : '' }}">
                             Comfortable
                         </button>
                         <button type="submit" name="density" value="compact"
-                                class="density-button rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-slate-600 {{ $feedDensity === 'compact' ? 'is-selected' : '' }}">
+                            class="density-button rounded-xl bg-[#f8f9fa] px-3 py-3 text-sm font-bold text-slate-600 {{ $feedDensity === 'compact' ? 'is-selected' : '' }}">
                             Compact
                         </button>
                     </form>
@@ -445,8 +498,11 @@
                 <section class="rounded-2xl p-5 text-white sru-hero-gradient">
                     <p class="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Invite</p>
                     <h2 class="mt-3 text-xl font-bold">Bring your batch online</h2>
-                    <p class="mt-2 text-sm leading-6 text-white/70">The feed becomes useful when classmates share jobs, events, milestones, and advice.</p>
-                    <a href="mailto:?subject=Join the SRU Alumni Network&body=Join me on the SRU Alumni Network." class="mt-4 inline-block rounded-xl bg-white px-4 py-2 text-sm font-bold" style="color:#1a2d4a;">
+                    <p class="mt-2 text-sm leading-6 text-white/70">The feed becomes useful when classmates share jobs,
+                        events, milestones, and advice.</p>
+                    <a href="mailto:?subject=Join the SRU Alumni Network&body=Join me on the SRU Alumni Network."
+                        class="mt-4 inline-block rounded-xl bg-white px-4 py-2 text-sm font-bold"
+                        style="color:#1a2d4a;">
                         Invite by email
                     </a>
                 </section>
@@ -454,7 +510,8 @@
         </div>
     </main>
 
-    <div class="feed-toast fixed right-5 top-5 z-50 rounded-2xl border border-[#b2ece5] bg-white px-5 py-3 text-sm font-bold shadow-lg" style="color:#1a2d4a;" data-feed-toast></div>
+    <div class="feed-toast fixed right-5 top-5 z-50 rounded-2xl border border-[#b2ece5] bg-white px-5 py-3 text-sm font-bold shadow-lg"
+        style="color:#1a2d4a;" data-feed-toast></div>
 </div>
 
 <script>
