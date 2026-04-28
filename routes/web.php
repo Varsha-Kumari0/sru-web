@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminJobOpportunityController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryAdminController;
 use App\Http\Controllers\GalleryController;
@@ -894,6 +895,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/events/{id}/edit', [EventController::class, 'adminEdit'])->name('admin.events.edit');
     Route::put('/admin/events/{id}', [EventController::class, 'adminUpdate'])->name('admin.events.update');
     Route::delete('/admin/events/{id}', [EventController::class, 'adminDestroy'])->name('admin.events.delete');
+    Route::get('/admin/jobs/new', [AdminJobOpportunityController::class, 'create'])->name('admin.jobs.create');
+    Route::post('/admin/jobs', [AdminJobOpportunityController::class, 'store'])->name('admin.jobs.store');
+    Route::get('/admin/jobs/manage', [AdminJobOpportunityController::class, 'manage'])->name('admin.jobs.manage');
+    Route::get('/admin/jobs/{id}/edit', [AdminJobOpportunityController::class, 'edit'])->name('admin.jobs.edit');
+    Route::put('/admin/jobs/{id}', [AdminJobOpportunityController::class, 'update'])->name('admin.jobs.update');
+    Route::delete('/admin/jobs/{id}', [AdminJobOpportunityController::class, 'destroy'])->name('admin.jobs.delete');
     Route::get('/admin/gallery/new', [GalleryAdminController::class, 'adminCreate'])->name('admin.gallery.create');
     Route::get('/admin/gallery/manage', [GalleryAdminController::class, 'adminManage'])->name('admin.gallery.manage');
     Route::get('/admin/gallery/{section}/{id}/edit', [GalleryAdminController::class, 'adminEdit'])->name('admin.gallery.edit');
