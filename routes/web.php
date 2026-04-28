@@ -88,13 +88,16 @@ Route::get('/newsroom', [NewsController::class, 'index'])->name('newsroom');
 Route::get('/newsroom/{id}', [NewsController::class, 'show'])->name('news.show');
 Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
 Route::get('/events/{id}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
-Route::get('/jobs', [JobOpportunityController::class, 'index'])->name('jobs.index');
+Route::get('/jobs', [JobOpportunityController::class, 'index'])->middleware('jobs.auth')->name('jobs.index');
 Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials.index');
 Route::view('/about', 'pages.about')->name('about');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 Route::get('/gallery/albums/{id}', [GalleryController::class, 'albumShow'])->name('gallery.album.show');
 Route::get('/gallery/videos/{id}', [GalleryController::class, 'videoShow'])->name('gallery.video.show');
 Route::view('/engage', 'pages.engage')->name('engage');
+Route::view('/engage/mentor-students', 'pages.mentor-students')->name('engage.mentor');
+Route::view('/engage/host-event', 'pages.host-event')->name('engage.host');
+Route::view('/engage/share-opportunities', 'pages.share-opportunities')->name('engage.share');
 Route::view('/contact', 'pages.contact')->name('contact');
 // Route::view('/jobs', 'pages.jobs')->name('jobs.index');
 
@@ -422,6 +425,8 @@ Route::middleware(['auth'])->group(function () {
     // 💼 JOBS AND INTERNSHIPS
     Route::get('/jobs/create', [JobOpportunityController::class, 'create'])->name('jobs.create');
     Route::post('/jobs', [JobOpportunityController::class, 'store'])->name('jobs.store');
+    Route::get('/jobs/{job}/edit', [JobOpportunityController::class, 'edit'])->name('jobs.edit');
+    Route::put('/jobs/{job}', [JobOpportunityController::class, 'update'])->name('jobs.update');
 
     // 📝 BIO EDITING
     Route::get('/profile/edit-bio', [ProfileController::class, 'editBio'])->name('profile.edit-bio');

@@ -10,9 +10,9 @@
 
         <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-5">
             @foreach([
-                ['Mentor Students', 'Offer career guidance, portfolio reviews, or interview practice.', route('contact')],
-                ['Host an Event', 'Run a workshop, reunion, webinar, or alumni meetup.', route('events.index')],
-                ['Share Opportunities', 'Send jobs, internships, referrals, and founder stories.', route('jobs.index')],
+                ['Mentor Students', 'Offer career guidance, portfolio reviews, or interview practice.', route('engage.mentor')],
+                ['Host an Event', 'Run a workshop, reunion, webinar, or alumni meetup.', route('engage.host')],
+                ['Share Opportunities', 'Send jobs, internships, referrals, and founder stories.', route('engage.share')],
             ] as $item)
                 <article class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                     <h2 class="text-xl font-bold text-[#1a2d4a]">{{ $item[0] }}</h2>

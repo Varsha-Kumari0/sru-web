@@ -99,6 +99,56 @@
 
 @if($profile)
 
+    @php
+        $requiredProfileFields = [
+            'full_name',
+            'father_name',
+            'mobile',
+            'city',
+            'country',
+            'degree',
+            'branch',
+            'passing_year',
+            'current_status',
+            'linkedin',
+            'facebook',
+            'instagram',
+            'twitter',
+        ];
+
+        $isProfileComplete = true;
+
+        foreach ($requiredProfileFields as $field) {
+            if (blank($profile->{$field})) {
+                $isProfileComplete = false;
+                break;
+            }
+        }
+
+        if ($profile->current_status === 'studying') {
+            $requiredStudyFields = [
+                'study_institution',
+                'study_degree',
+                'study_branch',
+                'study_from',
+                'study_to',
+            ];
+
+            foreach ($requiredStudyFields as $field) {
+                if (blank($profile->{$field})) {
+                    $isProfileComplete = false;
+                    break;
+                }
+            }
+        }
+
+        if ($profile->current_status === 'working') {
+            if (($experiences ?? collect())->count() < 1) {
+                $isProfileComplete = false;
+            }
+        }
+    @endphp
+
     {{-- ═══════════════════════════════
          HERO BANNER
     ═══════════════════════════════ --}}
@@ -193,7 +243,7 @@
                                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                         </svg>
-                                        Completed
+                                        {{ $isProfileComplete ? 'Completed' : 'Incomplete' }}
                                     </span>
                                     <span class="inline-flex items-center rounded-full px-4 py-1.5 text-xs font-bold text-white"
                                           style="background: #1a2d4a;">
