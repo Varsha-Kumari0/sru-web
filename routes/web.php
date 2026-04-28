@@ -94,6 +94,9 @@ Route::view('/about', 'pages.about')->name('about');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 Route::get('/gallery/albums/{id}', [GalleryController::class, 'albumShow'])->name('gallery.album.show');
 Route::view('/engage', 'pages.engage')->name('engage');
+Route::view('/engage/mentor-students', 'pages.mentor-students')->name('engage.mentor');
+Route::view('/engage/host-event', 'pages.host-event')->name('engage.host');
+Route::view('/engage/share-opportunities', 'pages.share-opportunities')->name('engage.share');
 Route::view('/contact', 'pages.contact')->name('contact');
 // Route::view('/jobs', 'pages.jobs')->name('jobs.index');
 
