@@ -104,21 +104,10 @@
                         <input type="text" id="title" name="title" value="{{ old('title') }}" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                     </div>
 
-                    @if($section === 'memories')
-                        <div>
-                            <label for="excerpt" class="mb-1.5 block text-sm font-semibold text-slate-700">Excerpt</label>
-                            <textarea id="excerpt" name="excerpt" rows="4" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('excerpt') }}</textarea>
-                        </div>
-                        <div>
-                            <label for="author_name" class="mb-1.5 block text-sm font-semibold text-slate-700">Author Name <span class="text-slate-400 font-normal">(optional)</span></label>
-                            <input type="text" id="author_name" name="author_name" value="{{ old('author_name') }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
-                        </div>
-                    @else
-                        <div>
-                            <label for="summary" class="mb-1.5 block text-sm font-semibold text-slate-700">Summary <span class="text-slate-400 font-normal">(optional)</span></label>
-                            <textarea id="summary" name="summary" rows="4" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('summary') }}</textarea>
-                        </div>
-                    @endif
+                    <div>
+                        <label for="summary" class="mb-1.5 block text-sm font-semibold text-slate-700">Summary <span class="text-slate-400 font-normal">(optional)</span></label>
+                        <textarea id="summary" name="summary" rows="4" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('summary') }}</textarea>
+                    </div>
 
                     @if($section === 'albums')
                         <div>
@@ -132,8 +121,8 @@
                     @if($section === 'videos')
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
-                                <label for="video_url" class="mb-1.5 block text-sm font-semibold text-slate-700">Video URL <span class="text-slate-400 font-normal">(optional)</span></label>
-                                <input type="url" id="video_url" name="video_url" value="{{ old('video_url') }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                                <label for="video_url" class="mb-1.5 block text-sm font-semibold text-slate-700">Video URL <span class="text-red-500">*</span></label>
+                                <input type="url" id="video_url" name="video_url" value="{{ old('video_url') }}" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                             </div>
                             <div>
                                 <label for="duration" class="mb-1.5 block text-sm font-semibold text-slate-700">Duration <span class="text-slate-400 font-normal">(optional)</span></label>
@@ -152,7 +141,7 @@
                             <input type="number" min="0" id="display_order" name="display_order" value="{{ old('display_order', 0) }}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                         </div>
                         <div>
-                            <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">{{ $section === 'albums' ? 'Cover Image' : 'Image' }} <span class="text-slate-400 font-normal">(optional)</span></label>
+                            <label for="image" class="mb-1.5 block text-sm font-semibold text-slate-700">{{ $section === 'albums' ? 'Cover Image' : ($section === 'videos' ? 'Thumbnail Image' : 'Image') }} <span class="text-slate-400 font-normal">(optional)</span></label>
                             <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/jpg,image/webp" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
                         </div>
                     </div>

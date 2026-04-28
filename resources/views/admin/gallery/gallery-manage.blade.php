@@ -89,11 +89,7 @@
                     <div class="flex items-start justify-between gap-4">
                         <div class="min-w-0 flex-1">
                             <h3 class="truncate text-lg font-semibold text-slate-900">{{ $item->title }}</h3>
-                            @if($section === 'memories')
-                                <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $item->excerpt }}</p>
-                            @else
-                                <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $item->summary }}</p>
-                            @endif
+                            <p class="mt-2 line-clamp-2 text-sm text-slate-600">{{ $item->summary }}</p>
                         </div>
                         <span class="flex-shrink-0 whitespace-nowrap rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
                             {{ $item->updated_at?->diffForHumans() ?? '-' }}

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\GalleryAlbum;
 use App\Models\GalleryAlbumPhoto;
-use App\Models\GalleryMemory;
 use App\Models\GalleryVideo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,12 +26,6 @@ class GalleryAdminController extends Controller
                 'label' => 'Videos',
                 'model' => GalleryVideo::class,
                 'image_field' => 'thumbnail_image',
-                'title_field' => 'title',
-            ],
-            'memories' => [
-                'label' => 'Memories',
-                'model' => GalleryMemory::class,
-                'image_field' => 'cover_image',
                 'title_field' => 'title',
             ],
         ];
@@ -66,24 +59,42 @@ class GalleryAdminController extends Controller
         }
 
         if ($section === 'videos') {
-            return $request->validate([
+            $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'summary' => 'nullable|string',
-                'video_url' => 'nullable|url|max:500',
+                'video_url' => 'required|string|max:500',
                 'duration' => 'nullable|string|max:20',
                 'published_at' => 'nullable|date',
                 'display_order' => 'nullable|integer|min:0',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
+
+            $videoUrl = trim((string) ($validated['video_url'] ?? ''));
+            if ($videoUrl !== '' && ! preg_match('#^https?://#i', $videoUrl)) {
+                $videoUrl = 'https://' . $videoUrl;
+            }
+
+            if ($videoUrl !== '' && ! filter_var($videoUrl, FILTER_VALIDATE_URL)) {
+                return $request->validate([
+                    'video_url' => 'required|url|max:500',
+                ]);
+            }
+
+            $validated['video_url'] = $videoUrl !== '' ? $videoUrl : null;
+
+            return $validated;
         }
 
         return $request->validate([
             'title' => 'required|string|max:255',
-            'excerpt' => 'required|string',
-            'author_name' => 'nullable|string|max:255',
+            'summary' => 'nullable|string',
             'published_at' => 'nullable|date',
             'display_order' => 'nullable|integer|min:0',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'photos' => 'nullable|array',
+            'photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'delete_photos' => 'nullable|array',
+            'delete_photos.*' => 'integer',
         ]);
     }
 
@@ -142,8 +153,8 @@ class GalleryAdminController extends Controller
 
         return [
             'title' => $validated['title'],
-            'excerpt' => $validated['excerpt'],
-            'author_name' => $validated['author_name'] ?? null,
+            'summary' => $validated['summary'] ?? null,
+            'is_featured' => $request->boolean('is_featured'),
             'is_active' => $request->boolean('is_active', true),
             'published_at' => $validated['published_at'] ?? null,
             'display_order' => (int) ($validated['display_order'] ?? 0),

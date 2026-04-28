@@ -93,6 +93,7 @@ Route::get('/testimonials', [TestimonialController::class, 'index'])->name('test
 Route::view('/about', 'pages.about')->name('about');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 Route::get('/gallery/albums/{id}', [GalleryController::class, 'albumShow'])->name('gallery.album.show');
+Route::get('/gallery/videos/{id}', [GalleryController::class, 'videoShow'])->name('gallery.video.show');
 Route::view('/engage', 'pages.engage')->name('engage');
 Route::view('/contact', 'pages.contact')->name('contact');
 // Route::view('/jobs', 'pages.jobs')->name('jobs.index');
