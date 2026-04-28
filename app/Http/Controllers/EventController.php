@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Event;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\View\View;
 
 class EventController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $filter = $request->query('filter', 'all');
         $allowedFilters = [
@@ -58,7 +60,7 @@ class EventController extends Controller
         return view('events.index', compact('events', 'allowedFilters', 'currentFilter', 'eventTypes', 'typeCounts', 'now', 'currentType'));
     }
 
-    public function show($id)
+    public function show(int $id): View
     {
         $event = Event::findOrFail($id);
 
@@ -102,7 +104,7 @@ class EventController extends Controller
         return $imageName;
     }
 
-    public function adminCreate()
+    public function adminCreate(): View
     {
         $actor = Auth::user();
 
@@ -122,7 +124,7 @@ class EventController extends Controller
         return view('admin.events.event-create', compact('recentEvents'));
     }
 
-    public function adminStore(Request $request)
+    public function adminStore(Request $request): RedirectResponse
     {
         $validated = $this->validateEvent($request);
         $validated['image'] = $this->storeEventImage($request);
@@ -141,7 +143,7 @@ class EventController extends Controller
         return redirect()->route('admin.events.create')->with('success', 'Event created successfully.');
     }
 
-    public function adminManage()
+    public function adminManage(): View
     {
         $events = Event::query()->latest('start_at')->get();
 
@@ -157,9 +159,9 @@ class EventController extends Controller
         return view('admin.events.event-manage', compact('events'));
     }
 
-    public function adminEdit($id)
+    public function adminEdit(int $id): View
     {
-        $event = Event::query()->findOrFail($id);
+        $event = Event::findOrFail($id);
 
         $actor = Auth::user();
         ActivityLog::record(
@@ -176,9 +178,9 @@ class EventController extends Controller
         return view('admin.events.event-edit', compact('event'));
     }
 
-    public function adminUpdate(Request $request, $id)
+    public function adminUpdate(Request $request, int $id): RedirectResponse
     {
-        $event = Event::query()->findOrFail($id);
+        $event = Event::findOrFail($id);
         $validated = $this->validateEvent($request);
         $validated['image'] = $this->storeEventImage($request, $event->image);
 
@@ -196,9 +198,9 @@ class EventController extends Controller
         return redirect()->route('admin.events.manage')->with('success', 'Event updated successfully.');
     }
 
-    public function adminDestroy($id)
+    public function adminDestroy(int $id): RedirectResponse
     {
-        $event = Event::query()->findOrFail($id);
+        $event = Event::findOrFail($id);
 
         if ($event->image) {
             $imagePath = public_path('images/' . $event->image);

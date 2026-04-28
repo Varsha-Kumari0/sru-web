@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -34,12 +35,12 @@ class Message extends Model
         return $this->belongsTo(User::class, 'receiver_id');
     }
 
-    public function scopeUnread($query)
+    public function scopeUnread(Builder $query): Builder
     {
         return $query->where('is_read', false);
     }
 
-    public function scopeBetweenUsers($query, $userId1, $userId2)
+    public function scopeBetweenUsers(Builder $query, int $userId1, int $userId2): Builder
     {
         return $query->where(function ($q) use ($userId1, $userId2) {
             $q->where('sender_id', $userId1)->where('receiver_id', $userId2);

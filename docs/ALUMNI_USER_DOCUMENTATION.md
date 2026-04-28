@@ -218,6 +218,24 @@ Authenticated alumni:
 - /profile/update
 - /logout
 
+## 7.1 Recent User-Facing Updates (2026-04-28)
+
+### Feed Route Compatibility
+- Canonical alumni feed experience remains inside dashboard route: GET /dashboard.
+- Compatibility route added: GET /feed (name: feed).
+- Behavior:
+  - authenticated users on /feed are redirected to /dashboard
+  - unauthenticated users on /feed are redirected to /login
+
+### Forgot Password Validation Visibility
+- Route: GET /forgot-password, Submit: POST /forgot-password.
+- When email is missing or invalid, users now see:
+  - a visible top-level alert explaining the validation error
+  - an inline email field error message
+- Accessibility improvements include:
+  - aria-invalid state when email validation fails
+  - aria-describedby linkage to the email error text
+
 ## 8. Common Issues and Fixes
 
 ### 8.1 Unknown column father_name

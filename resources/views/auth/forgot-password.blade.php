@@ -33,8 +33,14 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+                    {{ $errors->first('email') ?? 'Please provide a valid email address.' }}
+                </div>
+            @endif
+
             <!-- Form -->
-            <form method="POST" action="{{ route('password.email') }}">
+            <form method="POST" action="{{ route('password.email') }}" novalidate>
                 @csrf
 
                 <!-- Email -->
@@ -47,12 +53,14 @@
                         type="email" 
                         name="email"
                         value="{{ old('email') }}"
-                        required autofocus
+                        autofocus
+                        aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}"
+                        aria-describedby="email-error"
                         class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
 
                     @error('email')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p id="email-error" class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 

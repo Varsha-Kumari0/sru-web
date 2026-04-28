@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Connection extends Model
 {
@@ -17,12 +18,12 @@ class Connection extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function connectedUser()
+    public function connectedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'connected_user_id');
     }

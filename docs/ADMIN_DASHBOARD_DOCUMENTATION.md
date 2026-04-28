@@ -252,6 +252,17 @@ The profile record currently includes additional personal/social fields such as:
 - Max file size: 2 MB
 - Changes reflect across all admin pages because the sidebar reads auth()->user()->avatar.
 
+### 2.9 Platform Route and Auth UX Updates (2026-04-28)
+- Feed compatibility route added:
+  - GET /feed (name: feed)
+  - Authenticated users are redirected to /dashboard (which then applies role-based routing).
+  - Unauthenticated users are redirected to /login by auth middleware.
+- Password reset request page (/forgot-password) now shows clearer validation feedback:
+  - top alert banner when validation fails
+  - inline email error message for the email field
+  - improved accessibility state through aria-invalid and aria-describedby attributes
+- These updates reduce route confusion from legacy feed links and improve password reset usability for all roles.
+
 ## 3. Permanent Activity Audit
 
 ### 3.1 activity_logs Table

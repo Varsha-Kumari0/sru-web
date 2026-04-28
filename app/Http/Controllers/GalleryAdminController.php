@@ -6,10 +6,13 @@ use App\Models\ActivityLog;
 use App\Models\GalleryAlbum;
 use App\Models\GalleryAlbumPhoto;
 use App\Models\GalleryVideo;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class GalleryAdminController extends Controller
 {
@@ -118,7 +121,7 @@ class GalleryAdminController extends Controller
         return $imageName;
     }
 
-    private function listSectionItems(string $section)
+    private function listSectionItems(string $section): Collection
     {
         $sectionInfo = $this->sectionMap()[$section];
         $modelClass = $sectionInfo['model'];
@@ -161,7 +164,7 @@ class GalleryAdminController extends Controller
         ];
     }
 
-    public function adminCreate(Request $request)
+    public function adminCreate(Request $request): View
     {
         $section = $this->resolveSection($request->query('section'));
         $sections = $this->sectionMap();
@@ -183,7 +186,7 @@ class GalleryAdminController extends Controller
         return view('admin.gallery.gallery-create', compact('section', 'sections', 'sectionLabel', 'recentItems'));
     }
 
-    public function adminManage(Request $request)
+    public function adminManage(Request $request): View
     {
         $section = $this->resolveSection($request->query('section'));
         $sections = $this->sectionMap();
@@ -204,7 +207,7 @@ class GalleryAdminController extends Controller
         return view('admin.gallery.gallery-manage', compact('section', 'sections', 'sectionLabel', 'items'));
     }
 
-    public function adminEdit(string $section, int $id)
+    public function adminEdit(string $section, int $id): View
     {
         $section = $this->resolveSection($section);
         $sections = $this->sectionMap();
@@ -230,7 +233,7 @@ class GalleryAdminController extends Controller
         return view('admin.gallery.gallery-edit', compact('section', 'sections', 'sectionLabel', 'item'));
     }
 
-    public function adminStore(Request $request, string $section)
+    public function adminStore(Request $request, string $section): RedirectResponse
     {
         $section = $this->resolveSection($section);
         $sections = $this->sectionMap();
@@ -277,7 +280,7 @@ class GalleryAdminController extends Controller
             ->with('success', $sectionInfo['label'] . ' item created successfully.');
     }
 
-    public function adminUpdate(Request $request, string $section, int $id)
+    public function adminUpdate(Request $request, string $section, int $id): RedirectResponse
     {
         $section = $this->resolveSection($section);
         $sections = $this->sectionMap();
@@ -296,14 +299,22 @@ class GalleryAdminController extends Controller
             if (!empty($validated['delete_photos'])) {
                 $toDelete = GalleryAlbumPhoto::query()
                     ->where('gallery_album_id', $item->id)
-                    ->whereIn('id', $validated['delete_photos'])
+                    ->where(function ($query) use ($validated) {
+                        foreach ($validated['delete_photos'] as $index => $photoId) {
+                            if ($index === 0) {
+                                $query->where('id', $photoId);
+                            } else {
+                                $query->orWhere('id', $photoId);
+                            }
+                        }
+                    })
                     ->get();
                 foreach ($toDelete as $photo) {
                     $path = public_path('images/albums/' . $photo->file_name);
                     if (File::exists($path)) {
                         File::delete($path);
                     }
-                    $photo->delete();
+                    GalleryAlbumPhoto::query()->where('id', $photo->id)->delete();
                 }
             }
             // Store new uploaded photos
@@ -343,7 +354,7 @@ class GalleryAdminController extends Controller
             ->with('success', $sectionInfo['label'] . ' item updated successfully.');
     }
 
-    public function adminDestroy(string $section, int $id)
+    public function adminDestroy(string $section, int $id): RedirectResponse
     {
         $section = $this->resolveSection($section);
         $sections = $this->sectionMap();

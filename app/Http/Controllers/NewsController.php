@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use App\Models\News;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
+use Illuminate\View\View;
 
 
 class NewsController extends Controller
@@ -44,7 +46,7 @@ class NewsController extends Controller
         return $imageName;
     }
 
-    public function adminCreate()
+    public function adminCreate(): View
     {
         $actor = Auth::user();
 
@@ -64,7 +66,7 @@ class NewsController extends Controller
         return view('admin.news.news-create', compact('recentUpdatedNews'));
     }
 
-    public function adminManage(Request $request)
+    public function adminManage(Request $request): View
     {
         $mode = $request->query('mode', 'update');
 
@@ -86,7 +88,7 @@ class NewsController extends Controller
         return view('admin.news.news-manage', compact('newsItems', 'mode'));
     }
 
-    public function adminEdit($id)
+    public function adminEdit(int $id): View
     {
         $news = News::query()->findOrFail($id);
 
@@ -105,7 +107,7 @@ class NewsController extends Controller
         return view('admin.news.news-edit', compact('news'));
     }
 
-    public function adminStore(Request $request)
+    public function adminStore(Request $request): RedirectResponse
     {
         $validated = $this->validateNews($request);
 
@@ -137,7 +139,7 @@ class NewsController extends Controller
         return redirect()->route('admin.news.create')->with('success', 'News item created successfully.');
     }
 
-    public function adminUpdate(Request $request, $id)
+    public function adminUpdate(Request $request, int $id): RedirectResponse
     {
         $news = News::query()->findOrFail($id);
         $validated = $this->validateNews($request);
@@ -186,7 +188,7 @@ class NewsController extends Controller
         return redirect()->route('admin.news.manage', ['mode' => 'update'])->with('success', 'News item updated successfully.');
     }
 
-    public function adminDestroy($id)
+    public function adminDestroy(int $id): RedirectResponse
     {
         $news = News::query()->findOrFail($id);
         $actor = Auth::user();
@@ -209,13 +211,13 @@ class NewsController extends Controller
             ]
         );
 
-        $news->delete();
+        News::query()->whereKey($news->getKey())->delete();
 
         return redirect()->route('admin.news.manage', ['mode' => 'delete'])->with('success', 'News item deleted successfully.');
     }
 
     
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $archive = $request->query('archive');
         $selectedMonth = null;
@@ -225,8 +227,8 @@ class NewsController extends Controller
         if ($archive) {
             try {
                 $parsed = Carbon::createFromFormat('Y-m', $archive);
-                $query->whereYear('published_at', $parsed->year)
-                      ->whereMonth('published_at', $parsed->month);
+                $query->where('published_at', '>=', $parsed->copy()->startOfMonth())
+                    ->where('published_at', '<=', $parsed->copy()->endOfMonth());
                 $selectedMonth = $parsed->format('F Y');
             } catch (\Exception $e) {
                 $archive = null;
@@ -249,7 +251,7 @@ class NewsController extends Controller
         return view('news.index', compact('news', 'archives', 'selectedMonth', 'archive'));
     }
 
-    public function show($id)
+    public function show(int $id): View
     {
         $news = \App\Models\News::findOrFail($id);
 

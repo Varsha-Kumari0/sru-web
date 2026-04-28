@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivityLog extends Model
 {
@@ -37,12 +38,12 @@ class ActivityLog extends Model
         ]);
     }
 
-    public function actor()
+    public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');
     }
 
-    public function subject()
+    public function subject(): BelongsTo
     {
         return $this->belongsTo(User::class, 'subject_user_id');
     }

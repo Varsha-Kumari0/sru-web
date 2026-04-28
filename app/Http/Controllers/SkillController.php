@@ -4,17 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Skill;
+use App\Models\SkillEndorsement;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class SkillController extends Controller
 {
     public function index(): View
     {
-        $skills = auth()->user()->skills()->with('endorsements')->get();
+        $userId = Auth::id();
+        if (!$userId) {
+            abort(401);
+        }
+
+        $user = User::findOrFail($userId);
+
+        $skills = $user->skills()->with('endorsements')->get();
         return view('skills.index', compact('skills'));
     }
 
@@ -25,23 +34,28 @@ class SkillController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'level' => 'nullable|in:beginner,intermediate,advanced,expert',
         ]);
 
         $skill = Skill::create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'name' => $request->name,
             'level' => $request->level ?? 'beginner',
             'endorsements_count' => 0,
         ]);
 
         ActivityLog::record(
-            auth()->id(),
-            auth()->id(),
+            $user->id,
+            $user->id,
             'skill_created',
-            (auth()->user()?->name ?? 'Alumni') . ' added skill: ' . $skill->name,
+            ($user->name ?? 'Alumni') . ' added skill: ' . $skill->name,
             [
                 'skill_id' => $skill->id,
                 'name' => $skill->name,
@@ -66,6 +80,11 @@ class SkillController extends Controller
     {
         $this->authorize('update', $skill);
 
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'level' => 'required|in:beginner,intermediate,advanced,expert',
@@ -79,10 +98,10 @@ class SkillController extends Controller
         ]);
 
         ActivityLog::record(
-            auth()->id(),
-            auth()->id(),
+            $user->id,
+            $user->id,
             'skill_updated',
-            (auth()->user()?->name ?? 'Alumni') . ' updated skill: ' . $skill->name,
+            ($user->name ?? 'Alumni') . ' updated skill: ' . $skill->name,
             [
                 'skill_id' => $skill->id,
                 'before' => $previousData,
@@ -95,20 +114,25 @@ class SkillController extends Controller
 
     public function destroy(Skill $skill): JsonResponse
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
         // Ensure user owns the skill
-        if ($skill->user_id !== auth()->id()) {
+        if ($skill->user_id !== $user->id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
         $skillSnapshot = $skill->only(['id', 'name', 'level', 'endorsements_count']);
 
-        $skill->delete();
+        Skill::query()->whereKey($skill->getKey())->delete();
 
         ActivityLog::record(
-            auth()->id(),
-            auth()->id(),
+            $user->id,
+            $user->id,
             'skill_deleted',
-            (auth()->user()?->name ?? 'Alumni') . ' removed skill: ' . ($skillSnapshot['name'] ?? 'Skill'),
+            ($user->name ?? 'Alumni') . ' removed skill: ' . ($skillSnapshot['name'] ?? 'Skill'),
             [
                 'skill' => $skillSnapshot,
             ]
@@ -122,7 +146,10 @@ class SkillController extends Controller
 
     public function endorse(Request $request, Skill $skill): JsonResponse
     {
-        $user = auth()->user();
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
 
         // Check if user already endorsed this skill
         if ($skill->endorsements()->where('endorser_id', $user->id)->exists()) {
@@ -134,7 +161,8 @@ class SkillController extends Controller
             'endorser_name' => $user->name,
         ]);
 
-        $skill->increment('endorsements_count');
+        Skill::query()->whereKey($skill->getKey())->increment('endorsements_count', 1);
+        $skill->refresh();
 
         ActivityLog::record(
             $user->id,
@@ -157,16 +185,23 @@ class SkillController extends Controller
 
     public function removeEndorsement(Skill $skill): JsonResponse
     {
-        $user = auth()->user();
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
 
-        $endorsement = $skill->endorsements()->where('endorser_id', $user->id)->first();
+        $endorsementId = SkillEndorsement::query()
+            ->where('skill_id', $skill->id)
+            ->where('endorser_id', $user->id)
+            ->value('id');
 
-        if (!$endorsement) {
+        if (!$endorsementId) {
             return response()->json(['error' => 'You have not endorsed this skill'], 400);
         }
 
-        $endorsement->delete();
-        $skill->decrement('endorsements_count');
+        SkillEndorsement::query()->whereKey($endorsementId)->delete();
+        Skill::query()->whereKey($skill->getKey())->decrement('endorsements_count', 1);
+        $skill->refresh();
 
         ActivityLog::record(
             $user->id,

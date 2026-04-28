@@ -86,8 +86,8 @@ Route::get('/profile', [ProfileController::class, 'showProfile'])
 
 Route::get('/newsroom', [NewsController::class, 'index'])->name('newsroom');
 Route::get('/newsroom/{id}', [NewsController::class, 'show'])->name('news.show');
-Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
-Route::get('/events/{id}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/{id}', [EventController::class, 'show'])->name('events.show');
 Route::get('/jobs', [JobOpportunityController::class, 'index'])->middleware('jobs.auth')->name('jobs.index');
 Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials.index');
 Route::view('/about', 'pages.about')->name('about');
@@ -117,8 +117,8 @@ Route::post('/cookie-consent', function (Request $request) {
 
     $minutes = 60 * 24 * 180;
 
-    $response->cookie('sru_cookie_consent', $validated['level'], $minutes, null, null, false, false, false, 'Lax');
-    $response->cookie('sru_cookie_preferences', $allowPreferences ? '1' : '0', $minutes, null, null, false, false, false, 'Lax');
+    $response->withCookie(Cookie::make('sru_cookie_consent', $validated['level'], $minutes, null, null, false, false, false, 'Lax'));
+    $response->withCookie(Cookie::make('sru_cookie_preferences', $allowPreferences ? '1' : '0', $minutes, null, null, false, false, false, 'Lax'));
 
     if (! $allowPreferences) {
         Cookie::queue(Cookie::forget('sru_feed_density'));
@@ -148,11 +148,12 @@ Route::get('/dashboard', function () {
 
     $memberCount = User::query()
         ->where('role', 'user')
+        ->get()
         ->count();
 
     $upcomingEvents = Event::query()
         ->where('start_at', '>=', now())
-        ->orderBy('start_at')
+        ->orderBy('start_at', 'asc')
         ->take(3)
         ->get();
 
@@ -177,32 +178,72 @@ Route::get('/dashboard', function () {
     $feedTypes = ['post', 'news', 'event', 'testimonial'];
 
     $reactionCounts = FeedReaction::query()
-        ->whereIn('feed_type', $feedTypes)
+        ->where(function ($query) use ($feedTypes) {
+            foreach ($feedTypes as $index => $feedType) {
+                if ($index === 0) {
+                    $query->where('feed_type', $feedType);
+                } else {
+                    $query->orWhere('feed_type', $feedType);
+                }
+            }
+        })
         ->get()
         ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
         ->map(fn ($items) => $items->count());
 
     $commentCounts = FeedComment::query()
-        ->whereIn('feed_type', $feedTypes)
+        ->where(function ($query) use ($feedTypes) {
+            foreach ($feedTypes as $index => $feedType) {
+                if ($index === 0) {
+                    $query->where('feed_type', $feedType);
+                } else {
+                    $query->orWhere('feed_type', $feedType);
+                }
+            }
+        })
         ->get()
         ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
         ->map(fn ($items) => $items->count());
 
     $shareCounts = FeedShare::query()
-        ->whereIn('feed_type', $feedTypes)
+        ->where(function ($query) use ($feedTypes) {
+            foreach ($feedTypes as $index => $feedType) {
+                if ($index === 0) {
+                    $query->where('feed_type', $feedType);
+                } else {
+                    $query->orWhere('feed_type', $feedType);
+                }
+            }
+        })
         ->get()
         ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
         ->map(fn ($items) => $items->count());
 
     $viewerReactionKeys = FeedReaction::query()
         ->where('user_id', $user->id)
-        ->whereIn('feed_type', $feedTypes)
+        ->where(function ($query) use ($feedTypes) {
+            foreach ($feedTypes as $index => $feedType) {
+                if ($index === 0) {
+                    $query->where('feed_type', $feedType);
+                } else {
+                    $query->orWhere('feed_type', $feedType);
+                }
+            }
+        })
         ->get()
         ->mapWithKeys(fn ($item) => [$item->feed_type . ':' . $item->feed_id => true]);
 
     $commentGroups = FeedComment::query()
         ->with('user')
-        ->whereIn('feed_type', $feedTypes)
+        ->where(function ($query) use ($feedTypes) {
+            foreach ($feedTypes as $index => $feedType) {
+                if ($index === 0) {
+                    $query->where('feed_type', $feedType);
+                } else {
+                    $query->orWhere('feed_type', $feedType);
+                }
+            }
+        })
         ->latest()
         ->get()
         ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id);
@@ -225,6 +266,10 @@ Route::get('/dashboard', function () {
         'feedDensity'
     ));
 })->middleware(['auth'])->name('dashboard');
+
+Route::get('/feed', function () {
+    return redirect()->route('dashboard');
+})->middleware(['auth'])->name('feed');
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/dashboard/preferences/feed-density', function (Request $request) {
@@ -254,7 +299,7 @@ Route::middleware(['auth'])->group(function () {
                 'message' => 'Feed density saved.',
                 'density' => $validated['density'],
             ])
-            ->cookie('sru_feed_density', $validated['density'], 60 * 24 * 180, null, null, false, false, false, 'Lax');
+            ->withCookie(Cookie::make('sru_feed_density', $validated['density'], 60 * 24 * 180, null, null, false, false, false, 'Lax'));
     })->name('dashboard.preferences.feed-density');
 
     Route::post('/dashboard/feed/posts', function (Request $request) {
@@ -325,7 +370,7 @@ Route::middleware(['auth'])->group(function () {
         $existing = FeedReaction::query()->where($attributes)->first();
 
         if ($existing) {
-            $existing->delete();
+            FeedReaction::query()->whereKey($existing->getKey())->delete();
             session(['dashboard_last_action' => 'Removed a reaction.']);
 
             $actor = Auth::user();
@@ -344,6 +389,7 @@ Route::middleware(['auth'])->group(function () {
             $count = FeedReaction::query()
                 ->where('feed_type', $feedType)
                 ->where('feed_id', $feedId)
+                ->get()
                 ->count();
 
             if (request()->expectsJson()) {
@@ -375,6 +421,7 @@ Route::middleware(['auth'])->group(function () {
         $count = FeedReaction::query()
             ->where('feed_type', $feedType)
             ->where('feed_id', $feedId)
+            ->get()
             ->count();
 
         if (request()->expectsJson()) {
@@ -421,6 +468,7 @@ Route::middleware(['auth'])->group(function () {
         $count = FeedComment::query()
             ->where('feed_type', $feedType)
             ->where('feed_id', $feedId)
+            ->get()
             ->count();
 
         if ($request->expectsJson()) {
@@ -461,6 +509,7 @@ Route::middleware(['auth'])->group(function () {
         $count = FeedShare::query()
             ->where('feed_type', $feedType)
             ->where('feed_id', $feedId)
+            ->get()
             ->count();
 
         if (request()->expectsJson()) {
@@ -532,7 +581,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/admin/dashboard', function () {
 
-        $users = User::where('role', 'user')
+        $users = User::query()->where('role', 'user')
             ->with(['profile', 'professional'])
             ->orderByDesc('created_at')
             ->get();
@@ -665,48 +714,48 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         if ($selectedFilterBy === 'branch') {
             $filterValues = Profile::query()
-                ->whereNotNull('branch')
-                ->where('branch', '!=', '')
                 ->distinct()
-                ->orderBy('branch')
-                ->pluck('branch');
+                ->pluck('branch')
+                ->filter(fn ($branch) => !is_null($branch) && $branch !== '')
+                ->sort()
+                ->values();
         }
 
         if ($selectedFilterBy === 'graduation_year') {
             $filterValues = Profile::query()
-                ->whereNotNull('passing_year')
-                ->where('passing_year', '!=', '')
                 ->distinct()
-                ->orderByDesc('passing_year')
                 ->pluck('passing_year')
+                ->filter(fn ($year) => !is_null($year) && $year !== '')
+                ->sortDesc()
+                ->values()
                 ->map(fn ($year) => (string) $year);
         }
 
         if ($selectedFilterBy === 'organization') {
             $filterValues = Professional::query()
-                ->whereNotNull('organization')
-                ->where('organization', '!=', '')
                 ->distinct()
-                ->orderBy('organization')
-                ->pluck('organization');
+                ->pluck('organization')
+                ->filter(fn ($organization) => !is_null($organization) && $organization !== '')
+                ->sort()
+                ->values();
         }
 
         if ($selectedFilterBy === 'role') {
             $filterValues = Professional::query()
-                ->whereNotNull('role')
-                ->where('role', '!=', '')
                 ->distinct()
-                ->orderBy('role')
-                ->pluck('role');
+                ->pluck('role')
+                ->filter(fn ($role) => !is_null($role) && $role !== '')
+                ->sort()
+                ->values();
         }
 
         if ($selectedFilterBy === 'location') {
             $filterValues = Professional::query()
-                ->whereNotNull('location')
-                ->where('location', '!=', '')
                 ->distinct()
-                ->orderBy('location')
-                ->pluck('location');
+                ->pluck('location')
+                ->filter(fn ($location) => !is_null($location) && $location !== '')
+                ->sort()
+                ->values();
         }
 
         return view('admin.alumni.allalumini', compact('users', 'filterValues', 'selectedFilterBy', 'selectedFilterValue'));

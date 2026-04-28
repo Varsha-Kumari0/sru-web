@@ -15,19 +15,21 @@ class MessageController extends Controller
 {
     public function index(): View
     {
+        $userId = Auth::id();
+
         // Get all conversations (unique users who have messaged with current user)
-        $conversations = Message::where('sender_id', auth()->id())
-            ->orWhere('receiver_id', auth()->id())
+        $conversations = Message::query()->where('sender_id', $userId)
+            ->orWhere('receiver_id', $userId)
             ->with(['sender', 'receiver'])
             ->orderBy('created_at', 'desc')
             ->get()
-            ->groupBy(function ($message) {
-                return $message->sender_id === auth()->id() ? $message->receiver_id : $message->sender_id;
+            ->groupBy(function ($message) use ($userId) {
+                return $message->sender_id === $userId ? $message->receiver_id : $message->sender_id;
             })
-            ->map(function ($messages, $userId) {
-                $user = User::find($userId);
+            ->map(function ($messages, $otherUserId) use ($userId) {
+                $user = User::query()->find($otherUserId);
                 $latestMessage = $messages->first();
-                $unreadCount = $messages->where('receiver_id', auth()->id())->where('is_read', false)->count();
+                $unreadCount = $messages->where('receiver_id', $userId)->where('is_read', false)->count();
 
                 return [
                     'user' => $user,
@@ -41,9 +43,11 @@ class MessageController extends Controller
 
     public function show(User $user): View
     {
+        $currentUserId = Auth::id();
+
         // Mark messages as read
-        $markedAsRead = Message::where('sender_id', $user->id)
-            ->where('receiver_id', auth()->id())
+        $markedAsRead = Message::query()->where('sender_id', $user->id)
+            ->where('receiver_id', $currentUserId)
             ->where('is_read', false)
             ->update(['is_read' => true, 'read_at' => now()]);
 
@@ -63,7 +67,7 @@ class MessageController extends Controller
         }
 
         // Get conversation
-        $messages = Message::betweenUsers(auth()->id(), $user->id)
+        $messages = Message::query()->betweenUsers($currentUserId, $user->id)
             ->with(['sender', 'receiver'])
             ->orderBy('created_at', 'asc')
             ->get();
@@ -73,16 +77,18 @@ class MessageController extends Controller
 
     public function store(Request $request, User $user): RedirectResponse
     {
+        $senderId = Auth::id();
+
         $request->validate([
             'content' => 'required|string|max:1000',
             'subject' => 'nullable|string|max:255',
         ]);
 
         $message = Message::create([
-            'sender_id' => auth()->id(),
+            'sender_id' => $senderId,
             'receiver_id' => $user->id,
-            'subject' => $request->subject,
-            'content' => $request->content,
+            'subject' => $request->input('subject'),
+            'content' => $request->input('content'),
             'is_read' => false,
         ]);
 
@@ -96,7 +102,7 @@ class MessageController extends Controller
                 'message_id' => $message->id,
                 'receiver_user_id' => $user->id,
                 'receiver_name' => $user->name,
-                'has_subject' => !empty($request->subject),
+                'has_subject' => !empty($request->input('subject')),
             ]
         );
 
@@ -105,14 +111,16 @@ class MessageController extends Controller
 
     public function storeAjax(Request $request, User $user): JsonResponse
     {
+        $senderId = Auth::id();
+
         $request->validate([
             'content' => 'required|string|max:1000',
         ]);
 
         $message = Message::create([
-            'sender_id' => auth()->id(),
+            'sender_id' => $senderId,
             'receiver_id' => $user->id,
-            'content' => $request->content,
+            'content' => $request->input('content'),
             'is_read' => false,
         ]);
 
@@ -138,8 +146,9 @@ class MessageController extends Controller
 
     public function getUnreadCount(): JsonResponse
     {
-        $unreadCount = Message::where('receiver_id', auth()->id())
+        $unreadCount = Message::query()->where('receiver_id', Auth::id())
             ->where('is_read', false)
+            ->get()
             ->count();
 
         return response()->json(['unread_count' => $unreadCount]);

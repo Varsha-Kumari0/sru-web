@@ -6,21 +6,22 @@ use App\Models\ActivityLog;
 use App\Models\GalleryAlbum;
 use App\Models\GalleryVideo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class GalleryController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $albums = GalleryAlbum::query()
             ->where('is_active', true)
             ->orderByDesc('is_featured')
-            ->orderBy('display_order')
+            ->orderBy('display_order', 'asc')
             ->orderByDesc('published_at')
             ->get();
 
         $videos = GalleryVideo::query()
             ->where('is_active', true)
-            ->orderBy('display_order')
+            ->orderBy('display_order', 'asc')
             ->orderByDesc('published_at')
             ->get();
 
@@ -44,7 +45,7 @@ class GalleryController extends Controller
         return view('pages.gallery', compact('albums', 'videos', 'featuredAlbum'));
     }
 
-    public function albumShow(int $id)
+    public function albumShow(int $id): View
     {
         $album = GalleryAlbum::query()
             ->where('is_active', true)
@@ -68,7 +69,7 @@ class GalleryController extends Controller
         return view('pages.gallery-album', compact('album'));
     }
 
-    public function videoShow(int $id)
+    public function videoShow(int $id): View
     {
         $video = GalleryVideo::query()
             ->where('is_active', true)

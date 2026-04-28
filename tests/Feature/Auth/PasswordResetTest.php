@@ -20,6 +20,19 @@ test('reset password link can be requested', function () {
     Notification::assertSentTo($user, ResetPassword::class);
 });
 
+test('reset password request validates missing email with visible feedback', function () {
+    $response = $this->from('/forgot-password')->post('/forgot-password', [
+        'email' => '',
+    ]);
+
+    $response
+        ->assertRedirect('/forgot-password')
+        ->assertSessionHasErrors(['email']);
+
+    $this->get('/forgot-password')
+        ->assertSee('The email field is required.', false);
+});
+
 test('reset password screen can be rendered', function () {
     Notification::fake();
 

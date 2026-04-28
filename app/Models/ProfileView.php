@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProfileView extends Model
 {
@@ -16,12 +17,12 @@ class ProfileView extends Model
         'viewed_at' => 'datetime',
     ];
 
-    public function profileUser()
+    public function profileUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'profile_user_id');
     }
 
-    public function visitorUser()
+    public function visitorUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'visitor_user_id');
     }

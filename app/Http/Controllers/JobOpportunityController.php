@@ -79,11 +79,11 @@ class JobOpportunityController extends Controller
         $jobs = $query->get();
 
         $locations = JobOpportunity::query()
-            ->whereNotNull('location')
-            ->where('location', '!=', '')
-            ->distinct()
-            ->orderBy('location')
-            ->pluck('location');
+            ->pluck('location')
+            ->filter(fn ($location) => !is_null($location) && $location !== '')
+            ->unique()
+            ->sort()
+            ->values();
 
         $skills = JobOpportunity::query()
             ->pluck('skills')
