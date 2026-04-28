@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\AchievementController;
 
 if (! function_exists('resolveFeedTarget')) {
     function resolveFeedTarget(string $feedType, int $feedId): bool
@@ -101,6 +102,10 @@ Route::view('/engage/host-event', 'pages.host-event')->name('engage.host');
 Route::view('/engage/share-opportunities', 'pages.share-opportunities')->name('engage.share');
 Route::view('/contact', 'pages.contact')->name('contact');
 // Route::view('/jobs', 'pages.jobs')->name('jobs.index');
+Route::middleware('auth')->group(function () {
+    Route::get('/achievements/create', [AchievementController::class, 'create'])->name('achievements.create');
+    Route::post('/achievements', [AchievementController::class, 'store'])->name('achievements.store');
+});
 
 Route::post('/cookie-consent', function (Request $request) {
     $validated = $request->validate([

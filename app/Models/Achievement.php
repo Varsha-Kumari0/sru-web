@@ -8,11 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Achievement extends Model
 {
     protected $fillable = [
-        'user_id',
-        'title',
-        'description',
-        'badge_icon',
-        'earned_at',
+        'user_id', 'title', 'category', 'description',
+        'earned_at', 'proof_url', 'badge_icon', 'source'
     ];
 
     protected $casts = [
