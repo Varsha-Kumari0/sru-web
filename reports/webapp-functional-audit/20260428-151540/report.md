@@ -93,3 +93,17 @@
 - Forgot-password validation visibility confirmed:
 	- top error alert shown for failed submit
 	- inline email validation message shown
+
+# Documentation and Navigation Sync (2026-04-28)
+
+- Synced implementation notes across:
+	- docs/ADMIN_DASHBOARD_DOCUMENTATION.md
+	- docs/ALUMNI_USER_DOCUMENTATION.md
+	- reports/webapp-functional-audit/20260428-151540/report.md
+	- reports/webapp-functional-audit/20260428-151540/database-checks.md
+- Admin Jobs management module documented as completed (create/manage/edit/delete routes and views).
+- Admin sidebar consistency updates documented and implemented:
+	- Jobs flyout present across non-job admin pages.
+	- Gallery flyout present across non-gallery admin pages.
+- Local login reliability note documented:
+	- local host consistency (127.0.0.1) used to avoid local-session 419 mismatches.

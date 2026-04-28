@@ -236,6 +236,20 @@ Authenticated alumni:
   - aria-invalid state when email validation fails
   - aria-describedby linkage to the email error text
 
+## 7.2 Local Login Host Consistency Note (2026-04-28)
+
+- Local development access should use a single consistent host for auth flows.
+- Recommended local URL: http://127.0.0.1:8000
+- Mixing localhost and 127.0.0.1 in separate tabs can cause session/CSRF mismatch symptoms, including:
+  - login POST returning HTTP 419
+  - form submit failures even with a visible CSRF field
+- Environment alignment applied:
+  - APP_URL updated to http://127.0.0.1:8000 in local environment
+- If a 419 occurs in local testing:
+  - open only one host variant (127.0.0.1 or localhost, not both)
+  - hard-refresh login page
+  - clear cookies for both host variants if stale sessions remain
+
 ## 8. Common Issues and Fixes
 
 ### 8.1 Unknown column father_name
@@ -262,6 +276,16 @@ Cause:
 
 Fix:
 - enter only digits with total length 10 to 15
+
+### 8.4 Login POST returns 419 in local environment
+Cause:
+- host mismatch between active browser tabs or cookies (localhost vs 127.0.0.1)
+- stale session cookie after APP_URL changes
+
+Fix:
+- use a single host consistently: http://127.0.0.1:8000
+- clear browser cookies for localhost and 127.0.0.1
+- reload login page and retry authentication
 
 ## 9. Files Involved (User Side)
 

@@ -263,6 +263,46 @@ The profile record currently includes additional personal/social fields such as:
   - improved accessibility state through aria-invalid and aria-describedby attributes
 - These updates reduce route confusion from legacy feed links and improve password reset usability for all roles.
 
+### 2.10 Admin Jobs Management (2026-04-28)
+- Create route: GET /admin/jobs/new (name: admin.jobs.create)
+- Store route: POST /admin/jobs (name: admin.jobs.store)
+- Manage route: GET /admin/jobs/manage (name: admin.jobs.manage)
+- Edit route: GET /admin/jobs/{id}/edit (name: admin.jobs.edit)
+- Update route: PUT /admin/jobs/{id} (name: admin.jobs.update)
+- Delete route: DELETE /admin/jobs/{id} (name: admin.jobs.delete)
+- Jobs create page includes full opportunity form support for:
+  - type (job or internship)
+  - title
+  - company name and website
+  - contact email
+  - job area
+  - experience level
+  - work mode
+  - location
+  - skills
+  - salary or stipend
+  - application deadline
+  - attachment upload
+  - description
+- Jobs create page includes a right-side Recent Jobs panel.
+- Jobs manage page lists existing opportunities with per-item Update and Delete actions.
+- Jobs edit page supports full update flow with existing value prefill and optional attachment replacement.
+- File attachments are cleaned up on replacement and delete.
+- Activity log events are recorded for jobs create/update/delete flows.
+
+### 2.11 Admin Sidebar Consistency Refresh (2026-04-28)
+- Admin sidebars were synchronized so all major management flyouts are present across admin pages.
+- News, Events, Gallery, and Jobs flyout menus now appear consistently on:
+  - dashboard
+  - all alumni
+  - alumni edit
+  - activity logs
+  - news create/manage/edit
+  - events create/manage/edit
+  - gallery create/manage/edit
+  - jobs create/manage/edit
+- Gallery and Jobs links now remain visible even when navigating from non-module pages (for example Activity Logs and Alumni pages).
+
 ## 3. Permanent Activity Audit
 
 ### 3.1 activity_logs Table
@@ -309,10 +349,12 @@ Current events include:
   - All SRU Alumni
   - News -> View / New / Update/Delete
   - Events -> View / New / Update/Delete
+  - Gallery -> View / New / Update/Delete
+  - Jobs -> View / New / Update/Delete
   - Activity Logs
   - Reports
   - System -> Settings
-- The News and Events submenus on all admin pages use hover flyout menus that appear outside (to the right of) the sidebar.
+- The News, Events, Gallery, and Jobs submenus on all admin pages use hover flyout menus that appear outside (to the right of) the sidebar.
 - Admin sidebar profile avatar uses a consistent fit style across all admin pages (contain + center + white background + border).
 - The bottom sidebar admin identity card is present across all admin pages, including News create, News manage, News edit, Events create, Events manage, and Events edit.
 - Logout hover visibility was normalized for icon-style sidebar variants.
@@ -347,6 +389,12 @@ Current events include:
 - resources/views/admin/events/event-create.blade.php (view: admin.events.event-create)
 - resources/views/admin/events/event-manage.blade.php (view: admin.events.event-manage)
 - resources/views/admin/events/event-edit.blade.php (view: admin.events.event-edit)
+- resources/views/admin/gallery/gallery-create.blade.php (view: admin.gallery.gallery-create)
+- resources/views/admin/gallery/gallery-manage.blade.php (view: admin.gallery.gallery-manage)
+- resources/views/admin/gallery/gallery-edit.blade.php (view: admin.gallery.gallery-edit)
+- resources/views/admin/jobs/jobs-create.blade.php (view: admin.jobs.jobs-create)
+- resources/views/admin/jobs/jobs-manage.blade.php (view: admin.jobs.jobs-manage)
+- resources/views/admin/jobs/jobs-edit.blade.php (view: admin.jobs.jobs-edit)
 
 ## 6. Data and Validation Notes
 - father_name is now part of the profile data model.
@@ -458,5 +506,7 @@ Recommended checks:
   - Image upload support with automatic cleanup on replacement/deletion
   - Activity log recording for all create/update/delete operations
 - Both modules are fully integrated into the admin sidebar with hover submenus on all admin pages.
+- Jobs and Gallery modules are also fully integrated into the admin sidebar with hover submenus on all admin pages.
 - News and Events flyout submenus are rendered outside the sidebar so they remain visible without shrinking/stacking inside the nav column.
+- Gallery and Jobs flyout submenus use the same outside-sidebar rendering behavior.
 - Dashboard News and Events blocks are wired to live database data and link to public pages, while admin edit actions remain available through module manage pages.

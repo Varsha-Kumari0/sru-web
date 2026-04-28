@@ -37,6 +37,19 @@
 	- no schema or data model changes were required.
 	- no DB consistency impact detected from this UX change.
 
+# Documentation and Feature Sync Notes (2026-04-28)
+
+- Admin Jobs module completion is consistent with existing data model:
+	- table: job_opportunities
+	- no additional schema migration required for admin CRUD enablement
+	- updates are route/controller/view integration over existing schema
+- Admin sidebar consistency fixes (Jobs/Gallery visibility across admin pages) are presentation-layer only:
+	- no schema impact
+	- no data mutation required
+- Local login host consistency guidance (127.0.0.1) is environment/session behavior:
+	- no schema impact
+	- no persistent data model change
+
 # Blockers or Risks
 
 - `php artisan db:show --counts` failed due to missing `performance_schema.session_status` table in this MySQL setup. Used safe fallback checks via `tinker`.
