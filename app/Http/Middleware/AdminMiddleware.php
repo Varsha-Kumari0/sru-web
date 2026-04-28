@@ -10,6 +10,9 @@ class AdminMiddleware
 {
     public function handle($request, Closure $next)
     {
+        // Keep admin-side timestamps aligned with app timezone (Asia/Kolkata).
+        date_default_timezone_set(config('app.timezone', 'Asia/Kolkata'));
+
         if (!auth()->check()) {
             return redirect('/admin/login');
         }
