@@ -94,7 +94,7 @@ Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 Route::get('/gallery/albums/{id}', [GalleryController::class, 'albumShow'])->name('gallery.album.show');
 Route::view('/engage', 'pages.engage')->name('engage');
 Route::view('/contact', 'pages.contact')->name('contact');
-Route::view('/jobs', 'pages.jobs')->name('jobs.index');
+// Route::view('/jobs', 'pages.jobs')->name('jobs.index');
 
 Route::get('/dashboard', function () {
     $user = Auth::user();
