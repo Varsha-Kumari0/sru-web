@@ -110,7 +110,7 @@
     <header class="sticky top-0 z-40 flex items-center justify-between px-6 pt-[1.9rem] pb-[1.7em] xl:px-9 bg-white border-b border-slate-300">
         <div>
             <h2 class="font-display text-2xl font-semibold">Manage Engage Posts</h2>
-            <p class="text-xs mt-0.5 text-slate-500">Update or delete Engage feed posts.</p>
+            <p class="text-xs mt-0.5 text-slate-500">Review engage posts and moderate their comments or likes.</p>
         </div>
         <a href="{{ route('admin.engage.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Create New</a>
     </header>
@@ -133,8 +133,14 @@
 
                     <p class="mt-4 text-sm text-slate-700 line-clamp-4">{{ $post->body }}</p>
 
+                    <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                        <span class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">{{ $post->comments_count }} comments</span>
+                        <span class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">{{ $post->likes_count }} likes</span>
+                        <span>By {{ $post->user?->display_name ?? 'Unknown' }}</span>
+                    </div>
+
                     <div class="mt-5 flex items-center justify-end gap-3">
-                        <a href="{{ route('admin.engage.edit', $post->id) }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Update</a>
+                        <a href="{{ route('admin.engage.review', $post->id) }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Review</a>
                         <form method="POST" action="{{ route('admin.engage.delete', $post->id) }}" onsubmit="return confirm('Delete this engage post?');">
                             @csrf
                             @method('DELETE')

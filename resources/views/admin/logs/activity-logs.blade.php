@@ -240,7 +240,7 @@
                         <option value="">All Actors</option>
                         @foreach($actors as $actor)
                             <option value="{{ $actor->id }}" {{ (string) request('actor_user_id') === (string) $actor->id ? 'selected' : '' }}>
-                                {{ $actor->name }} ({{ $actor->email }})
+                                    {{ $actor->display_name }} ({{ $actor->email }})
                             </option>
                         @endforeach
                     </select>
@@ -429,7 +429,7 @@
                                 </td>
                                 <td class="px-3 py-2 align-top text-slate-700 break-words">
                                     @if($log->actor)
-                                        <div class="font-medium text-slate-900">{{ $log->actor->name }}</div>
+                                        <div class="font-medium text-slate-900">{{ $log->actor->display_name }}</div>
                                         <div class="text-[10px] text-slate-500 truncate" title="{{ $log->actor->email }}">{{ $log->actor->email }}</div>
                                     @else
                                         -
@@ -437,7 +437,7 @@
                                 </td>
                                 <td class="px-3 py-2 align-top text-slate-700 break-words">
                                     @if($log->subject)
-                                        <div class="font-medium text-slate-900">{{ $log->subject->name }}</div>
+                                        <div class="font-medium text-slate-900">{{ $log->subject->display_name }}</div>
                                         <div class="text-[10px] text-slate-500 truncate" title="{{ $log->subject->email }}">{{ $log->subject->email }}</div>
                                     @else
                                         {{ $log->properties['subject_name'] ?? '-' }}

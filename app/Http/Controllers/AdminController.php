@@ -15,7 +15,7 @@ class AdminController extends Controller
     // Reusable query builder for activity logs list and export endpoints.
     private function buildActivityLogsQuery(Request $request)
     {
-        $query = ActivityLog::query()->with(['actor', 'subject']);
+        $query = ActivityLog::query()->with(['actor.profile', 'subject.profile']);
 
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->string('from_date'));
@@ -57,6 +57,7 @@ class AdminController extends Controller
                 'id',
                 ActivityLog::query()->whereNotNull('actor_user_id')->distinct()->pluck('actor_user_id')
             )
+            ->with('profile')
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
@@ -121,9 +122,9 @@ class AdminController extends Controller
                     $log->created_at?->format('Y-m-d H:i:s'),
                     $log->action,
                     $log->description,
-                    $log->actor?->name ?? '-',
+                    $log->actor?->display_name ?? '-',
                     $log->actor?->email ?? '-',
-                    $log->subject?->name ?? '-',
+                    $log->subject?->display_name ?? '-',
                     $log->subject?->email ?? '-',
                 ]);
             }

@@ -83,4 +83,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(Skill::class);
     }
+
+    public function getDisplayNameAttribute(): string
+    {
+        $name = trim((string) $this->name);
+        $profileName = trim((string) ($this->profile?->full_name ?? ''));
+
+        if ($profileName !== '' && in_array($name, ['Alumni User', 'User'], true)) {
+            return $profileName;
+        }
+
+        return $name !== '' ? $name : ($profileName !== '' ? $profileName : 'Unknown User');
+    }
 }

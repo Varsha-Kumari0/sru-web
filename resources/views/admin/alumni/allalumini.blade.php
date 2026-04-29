@@ -307,14 +307,13 @@
 							<th class="px-4 py-3 text-left">Organization</th>
 							<th class="px-4 py-3 text-left">Role</th>
 							<th class="px-4 py-3 text-left">Location</th>
-							<th class="px-4 py-3 text-left">Skills</th>
 							<th class="px-4 py-3 text-left">Action</th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php if ($users->isEmpty()): ?>
 							<tr>
-								<td colspan="10" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
+								<td colspan="9" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
 							</tr>
 						<?php else: ?>
 							<?php foreach ($users as $user): ?>
@@ -486,7 +485,6 @@
 									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->organization ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->role ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->location ?? '-' }}</td>
-									<td class="px-4 py-3 text-slate-700 max-w-[220px] break-words">{{ $skillsText }}</td>
 									<td class="px-4 py-3">
 										<div class="flex items-center gap-2">
 											<button type="button"

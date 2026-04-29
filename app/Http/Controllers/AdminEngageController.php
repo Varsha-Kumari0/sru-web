@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\FeedComment;
 use App\Models\FeedPost;
+use App\Models\FeedReaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -77,7 +79,11 @@ class AdminEngageController extends Controller
     public function manage(): View
     {
         $posts = FeedPost::query()
-            ->with('user')
+            ->with(['user.profile'])
+            ->withCount([
+                'comments as comments_count',
+                'reactions as likes_count' => fn ($query) => $query->where('reaction', 'like'),
+            ])
             ->latest('updated_at')
             ->get();
 
@@ -98,14 +104,20 @@ class AdminEngageController extends Controller
 
     public function edit(int $id): View
     {
-        $post = FeedPost::query()->with('user')->findOrFail($id);
+        $post = FeedPost::query()
+            ->with([
+                'user.profile',
+                'comments' => fn ($query) => $query->with('user.profile')->latest(),
+                'reactions' => fn ($query) => $query->with('user.profile')->latest(),
+            ])
+            ->findOrFail($id);
 
         $actor = Auth::user();
         ActivityLog::record(
             $actor?->id,
             $actor?->id,
             'admin_engage_edit_opened',
-            ($actor?->name ?? 'Admin') . ' opened engage edit for post #' . $post->id,
+            ($actor?->name ?? 'Admin') . ' opened engage moderation view for post #' . $post->id,
             [
                 'post_id' => $post->id,
             ]
@@ -120,33 +132,21 @@ class AdminEngageController extends Controller
     public function update(Request $request, int $id): RedirectResponse
     {
         $post = FeedPost::query()->findOrFail($id);
-
-        $validated = $request->validate([
-            'post_type' => 'required|in:' . implode(',', array_keys($this->postTypes)),
-            'body' => 'required|string|min:10|max:1200',
-        ]);
-
-        $post->update([
-            'post_type' => $validated['post_type'],
-            'body' => trim($validated['body']),
-        ]);
-
         $actor = Auth::user();
+
         ActivityLog::record(
             $actor?->id,
             $actor?->id,
-            'admin_engage_updated',
-            ($actor?->name ?? 'Admin') . ' updated engage post #' . $post->id,
+            'admin_engage_update_blocked',
+            ($actor?->name ?? 'Admin') . ' attempted to edit engage post #' . $post->id . ' but editing is disabled',
             [
                 'post_id' => $post->id,
-                'post_type' => $post->post_type,
-                'body_preview' => substr($post->body, 0, 120),
             ]
         );
 
         return redirect()
-            ->route('admin.engage.manage')
-            ->with('success', 'Engage post updated successfully.');
+            ->route('admin.engage.review', $post->id)
+            ->with('error', 'Editing engage posts is disabled. You can review and delete comments or likes only.');
     }
 
     public function destroy(int $id): RedirectResponse
@@ -156,7 +156,17 @@ class AdminEngageController extends Controller
         $postType = $post->post_type;
         $postPreview = substr($post->body, 0, 120);
 
-        $post->delete();
+        FeedComment::query()
+            ->where('feed_type', 'post')
+            ->where('feed_id', $postId)
+            ->delete();
+
+        FeedReaction::query()
+            ->where('feed_type', 'post')
+            ->where('feed_id', $postId)
+            ->delete();
+
+        FeedPost::query()->whereKey($postId)->delete();
 
         $actor = Auth::user();
         ActivityLog::record(
@@ -174,5 +184,60 @@ class AdminEngageController extends Controller
         return redirect()
             ->route('admin.engage.manage')
             ->with('success', 'Engage post deleted successfully.');
+    }
+
+    public function destroyComment(int $comment): RedirectResponse
+    {
+        $commentModel = FeedComment::query()->with(['user.profile'])->findOrFail($comment);
+        $postId = (int) $commentModel->feed_id;
+        $commentAuthor = $commentModel->user?->display_name ?? 'Unknown User';
+        $commentPreview = substr($commentModel->body, 0, 120);
+
+        FeedComment::query()->whereKey($commentModel->id)->delete();
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_engage_comment_deleted',
+            ($actor?->name ?? 'Admin') . ' deleted a comment from engage post #' . $postId,
+            [
+                'post_id' => $postId,
+                'comment_id' => $commentModel->id,
+                'comment_author' => $commentAuthor,
+                'body_preview' => $commentPreview,
+            ]
+        );
+
+        return redirect()
+            ->route('admin.engage.review', $postId)
+            ->with('success', 'Comment deleted successfully.');
+    }
+
+    public function destroyReaction(int $reaction): RedirectResponse
+    {
+        $reactionModel = FeedReaction::query()->with(['user.profile'])->findOrFail($reaction);
+        $postId = (int) $reactionModel->feed_id;
+        $reactionAuthor = $reactionModel->user?->display_name ?? 'Unknown User';
+
+        FeedReaction::query()->whereKey($reactionModel->id)->delete();
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'admin_engage_reaction_deleted',
+            ($actor?->name ?? 'Admin') . ' deleted a reaction from engage post #' . $postId,
+            [
+                'post_id' => $postId,
+                'reaction_id' => $reactionModel->id,
+                'reaction_author' => $reactionAuthor,
+                'reaction' => $reactionModel->reaction,
+            ]
+        );
+
+        return redirect()
+            ->route('admin.engage.review', $postId)
+            ->with('success', 'Reaction deleted successfully.');
     }
 }

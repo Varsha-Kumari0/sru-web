@@ -948,9 +948,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/engage/new', [AdminEngageController::class, 'create'])->name('admin.engage.create');
     Route::post('/admin/engage', [AdminEngageController::class, 'store'])->name('admin.engage.store');
     Route::get('/admin/engage/manage', [AdminEngageController::class, 'manage'])->name('admin.engage.manage');
-    Route::get('/admin/engage/{id}/edit', [AdminEngageController::class, 'edit'])->name('admin.engage.edit');
+    Route::get('/admin/engage/{id}/review', [AdminEngageController::class, 'edit'])->name('admin.engage.review');
     Route::put('/admin/engage/{id}', [AdminEngageController::class, 'update'])->name('admin.engage.update');
     Route::delete('/admin/engage/{id}', [AdminEngageController::class, 'destroy'])->name('admin.engage.delete');
+    Route::delete('/admin/engage/comments/{comment}', [AdminEngageController::class, 'destroyComment'])->name('admin.engage.comments.delete');
+    Route::delete('/admin/engage/reactions/{reaction}', [AdminEngageController::class, 'destroyReaction'])->name('admin.engage.reactions.delete');
     Route::get('/admin/gallery/new', [GalleryAdminController::class, 'adminCreate'])->name('admin.gallery.create');
     Route::get('/admin/gallery/manage', [GalleryAdminController::class, 'adminManage'])->name('admin.gallery.manage');
     Route::get('/admin/gallery/{section}/{id}/edit', [GalleryAdminController::class, 'adminEdit'])->name('admin.gallery.edit');

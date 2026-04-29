@@ -64,52 +64,107 @@
 <main class="ml-64 flex-1 flex flex-col min-h-screen">
     <header class="sticky top-0 z-40 flex items-center justify-between px-6 pt-[1.9rem] pb-[1.7em] xl:px-9 bg-white border-b border-slate-300">
         <div>
-            <h2 class="font-display text-2xl font-semibold">Update Engage Post</h2>
-            <p class="text-xs mt-0.5 text-slate-500">Edit the selected engage post and save changes.</p>
+            <h2 class="font-display text-2xl font-semibold">Engage Post Details</h2>
+            <p class="text-xs mt-0.5 text-slate-500">Review the post, see who commented or liked it, and delete those interactions if needed.</p>
         </div>
         <a href="{{ route('admin.engage.manage') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Back to Manage</a>
     </header>
 
-    <div class="p-9">
-        <div class="max-w-4xl rounded-xl border border-slate-300 bg-white p-6">
-            @if($errors->any())
-                <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    <p class="mb-1 font-semibold">Please fix the following:</p>
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+    <div class="p-9 space-y-6">
+        @if(session('success'))
+            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
+        @endif
+
+        @if(session('error'))
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ session('error') }}</div>
+        @endif
+
+        <div class="rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">{{ $postTypes[$post->post_type] ?? ucfirst($post->post_type) }}</span>
+                        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Post #{{ $post->id }}</span>
+                    </div>
+                    <p class="mt-3 text-sm text-slate-500">Posted by {{ $post->user?->display_name ?? 'Unknown User' }}</p>
                 </div>
-            @endif
+                <form method="POST" action="{{ route('admin.engage.delete', $post->id) }}" onsubmit="return confirm('Delete this engage post and all its comments and likes?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Delete Post</button>
+                </form>
+            </div>
 
-            @if(session('success'))
-                <div class="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
-            @endif
+            <div class="mt-5 rounded-xl bg-slate-50 p-4 text-sm leading-7 text-slate-800 whitespace-pre-wrap break-words">{{ $post->body }}</div>
 
-            <form method="POST" action="{{ route('admin.engage.update', $post->id) }}" class="space-y-5">
-                @csrf
-                @method('PUT')
+            <div class="mt-5 flex flex-wrap gap-3 text-xs text-slate-500">
+                <span class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">{{ $post->comments->count() }} comments</span>
+                <span class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">{{ $post->reactions->where('reaction', 'like')->count() }} likes</span>
+                <span>Updated {{ $post->updated_at?->diffForHumans() }}</span>
+            </div>
+        </div>
 
-                <div>
-                    <label for="post_type" class="mb-1.5 block text-sm font-semibold text-slate-700">Post Type</label>
-                    <select id="post_type" name="post_type" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none bg-white">
-                        @foreach($postTypes as $key => $label)
-                            <option value="{{ $key }}" @selected(old('post_type', $post->post_type) === $key)>{{ $label }}</option>
-                        @endforeach
-                    </select>
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <section class="rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900">Comments</h3>
+                        <p class="text-xs text-slate-500">All comments made on this post.</p>
+                    </div>
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{{ $post->comments->count() }}</span>
                 </div>
 
-                <div>
-                    <label for="body" class="mb-1.5 block text-sm font-semibold text-slate-700">Post Content</label>
-                    <textarea id="body" name="body" rows="8" maxlength="1200" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">{{ old('body', $post->body) }}</textarea>
-                    <p class="mt-1 text-xs text-slate-500">Minimum 10 characters, maximum 1200.</p>
+                <div class="space-y-4">
+                    @forelse($post->comments as $comment)
+                        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-semibold text-slate-900">{{ $comment->user?->display_name ?? 'Unknown User' }}</p>
+                                    <p class="text-xs text-slate-500">{{ $comment->user?->email ?? '-' }} • {{ $comment->created_at?->format('d M Y, h:i A') ?? '-' }}</p>
+                                </div>
+                                <form method="POST" action="{{ route('admin.engage.comments.delete', $comment->id) }}" onsubmit="return confirm('Delete this comment?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">Delete</button>
+                                </form>
+                            </div>
+                            <div class="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{{ $comment->body }}</div>
+                        </article>
+                    @empty
+                        <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">No comments on this post yet.</div>
+                    @endforelse
+                </div>
+            </section>
+
+            <section class="rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900">Likes</h3>
+                        <p class="text-xs text-slate-500">People who reacted to this post.</p>
+                    </div>
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{{ $post->reactions->count() }}</span>
                 </div>
 
-                <div class="flex items-center justify-end gap-3">
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Save Changes</button>
+                <div class="space-y-4">
+                    @forelse($post->reactions as $reaction)
+                        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-semibold text-slate-900">{{ $reaction->user?->display_name ?? 'Unknown User' }}</p>
+                                    <p class="text-xs text-slate-500">{{ $reaction->user?->email ?? '-' }} • {{ ucfirst($reaction->reaction ?? 'reaction') }} • {{ $reaction->created_at?->format('d M Y, h:i A') ?? '-' }}</p>
+                                </div>
+                                <form method="POST" action="{{ route('admin.engage.reactions.delete', $reaction->id) }}" onsubmit="return confirm('Delete this like or reaction?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">Delete</button>
+                                </form>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">No likes or reactions on this post yet.</div>
+                    @endforelse
                 </div>
-            </form>
+            </section>
         </div>
     </div>
 </main>
