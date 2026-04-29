@@ -131,101 +131,7 @@
     @endphp
 
     <div class="site-shell min-h-screen">
-        <nav class="sticky top-0 z-50 bg-white/95 border-b border-slate-200/80 backdrop-blur">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <a href="/" class="flex items-center gap-3">
-                    <span
-                        class="w-10 h-10 rounded-full inline-flex items-center justify-center text-white font-bold text-sm"
-                        style="background: var(--navy)">SRU</span>
-                    <span>
-                        <span class="block text-sm font-bold" style="color: var(--navy)">SR University</span>
-                        <span class="block text-[11px] text-slate-500">Alumni Association</span>
-                    </span>
-                </a>
-
-                <button id="mobile-menu-btn" class="md:hidden text-slate-700 font-semibold">Menu</button>
-
-                <ul class="hidden md:flex items-center gap-6 text-xs font-bold tracking-wider uppercase text-slate-600">
-                    <li><a class="hover:text-teal-600" href="/">Home</a></li>
-                    <li><a class="hover:text-teal-600" href="#about">About</a></li>
-                    <li><a class="hover:text-teal-600" href="/events">Events</a></li>
-                    <li><a class="hover:text-teal-600" href="/newsroom">Newsroom</a></li>
-                    <li><a class="hover:text-teal-600" href="{{ route('gallery') }}">Gallery</a></li>
-                    <li><a class="hover:text-teal-600" href="{{ route('jobs.index') }}">Jobs</a></li>
-                    <li><a class="hover:text-teal-600" href="#directory">Directory</a></li>
-                    <li><a class="hover:text-teal-600" href="#giving">Giving</a></li>
-                    <li><a class="hover:text-teal-600" href="#contact">Contact</a></li>
-                </ul>
-
-                <div>
-                    @auth
-                        @php
-                            $user = auth()->user();
-                            $profileName = trim((string) ($user->profile?->full_name ?? ''));
-                            $accountName = trim((string) ($user->name ?? ''));
-                            $displayName = ($profileName !== '' && ($accountName === '' || $accountName === 'Alumni User'))
-                                ? $profileName
-                                : ($accountName !== '' ? $accountName : 'Profile');
-                            $avatarInitial = strtoupper(substr($displayName, 0, 1));
-                        @endphp
-                        <a href="{{ route('profile') }}"
-                            class="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-semibold"
-                            style="border-color: #dbe5f5; color: var(--navy); background: #ffffff;">
-                            <span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-white text-[11px] font-bold"
-                                style="background: var(--navy)">{{ $avatarInitial }}</span>
-                            <span class="max-w-[130px] truncate">{{ $displayName }}</span>
-                        </a>
-                    @else
-                        <a href="/register"
-                            class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold"
-                            style="background: var(--navy)">
-                            Register
-                        </a>
-                        <a href="/login"
-                            class="hidden md:inline-flex items-center px-4 py-2 rounded-full text-white text-xs font-semibold"
-                            style="background: var(--navy)">
-                            Login
-                        </a>
-                    @endauth
-                </div>
-            </div>
-            <div id="mobile-menu" class="md:hidden hidden border-t border-slate-200 bg-white">
-                <div class="px-4 py-3 space-y-2 text-sm font-semibold text-slate-700">
-                    <a href="/" class="block">Home</a>
-                    <a href="#about" class="block">About</a>
-                    <a href="/events" class="block">Events</a>
-                    <a href="/newsroom" class="block">Newsroom</a>
-                    <a href="{{ route('gallery') }}" class="block">Gallery</a>
-                    <a href="{{ route('jobs.index') }}" class="block">Jobs</a>
-                    <a href="#directory" class="block">Directory</a>
-                    <a href="#giving" class="block">Giving</a>
-                    <a href="#contact" class="block">Contact</a>
-                    @auth
-                        @php
-                            $user = auth()->user();
-                            $mobileProfileName = trim((string) ($user->profile?->full_name ?? ''));
-                            $mobileAccountName = trim((string) ($user->name ?? ''));
-                            $mobileDisplayName = ($mobileProfileName !== '' && ($mobileAccountName === '' || $mobileAccountName === 'Alumni User'))
-                                ? $mobileProfileName
-                                : ($mobileAccountName !== '' ? $mobileAccountName : 'Profile');
-                            $mobileAvatarInitial = strtoupper(substr($mobileDisplayName, 0, 1));
-                        @endphp
-                        <a href="{{ route('profile') }}"
-                            class="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-full border"
-                            style="border-color: #dbe5f5; color: var(--navy); background: #ffffff;">
-                            <span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-white text-[11px] font-bold"
-                                style="background: var(--navy)">{{ $mobileAvatarInitial }}</span>
-                            <span class="max-w-[160px] truncate">{{ $mobileDisplayName }}</span>
-                        </a>
-                    @else
-                        <a href="/register" class="inline-block mt-2 px-4 py-2 rounded-full text-white"
-                            style="background: var(--navy)">Register</a>
-                        <a href="/login" class="inline-block mt-2 px-4 py-2 rounded-full text-white"
-                            style="background: var(--navy)">Login</a>
-                    @endauth
-                </div>
-            </div>
-        </nav>
+        @include('partials.navbar')
 
         <section class="relative overflow-hidden">
             <div class="carousel" data-carousel data-autoplay="5500" id="hero-carousel">
@@ -540,15 +446,6 @@
     </div>
 
     <script>
-        const menuButton = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        if (menuButton && mobileMenu) {
-            menuButton.addEventListener('click', function () {
-                mobileMenu.classList.toggle('hidden');
-            });
-        }
-
         function setupCarousel(root) {
             const track = root.querySelector('.carousel-track');
             const slides = Array.from(root.querySelectorAll('.carousel-slide'));
