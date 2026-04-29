@@ -71,6 +71,10 @@ class ProfileController extends Controller
      */
     public function showProfile()
     {
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
         $profile = Profile::where('user_id', auth()->id())->first();
         $experiences = Professional::where('user_id', auth()->id())->get();
         $skills = Skill::where('user_id', auth()->id())->get();

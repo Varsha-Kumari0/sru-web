@@ -519,10 +519,18 @@
 
                 <div>
                     <p class="text-white text-xs tracking-[0.14em] uppercase font-bold mb-3">Campus Map</p>
-                    <div
-                        class="h-32 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-xs text-slate-400">
-                        Map Embed Placeholder
-                    </div>
+                    <a href="https://maps.google.com/?q=SR+University,+Warangal,+Telangana,+India" target="_blank" rel="noopener noreferrer" class="block rounded-lg overflow-hidden border border-white/10 hover:opacity-90 transition-opacity">
+                        <iframe
+                            src="https://maps.google.com/maps?q=SR+University,+Warangal,+Telangana,+India&output=embed&z=15"
+                            width="100%"
+                            height="128"
+                            style="border:0;display:block;"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            title="SR University Location">
+                        </iframe>
+                    </a>
                 </div>
             </div>
             <div class="text-center text-xs text-slate-500 mt-10 border-t border-white/10 pt-6">
