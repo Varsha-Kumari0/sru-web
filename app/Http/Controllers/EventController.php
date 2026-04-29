@@ -64,6 +64,18 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'event_viewed',
+            ($actor?->name ?? 'Guest') . ' viewed event detail: ' . $event->title,
+            [
+                'event_id' => $event->id,
+                'title' => $event->title,
+            ]
+        );
+
         return view('events.show', compact('event'));
     }
 

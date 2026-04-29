@@ -23,12 +23,27 @@ class SkillController extends Controller
 
         $user = User::findOrFail($userId);
 
+        ActivityLog::record(
+            $user->id,
+            $user->id,
+            'skills_index_opened',
+            ($user->name ?? 'User') . ' opened skills page'
+        );
+
         $skills = $user->skills()->with('endorsements')->get();
         return view('skills.index', compact('skills'));
     }
 
     public function create(): View
     {
+        $user = Auth::user();
+        ActivityLog::record(
+            $user?->id,
+            $user?->id,
+            'skill_create_opened',
+            ($user?->name ?? 'User') . ' opened add skill page'
+        );
+
         return view('skills.create');
     }
 
@@ -73,10 +88,23 @@ class SkillController extends Controller
     public function edit(Skill $skill): View
     {
         $this->authorize('update', $skill);
+
+        $user = Auth::user();
+        ActivityLog::record(
+            $user?->id,
+            $user?->id,
+            'skill_edit_opened',
+            ($user?->name ?? 'User') . ' opened skill edit page',
+            [
+                'skill_id' => $skill->id,
+                'skill_name' => $skill->name,
+            ]
+        );
+
         return view('skills.edit', compact('skill'));
     }
 
-    public function update(Request $request, Skill $skill): RedirectResponse
+    public function update(Request $request, Skill $skill): JsonResponse|RedirectResponse
     {
         $this->authorize('update', $skill);
 
@@ -108,6 +136,14 @@ class SkillController extends Controller
                 'after' => $skill->only(['name', 'level']),
             ]
         );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'skill' => $skill,
+                'message' => 'Skill updated successfully!',
+            ]);
+        }
 
         return redirect()->route('skills.index')->with('success', 'Skill updated successfully!');
     }

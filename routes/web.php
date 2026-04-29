@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminEngageController;
 use App\Http\Controllers\AdminJobOpportunityController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryAdminController;
@@ -96,10 +97,53 @@ Route::view('/about', 'pages.about')->name('about');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 Route::get('/gallery/albums/{id}', [GalleryController::class, 'albumShow'])->name('gallery.album.show');
 Route::get('/gallery/videos/{id}', [GalleryController::class, 'videoShow'])->name('gallery.video.show');
-Route::view('/engage', 'pages.engage')->name('engage');
-Route::view('/engage/mentor-students', 'pages.mentor-students')->name('engage.mentor');
-Route::view('/engage/host-event', 'pages.host-event')->name('engage.host');
-Route::view('/engage/share-opportunities', 'pages.share-opportunities')->name('engage.share');
+Route::get('/engage', function () {
+    $actor = Auth::user();
+    ActivityLog::record(
+        $actor?->id,
+        $actor?->id,
+        'engage_viewed',
+        ($actor?->name ?? 'Guest') . ' viewed engage page'
+    );
+
+    return view('pages.engage');
+})->name('engage');
+
+Route::get('/engage/mentor-students', function () {
+    $actor = Auth::user();
+    ActivityLog::record(
+        $actor?->id,
+        $actor?->id,
+        'engage_mentor_viewed',
+        ($actor?->name ?? 'Guest') . ' viewed engage mentor page'
+    );
+
+    return view('pages.mentor-students');
+})->name('engage.mentor');
+
+Route::get('/engage/host-event', function () {
+    $actor = Auth::user();
+    ActivityLog::record(
+        $actor?->id,
+        $actor?->id,
+        'engage_host_viewed',
+        ($actor?->name ?? 'Guest') . ' viewed engage host-event page'
+    );
+
+    return view('pages.host-event');
+})->name('engage.host');
+
+Route::get('/engage/share-opportunities', function () {
+    $actor = Auth::user();
+    ActivityLog::record(
+        $actor?->id,
+        $actor?->id,
+        'engage_share_viewed',
+        ($actor?->name ?? 'Guest') . ' viewed engage share-opportunities page'
+    );
+
+    return view('pages.share-opportunities');
+})->name('engage.share');
 Route::view('/contact', 'pages.contact')->name('contact');
 // Route::view('/jobs', 'pages.jobs')->name('jobs.index');
 Route::middleware('auth')->group(function () {
@@ -678,7 +722,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         $usersQuery = User::query()
             ->where('role', 'user')
-            ->with(['profile', 'professional']);
+            ->with(['profile', 'professional', 'skills']);
 
         if ($selectedFilterBy !== 'all' && $selectedFilterValue !== '') {
             if ($selectedFilterBy === 'branch') {
@@ -901,6 +945,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/jobs/{id}/edit', [AdminJobOpportunityController::class, 'edit'])->name('admin.jobs.edit');
     Route::put('/admin/jobs/{id}', [AdminJobOpportunityController::class, 'update'])->name('admin.jobs.update');
     Route::delete('/admin/jobs/{id}', [AdminJobOpportunityController::class, 'destroy'])->name('admin.jobs.delete');
+    Route::get('/admin/engage/new', [AdminEngageController::class, 'create'])->name('admin.engage.create');
+    Route::post('/admin/engage', [AdminEngageController::class, 'store'])->name('admin.engage.store');
+    Route::get('/admin/engage/manage', [AdminEngageController::class, 'manage'])->name('admin.engage.manage');
+    Route::get('/admin/engage/{id}/edit', [AdminEngageController::class, 'edit'])->name('admin.engage.edit');
+    Route::put('/admin/engage/{id}', [AdminEngageController::class, 'update'])->name('admin.engage.update');
+    Route::delete('/admin/engage/{id}', [AdminEngageController::class, 'destroy'])->name('admin.engage.delete');
     Route::get('/admin/gallery/new', [GalleryAdminController::class, 'adminCreate'])->name('admin.gallery.create');
     Route::get('/admin/gallery/manage', [GalleryAdminController::class, 'adminManage'])->name('admin.gallery.manage');
     Route::get('/admin/gallery/{section}/{id}/edit', [GalleryAdminController::class, 'adminEdit'])->name('admin.gallery.edit');

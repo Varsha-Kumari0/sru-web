@@ -24,6 +24,13 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        ActivityLog::record(
+            $request->user()?->id,
+            $request->user()?->id,
+            'profile_account_edit_opened',
+            ($request->user()?->name ?? 'User') . ' opened account edit page'
+        );
+
         return view('profile.edit', [
             'user' => $request->user(),
         ]);
@@ -34,6 +41,8 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        $before = $request->user()->only(['name', 'email']);
+
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -41,6 +50,17 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+
+        ActivityLog::record(
+            $request->user()->id,
+            $request->user()->id,
+            'profile_account_updated',
+            ($request->user()->name ?? 'User') . ' updated account profile details',
+            [
+                'before' => $before,
+                'after' => $request->user()->only(['name', 'email']),
+            ]
+        );
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -55,6 +75,16 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        ActivityLog::record(
+            $user?->id,
+            $user?->id,
+            'account_deleted',
+            ($user?->name ?? 'User') . ' deleted account',
+            [
+                'email' => $user?->email,
+            ]
+        );
 
         Auth::logout();
 
@@ -74,6 +104,14 @@ class ProfileController extends Controller
         if (auth()->user()->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'profile_viewed',
+            ($actor?->name ?? 'User') . ' viewed profile page'
+        );
 
         $profile = Profile::where('user_id', auth()->id())->first();
         $experiences = Professional::where('user_id', auth()->id())->get();
@@ -109,6 +147,14 @@ class ProfileController extends Controller
      */
     public function createProfile()
     {
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'profile_create_opened',
+            ($actor?->name ?? 'User') . ' opened create profile page'
+        );
+
         $selectDegree = [
             "B.Tech" => [
                 "CSE (AI & ML)",
@@ -296,9 +342,23 @@ class ProfileController extends Controller
             return redirect()->route('profile.create')->with('error', 'Please create your profile first');
         }
 
+        $oldDescription = $profile->description;
+
         $profile->update([
             'description' => $request->description,
         ]);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'profile_bio_updated',
+            ($actor?->name ?? 'User') . ' updated profile bio',
+            [
+                'old' => $oldDescription,
+                'new' => $profile->description,
+            ]
+        );
 
         return redirect()->route('profile')->with('success', 'Bio updated successfully');
     }
@@ -314,6 +374,14 @@ class ProfileController extends Controller
             return redirect()->route('profile.create')->with('error', 'Please create your profile first');
         }
 
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'profile_bio_edit_opened',
+            ($actor?->name ?? 'User') . ' opened bio edit page'
+        );
+
         return view('profile.edit-bio', compact('profile'));
     }
     /**
@@ -321,6 +389,14 @@ class ProfileController extends Controller
      */
     public function editProfile()
     {
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'profile_edit_opened',
+            ($actor?->name ?? 'User') . ' opened profile edit page'
+        );
+
         $profile = Profile::where('user_id', Auth::id())->first();
         $experiences = Professional::where('user_id', Auth::id())->get();
 

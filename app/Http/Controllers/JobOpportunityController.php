@@ -114,6 +114,17 @@ class JobOpportunityController extends Controller
     {
         $selectedType = $this->validFilter($request->query('type'), array_keys($this->types)) ?? 'job';
 
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'job_opportunity_create_opened',
+            ($actor?->name ?? 'User') . ' opened create opportunity page',
+            [
+                'selected_type' => $selectedType,
+            ]
+        );
+
         return view('jobs.create', [
             'types' => $this->types,
             'jobAreas' => $this->jobAreas,
@@ -200,6 +211,19 @@ class JobOpportunityController extends Controller
     public function edit(JobOpportunity $job): View
     {
         $this->authorizeOwner($job);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'job_opportunity_edit_opened',
+            ($actor?->name ?? 'User') . ' opened edit opportunity page',
+            [
+                'job_id' => $job->id,
+                'type' => $job->type,
+                'title' => $job->title,
+            ]
+        );
 
         return view('jobs.edit', [
             'job' => $job,

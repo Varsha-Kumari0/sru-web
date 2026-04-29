@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Achievement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,14 @@ class AchievementController extends Controller
 
     public function create()
     {
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'achievement_create_opened',
+            ($actor?->name ?? 'User') . ' opened achievement create page'
+        );
+
         return view('pages.achievement-create');
     }
 
@@ -34,7 +43,7 @@ class AchievementController extends Controller
             'other'           => '⭐',
         ];
 
-        Achievement::create([
+        $achievement = Achievement::create([
             'user_id'     => Auth::id(),
             'title'       => $validated['title'],
             'category'    => $validated['category'],
@@ -44,6 +53,19 @@ class AchievementController extends Controller
             'badge_icon'  => $icons[$validated['category']],
             'source'      => 'self_reported',
         ]);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'achievement_created',
+            ($actor?->name ?? 'User') . ' added achievement: ' . $achievement->title,
+            [
+                'achievement_id' => $achievement->id,
+                'title' => $achievement->title,
+                'category' => $achievement->category,
+            ]
+        );
 
         return redirect()->route('profile')->with('status', 'Achievement added successfully!');
     }

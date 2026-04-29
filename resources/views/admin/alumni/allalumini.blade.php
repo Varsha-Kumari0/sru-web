@@ -139,7 +139,20 @@
 			</div>
 		</div>
 
-		<a href="{{ route('admin.activity-logs') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+		        <div class="group relative">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+                <span class="flex-1">Engage</span>
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="transition-transform duration-150 group-hover:rotate-180">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </a>
+            <div class="absolute left-full top-0 z-50 hidden min-w-[11rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-lg group-hover:flex">
+                <a href="{{ route('engage') }}" target="_blank" rel="noopener noreferrer" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">View</a>
+                <a href="{{ route('admin.engage.create') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">New</a>
+                <a href="{{ route('admin.engage.manage') }}" class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900">Update/Delete</a>
+            </div>
+        </div>
+<a href="{{ route('admin.activity-logs') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
 			<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
 				<path d="M3 3v18h18"/>
 				<path d="M8 14l3-3 3 2 4-5"/>
@@ -294,13 +307,14 @@
 							<th class="px-4 py-3 text-left">Organization</th>
 							<th class="px-4 py-3 text-left">Role</th>
 							<th class="px-4 py-3 text-left">Location</th>
+							<th class="px-4 py-3 text-left">Skills</th>
 							<th class="px-4 py-3 text-left">Action</th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php if ($users->isEmpty()): ?>
 							<tr>
-								<td colspan="9" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
+								<td colspan="10" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
 							</tr>
 						<?php else: ?>
 							<?php foreach ($users as $user): ?>
@@ -310,6 +324,100 @@
 									$initials = strtoupper(substr($displayName, 0, 1));
 									$avatarColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899'];
 									$avatarColor = $avatarColors[crc32($displayName) % count($avatarColors)];
+									$skillsText = collect($user->skills ?? [])
+										->pluck('name')
+										->map(fn ($name) => is_string($name) ? trim($name) : '')
+										->filter()
+										->unique()
+										->values()
+										->implode(', ');
+									$skillsText = $skillsText !== '' ? $skillsText : '-';
+
+									$knownProfileFields = [
+										'id',
+										'user_id',
+										'created_at',
+										'updated_at',
+										'profile_photo',
+										'full_name',
+										'father_name',
+										'mobile',
+										'city',
+										'country',
+										'linkedin',
+										'facebook',
+										'instagram',
+										'twitter',
+										'degree',
+										'branch',
+										'passing_year',
+										'current_status',
+										'company',
+										'employment_from',
+										'employment_to',
+										'study_institution',
+										'study_degree',
+										'study_branch',
+										'study_from',
+										'study_to',
+										'previous_education',
+										'description',
+									];
+
+									$dynamicProfileFields = collect($user->profile?->getAttributes() ?? [])
+										->except($knownProfileFields)
+										->filter(function ($value) {
+											if (is_null($value)) {
+												return false;
+											}
+
+											if (is_string($value) && trim($value) === '') {
+												return false;
+											}
+
+											return true;
+										})
+										->mapWithKeys(function ($value, $key) {
+											$formattedValue = is_array($value)
+												? json_encode($value, JSON_UNESCAPED_UNICODE)
+												: (string) $value;
+
+											return [ucwords(str_replace('_', ' ', $key)) => $formattedValue];
+										})
+										->all();
+
+									$dynamicProfessionalFields = collect($user->professional?->getAttributes() ?? [])
+										->except([
+											'id',
+											'user_id',
+											'created_at',
+											'updated_at',
+											'organization',
+											'industry',
+											'role',
+											'from',
+											'to',
+											'location',
+										])
+										->filter(function ($value) {
+											if (is_null($value)) {
+												return false;
+											}
+
+											if (is_string($value) && trim($value) === '') {
+												return false;
+											}
+
+											return true;
+										})
+										->mapWithKeys(function ($value, $key) {
+											$formattedValue = is_array($value)
+												? json_encode($value, JSON_UNESCAPED_UNICODE)
+												: (string) $value;
+
+											return [ucwords(str_replace('_', ' ', $key)) => $formattedValue];
+										})
+										->all();
 									$detailPayload = [
 										'user_name' => $user->name,
 										'full_name' => $displayName,
@@ -354,7 +462,10 @@
 										'work_from' => $user->professional?->from ?? '-',
 										'work_to' => $user->professional?->to ?? '-',
 										'work_location' => $user->professional?->location ?? '-',
+										'skills' => $skillsText,
 										'registered' => $user->created_at?->format('d M Y') ?? '-',
+										'dynamic_profile_fields' => $dynamicProfileFields,
+										'dynamic_professional_fields' => $dynamicProfessionalFields,
 									];
 								?>
 								<tr class="border-t border-slate-200 hover:bg-slate-50">
@@ -375,6 +486,7 @@
 									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->organization ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->role ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->location ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700 max-w-[220px] break-words">{{ $skillsText }}</td>
 									<td class="px-4 py-3">
 										<div class="flex items-center gap-2">
 											<button type="button"
@@ -423,12 +535,12 @@
 
 {{-- Alumni quick-view modal --}}
 <div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
-	<div class="w-full max-w-4xl rounded-xl bg-white border border-slate-300 shadow-xl">
+	<div class="w-full max-w-4xl overflow-hidden rounded-xl bg-white border border-slate-300 shadow-xl">
 		<div class="flex items-center justify-between border-b border-slate-200 px-6 py-5">
 			<h3 id="detailsTitle" class="text-xl font-semibold text-slate-900">Alumni Details</h3>
 			<button type="button" class="text-slate-500 hover:text-slate-900" onclick="closeDetails()">Close</button>
 		</div>
-		<div class="max-h-[75vh] overflow-y-auto p-6">
+		<div class="max-h-[75vh] overflow-y-auto overflow-x-hidden p-6">
 			<div id="detailsBody" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"></div>
 		</div>
 	</div>
@@ -584,18 +696,27 @@ window.addEventListener('DOMContentLoaded', toggleValueFilter);
 			['Work From', data.work_from],
 			['Work To', data.work_to],
 			['Work Location', data.work_location],
+			['Skills', data.skills],
 			['Registered', data.registered],
 		];
+
+		const dynamicProfileFields = Object.entries(data.dynamic_profile_fields || {})
+			.map(([key, value]) => [`Profile ${key}`, value]);
+
+		const dynamicProfessionalFields = Object.entries(data.dynamic_professional_fields || {})
+			.map(([key, value]) => [`Professional ${key}`, value]);
+
+		const mergedEntries = [...entries, ...dynamicProfileFields, ...dynamicProfessionalFields];
 
 		let photoHtml = '';
 		if (data.profile_photo) {
 			photoHtml = `<div class="col-span-2 md:col-span-3 lg:col-span-4 flex justify-center mb-4"><img src="${data.profile_photo}" alt="Profile" style="width:150px;height:150px;border-radius:12px;object-fit:contain;object-position:center;background:#f8f9fc;border:1px solid #dde3ec;flex-shrink:0;"></div>`;
 		}
 
-		body.innerHTML = photoHtml + entries.map(([label, value]) => `
-			<div class="rounded-lg bg-slate-100 p-3">
+		body.innerHTML = photoHtml + mergedEntries.map(([label, value]) => `
+			<div class="min-w-0 rounded-lg bg-slate-100 p-3">
 				<p class="mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-700">${label}</p>
-				<p class="text-sm text-slate-900" style="white-space: pre-line;">${value ?? '-'}</p>
+				<p class="text-sm text-slate-900" style="white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;">${value ?? '-'}</p>
 			</div>
 		`).join('');
 

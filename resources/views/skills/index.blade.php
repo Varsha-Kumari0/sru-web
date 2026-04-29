@@ -176,6 +176,7 @@ function addSkill(event) {
     fetch('/skills', {
         method: 'POST',
         headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
@@ -215,6 +216,7 @@ function updateSkill(event) {
     fetch(`/skills/${skillId}`, {
         method: 'PUT',
         headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
@@ -243,6 +245,7 @@ function deleteSkill(id) {
     fetch(`/skills/${id}`, {
         method: 'DELETE',
         headers: {
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })

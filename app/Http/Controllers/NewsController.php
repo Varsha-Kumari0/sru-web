@@ -253,7 +253,19 @@ class NewsController extends Controller
 
     public function show(int $id): View
     {
-        $news = \App\Models\News::findOrFail($id);
+        $news = News::findOrFail($id);
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $actor?->id,
+            'news_viewed',
+            ($actor?->name ?? 'Guest') . ' viewed news detail: ' . $news->title,
+            [
+                'news_id' => $news->id,
+                'title' => $news->title,
+            ]
+        );
 
         return view('news.show', compact('news'));
     }
