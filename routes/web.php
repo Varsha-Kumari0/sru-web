@@ -692,7 +692,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         $batchChipText = $yearsCount > 0 ? ($yearsCount . ' recorded batches') : 'No batch data';
         $messagesChipText = 'View inbox';
 
-        return view('admin.dashboard.panel', compact(
+        return view('admin.dashboard.dashboard', compact(
             'users',
             'totalCount',
             'yearsCount',
@@ -952,7 +952,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/engage/new', [AdminEngageController::class, 'create'])->name('admin.engage.create');
     Route::post('/admin/engage', [AdminEngageController::class, 'store'])->name('admin.engage.store');
     Route::get('/admin/engage/manage', [AdminEngageController::class, 'manage'])->name('admin.engage.manage');
+    Route::get('/admin/engage/{id}/edit', function (int $id) {
+        return redirect()->route('admin.engage.review', $id);
+    })->name('admin.engage.edit');
     Route::get('/admin/engage/{id}/review', [AdminEngageController::class, 'edit'])->name('admin.engage.review');
+    Route::get('/admin/engage/feed/{feedType}/{feedId}/review', [AdminEngageController::class, 'reviewFeed'])->name('admin.engage.feed.review');
     Route::put('/admin/engage/{id}', [AdminEngageController::class, 'update'])->name('admin.engage.update');
     Route::delete('/admin/engage/{id}', [AdminEngageController::class, 'destroy'])->name('admin.engage.delete');
     Route::delete('/admin/engage/comments/{comment}', [AdminEngageController::class, 'destroyComment'])->name('admin.engage.comments.delete');
