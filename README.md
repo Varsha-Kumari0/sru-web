@@ -1,59 +1,271 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+﻿# SRU Alumni Portal
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A web platform for Sir Syed University of Engineering & Technology (SRUET) alumni — connecting graduates, sharing opportunities, and enabling institutional engagement.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Table of Contents
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Environment Configuration](#environment-configuration)
+- [Running the Application](#running-the-application)
+- [Database](#database)
+- [User Roles](#user-roles)
+- [Admin Panel](#admin-panel)
+- [Documentation](#documentation)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Overview
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+The SRU Alumni Portal allows university alumni to:
+- Register and maintain professional profiles
+- Connect with fellow alumni
+- Browse and engage with news, events, and job opportunities
+- Share posts, like and comment on content
+- View the alumni gallery and institutional updates
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Administrators can manage all content and alumni data through a dedicated admin panel with full moderation capabilities.
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Tech Stack
 
-### Premium Partners
+| Layer       | Technology                                         |
+|-------------|----------------------------------------------------|
+| Backend     | PHP 8.2+, Laravel 12                               |
+| Frontend    | Blade templates, Tailwind CSS 3, Alpine.js         |
+| Build Tool  | Vite 7                                             |
+| Database    | MySQL / SQLite (configurable)                      |
+| Testing     | PestPHP 3                                          |
+| Mail        | SMTP (configurable via `.env`)                     |
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+---
 
-## Contributing
+## Features
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Alumni Side
+- **Registration & Login** — email-based registration; system-generated password sent by email
+- **Profile** — two-step profile creation with personal, academic, and professional details; social links (LinkedIn, Facebook, Instagram, X/Twitter)
+- **News** — public news listing and detail pages
+- **Events** — upcoming and past events with registration links
+- **Gallery** — photo albums and videos
+- **Jobs** — job and internship opportunities posted by alumni/admin
+- **Engage (Feed)** — post updates, like and comment on posts/news/events/testimonials
+- **Connections** — connect with other alumni
+- **Messages** — direct messaging between alumni
+- **Achievements** — showcase personal and professional achievements
+- **Skills & Endorsements** — add skills and receive peer endorsements
+- **Testimonials** — give and receive testimonials
 
-## Code of Conduct
+### Admin Side
+- **Dashboard** — live stats (total alumni, news, events), recent activity feed
+- **Alumni Management** — view, search, filter, edit, and delete alumni records; CSV export
+- **News Management** — create, edit, and delete news articles with image upload
+- **Events Management** — create, edit, and delete events with full field support
+- **Gallery Management** — manage photo albums and videos
+- **Jobs Management** — manage job and internship postings
+- **Engage / Feed Moderation** — review and delete comments and reactions across all feed types (posts, news, events, testimonials)
+- **Activity Logs** — full audit trail with grouping, hover-expanded change details, and CSV export
+- **Admin Profile** — sidebar avatar upload
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Project Structure
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```
+app/
+  Http/Controllers/       # All controllers (admin and alumni)
+  Models/                 # Eloquent models
+  Mail/                   # Mailable classes
+resources/
+  views/
+    admin/                # Admin Blade templates (grouped by module)
+      partials/           # Shared sidebar partial
+      dashboard/
+      alumni/
+      news/
+      events/
+      gallery/
+      jobs/
+      engage/
+      logs/
+    pages/                # Public-facing alumni pages
+database/
+  migrations/             # All migration files
+  seeders/                # Database seeders
+public/
+  images/                 # Uploaded images and logos
+routes/
+  web.php                 # All application routes
+docs/                     # Extended feature documentation
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- PHP >= 8.2
+- Composer
+- Node.js >= 18 and npm
+- A database (MySQL recommended for production; SQLite works for local dev)
+- Mail server or Mailtrap credentials
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd sru-web
+
+# Install PHP dependencies
+composer install
+
+# Install Node dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+```
+
+---
+
+## Environment Configuration
+
+Edit `.env` with your local values:
+
+```env
+APP_NAME="SRU Alumni Portal"
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=sru_alumni
+DB_USERNAME=root
+DB_PASSWORD=
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=no-reply@sru-alumni.com
+MAIL_FROM_NAME="SRU Alumni Portal"
+```
+
+---
+
+## Running the Application
+
+```bash
+# Run database migrations
+php artisan migrate
+
+# (Optional) Seed the database with sample data
+php artisan db:seed
+
+# Start the Laravel development server
+php artisan serve
+
+# In a separate terminal, compile frontend assets (watch mode)
+npm run dev
+```
+
+For a production build:
+
+```bash
+npm run build
+```
+
+---
+
+## Database
+
+All schema changes are handled via Laravel migrations in `database/migrations/`.
+
+Key tables:
+
+| Table                    | Purpose                                      |
+|--------------------------|----------------------------------------------|
+| `users`                  | Authentication and account data              |
+| `profiles`               | Alumni personal, academic, and social data   |
+| `professionals`          | Work history entries per alumni              |
+| `news`                   | News articles                                |
+| `events`                 | Events with scheduling fields                |
+| `job_opportunities`      | Job and internship listings                  |
+| `feed_posts`             | Alumni feed posts                            |
+| `feed_comments`          | Comments on any feed type                    |
+| `feed_reactions`         | Likes/reactions on any feed type             |
+| `gallery_albums`         | Photo albums                                 |
+| `gallery_album_photos`   | Photos within albums                         |
+| `gallery_videos`         | Gallery video entries                        |
+| `connections`            | Alumni-to-alumni connection records          |
+| `messages`               | Direct messages between alumni               |
+| `skills`                 | Alumni skills                                |
+| `skill_endorsements`     | Peer endorsements for skills                 |
+| `achievements`           | Personal and professional achievements       |
+| `testimonials`           | Alumni testimonials                          |
+| `activity_logs`          | Full admin audit trail                       |
+
+---
+
+## User Roles
+
+| Role    | Access                                          |
+|---------|-------------------------------------------------|
+| `admin` | Full admin panel + all alumni-side pages        |
+| `alumni`| Alumni dashboard, profile, feed, gallery, etc.  |
+
+Role is stored on the `users` table and enforced via the `admin` middleware.
+
+### Seeding an Admin Account
+
+```bash
+php artisan db:seed --class=AdminUserSeeder
+```
+
+---
+
+## Admin Panel
+
+The admin panel is accessible at `/admin/dashboard` (requires admin role).
+
+Key routes:
+
+| Section        | URL                          |
+|----------------|------------------------------|
+| Dashboard      | `/admin/dashboard`           |
+| All Alumni     | `/admin/all-alumini`         |
+| News           | `/admin/news/manage`         |
+| Events         | `/admin/events/manage`       |
+| Gallery        | `/admin/gallery/manage`      |
+| Jobs           | `/admin/jobs/manage`         |
+| Engage/Feed    | `/admin/engage/manage`       |
+| Activity Logs  | `/admin/activity-logs`       |
+
+All admin pages share a single sidebar partial (`resources/views/admin/partials/sidebar.blade.php`) with active-state highlighting per section.
+
+---
+
+## Documentation
+
+Extended documentation is in the `docs/` folder:
+
+- [`docs/ADMIN_DASHBOARD_DOCUMENTATION.md`](docs/ADMIN_DASHBOARD_DOCUMENTATION.md) — full admin feature reference, routes, validation rules, and verification checklist
+- [`docs/ALUMNI_USER_DOCUMENTATION.md`](docs/ALUMNI_USER_DOCUMENTATION.md) — alumni user journey, profile flow, and validation rules
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is proprietary software developed for Sir Syed University of Engineering & Technology alumni management.

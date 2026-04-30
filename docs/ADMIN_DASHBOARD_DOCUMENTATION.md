@@ -36,6 +36,7 @@ The profile record currently includes additional personal/social fields such as:
 
 ### 2.1 Admin Dashboard
 - Route: GET /admin/dashboard (name: admin.dashboard)
+- View: `resources/views/admin/dashboard/dashboard.blade.php` (previously `panel.blade.php`, renamed 2026-04-30)
 - Displays key stats:
   - total alumni
   - graduation batches
@@ -311,6 +312,41 @@ The profile record currently includes additional personal/social fields such as:
   - Edit Alumni page
 - Confirmed Jobs and Gallery flyouts are now consistently available across the full admin page set.
 
+### 2.13 Admin Dashboard View Rename (2026-04-30)
+- `resources/views/admin/dashboard/panel.blade.php` renamed to `dashboard.blade.php`.
+- Admin dashboard route now resolves to view `admin.dashboard.dashboard`.
+- All internal references updated accordingly.
+
+### 2.14 Shared Admin Sidebar Partial (2026-04-30)
+- A shared sidebar partial was created at `resources/views/admin/partials/sidebar.blade.php`.
+- All 19 admin Blade files now include the sidebar via:
+  `@include('admin.partials.sidebar', ['activeSection' => '<section>'])`
+- The partial accepts an `$activeSection` string and computes per-link active/inactive CSS classes in PHP.
+- Active section values: `dashboard`, `alumni`, `news`, `events`, `gallery`, `jobs`, `engage`, `logs`.
+- Sidebar logo container uses custom padding: `padding-top: 1.25rem; padding-bottom: 1.36rem;` (inline style override).
+- Admin header bar uses Tailwind arbitrary value `pb-[1.7em]` for bottom padding on all admin pages.
+
+### 2.15 Engage Feed Moderation Expansion (2026-04-30)
+- Admin Engage module now supports moderation of all feed types: `post`, `news`, `event`, `testimonial`.
+- New route: `GET /admin/engage/feed/{feedType}/{feedId}/review` (name: `admin.engage.feed.review`).
+  - Handled by `AdminEngageController@reviewFeed`.
+  - Accepts any `feedType` string and loads the corresponding source record (News, Event, FeedPost, or Testimonial).
+- `engage-manage.blade.php` redesigned as a unified feed list showing all feed types with a Review button per item.
+- `engage-edit.blade.php` redesigned as a generic feed review page showing:
+  - Source content details (title, body, author, date)
+  - Comments list with per-comment Delete button
+  - Reactions/Likes list with per-reaction Delete button
+  - Whether admin can delete the source item (`$canDeleteSource`)
+- Review buttons are also placed directly on News, Events, Gallery, and Jobs manage pages:
+  - Each item card includes a Review link pointing to `route('admin.engage.feed.review', [$type, $id])`
+- `AdminEngageController` private helpers for source loading:
+  - `loadFeedSourceData()` — dispatcher
+  - `loadPostSourceData()` — loads FeedPost
+  - `loadNewsSourceData()` — loads News
+  - `loadEventSourceData()` — loads Event
+  - `loadTestimonialSourceData()` — loads Testimonial
+- `destroyComment()` and `destroyReaction()` now redirect back to `admin.engage.feed.review` after deletion.
+
 ## 3. Permanent Activity Audit
 
 ### 3.1 activity_logs Table
@@ -352,27 +388,32 @@ Current events include:
 - activity_logs_exported
 
 ## 4. Sidebar and UI Consistency
-- Sidebar links are present across admin pages:
+- All 19 admin pages share a single sidebar partial: `resources/views/admin/partials/sidebar.blade.php`.
+- Sidebar links are present across all admin pages:
   - Dashboard
   - All SRU Alumni
+  - Messages
   - News -> View / New / Update/Delete
   - Events -> View / New / Update/Delete
   - Gallery -> View / New / Update/Delete
   - Jobs -> View / New / Update/Delete
+  - Engage
   - Activity Logs
-  - Reports
-  - System -> Settings
+- Active nav item is highlighted using PHP-computed CSS classes based on the `$activeSection` variable passed to the partial.
 - The News, Events, Gallery, and Jobs submenus on all admin pages use hover flyout menus that appear outside (to the right of) the sidebar.
 - Admin sidebar profile avatar uses a consistent fit style across all admin pages (contain + center + white background + border).
-- The bottom sidebar admin identity card is present across all admin pages, including News create, News manage, News edit, Events create, Events manage, and Events edit.
+- The bottom sidebar admin identity card is present across all admin pages.
 - Logout hover visibility was normalized for icon-style sidebar variants.
 - The same shared logo is rendered across all admin pages using the file public/images/logos/sru_logo_new.png.
+- Logo container padding: `padding-top: 1.25rem; padding-bottom: 1.36rem;` applied via inline style.
+- Admin page top header bar uses `pb-[1.7em]` (Tailwind arbitrary value) for consistent bottom padding.
 
 ## 5. Files Involved
 
 ### Backend
 - routes/web.php
 - app/Http/Controllers/AdminController.php
+- app/Http/Controllers/AdminEngageController.php
 - app/Http/Controllers/EventController.php
 - app/Http/Controllers/NewsController.php
 - app/Http/Controllers/ProfileController.php
@@ -381,13 +422,17 @@ Current events include:
 - app/Models/Profile.php
 - app/Models/News.php
 - app/Models/Event.php
+- app/Models/FeedPost.php
+- app/Models/FeedComment.php
+- app/Models/FeedReaction.php
 - app/Models/ActivityLog.php
 - database/migrations/2026_04_25_090000_create_activity_logs_table.php
 - database/migrations/2026_04_25_111645_create_events_table.php
 - database/migrations/2026_04_25_120000_add_avatar_to_users_table.php
 
 ### Admin Views
-- resources/views/admin/dashboard/panel.blade.php (view: admin.dashboard.panel)
+- resources/views/admin/partials/sidebar.blade.php (shared sidebar partial, included by all admin pages)
+- resources/views/admin/dashboard/dashboard.blade.php (view: admin.dashboard.dashboard; previously panel.blade.php)
 - resources/views/admin/alumni/allalumini.blade.php (view: admin.alumni.allalumini)
 - resources/views/admin/alumni/edit-alumni.blade.php (view: admin.alumni.edit-alumni)
 - resources/views/admin/logs/activity-logs.blade.php (view: admin.logs.activity-logs)
@@ -403,6 +448,17 @@ Current events include:
 - resources/views/admin/jobs/jobs-create.blade.php (view: admin.jobs.jobs-create)
 - resources/views/admin/jobs/jobs-manage.blade.php (view: admin.jobs.jobs-manage)
 - resources/views/admin/jobs/jobs-edit.blade.php (view: admin.jobs.jobs-edit)
+- resources/views/admin/engage/engage-manage.blade.php (unified feed list for all feed types)
+- resources/views/admin/engage/engage-edit.blade.php (generic feed review page for comments/reactions)
+- resources/views/admin/engage/engage-create.blade.php
+
+### Admin Controllers
+- app/Http/Controllers/AdminEngageController.php
+  - `manage()` — unified feed items list (post/news/event/testimonial)
+  - `reviewFeed(feedType, feedId)` — load review page for any feed type
+  - `edit(id)` — legacy post review (redirects to reviewFeed)
+  - `destroyComment(comment)` — delete comment, redirect to feed.review
+  - `destroyReaction(reaction)` — delete reaction, redirect to feed.review
 
 ## 6. Data and Validation Notes
 - father_name is now part of the profile data model.
@@ -499,11 +555,20 @@ Recommended checks:
 28. Edit a news item and verify updated values are saved, optional image replacement works, and Activity Logs records a news_updated entry.
 29. Delete a news item and verify the record is removed, any stored image file is deleted, and Activity Logs records a news_deleted entry.
 
+### Engage / Feed Moderation
+30. Open Admin -> Engage and verify the manage page lists all feed types (posts, news, events, testimonials) in a unified list with a Review button per item.
+31. Click Review on a feed post and verify the review page shows the source content, comments list, and reactions list with per-item Delete buttons.
+32. Click Review on a News item from the News manage page and verify the review page loads the correct news source data and its associated comments/reactions.
+33. Click Review on an Event item from the Events manage page and verify the review page loads the correct event source data.
+34. Delete a comment from the feed review page and verify the page reloads to the same review URL with the comment removed.
+35. Delete a reaction from the feed review page and verify the page reloads to the same review URL with the reaction removed.
+
 ## 8. Notes
 - The URL path now uses /admin/all-alumini while the route name remains admin.allalumini for compatibility.
 - The older URL /admin/allalumini is preserved as a redirect.
 - If renamed to allalumni in future, route names and view references must be updated together.
-- Admin Blade files are now grouped by module under resources/views/admin (dashboard, alumni, logs, news, events) instead of a single flat folder.
+- Admin Blade files are now grouped by module under resources/views/admin (dashboard, alumni, logs, news, events, gallery, jobs, engage, partials).
+- A single shared sidebar partial (`resources/views/admin/partials/sidebar.blade.php`) is included by every admin page; sidebar changes need only be made in one place.
 - Alumni admin editing now stores two parallel employment concepts:
   - profile-level current employment summary (company + employment_from + employment_to)
   - professional history/work details (organization + industry + role + from + to + location)
@@ -513,8 +578,11 @@ Recommended checks:
   - Edit page with form and back link
   - Image upload support with automatic cleanup on replacement/deletion
   - Activity log recording for all create/update/delete operations
+- All four content modules (News, Events, Gallery, Jobs) include a Review button on their manage pages linking to the engage feed review route.
 - Both modules are fully integrated into the admin sidebar with hover submenus on all admin pages.
 - Jobs and Gallery modules are also fully integrated into the admin sidebar with hover submenus on all admin pages.
 - News and Events flyout submenus are rendered outside the sidebar so they remain visible without shrinking/stacking inside the nav column.
 - Gallery and Jobs flyout submenus use the same outside-sidebar rendering behavior.
 - Dashboard News and Events blocks are wired to live database data and link to public pages, while admin edit actions remain available through module manage pages.
+- The engage moderation page (`engage-edit.blade.php`) now works for any feed type (post/news/event/testimonial), not just posts.
+- Admin dashboard view was renamed: `panel.blade.php` → `dashboard.blade.php` (route: `admin.dashboard.dashboard`).

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\Event;
 use App\Models\FeedComment;
 use App\Models\FeedPost;
 use App\Models\FeedReaction;
+use App\Models\News;
+use App\Models\Testimonial;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,12 +83,105 @@ class AdminEngageController extends Controller
     {
         $posts = FeedPost::query()
             ->with(['user.profile'])
-            ->withCount([
-                'comments as comments_count',
-                'reactions as likes_count' => fn ($query) => $query->where('reaction', 'like'),
-            ])
             ->latest('updated_at')
-            ->get();
+            ->get(['id', 'user_id', 'post_type', 'body', 'updated_at']);
+
+        $news = News::query()
+            ->latest('updated_at')
+            ->get(['id', 'title', 'excerpt', 'updated_at']);
+
+        $events = Event::query()
+            ->latest('updated_at')
+            ->get(['id', 'title', 'excerpt', 'location', 'updated_at']);
+
+        $testimonials = Testimonial::query()
+            ->latest('updated_at')
+            ->get(['id', 'name', 'position', 'company', 'content', 'status', 'updated_at']);
+
+        $feedItems = collect();
+
+        foreach ($posts as $post) {
+            $feedItems->push([
+                'feed_type' => 'post',
+                'feed_id' => $post->id,
+                'kind' => $this->postTypes[$post->post_type] ?? ucfirst((string) $post->post_type),
+                'title' => 'Shared by ' . ($post->user?->display_name ?? $post->user?->name ?? 'Unknown User'),
+                'body' => $post->body,
+                'owner' => $post->user?->display_name ?? $post->user?->name ?? 'Unknown User',
+                'updated_at' => $post->updated_at,
+                'can_delete_source' => true,
+                'source_delete_route' => route('admin.engage.delete', $post->id),
+            ]);
+        }
+
+        foreach ($news as $item) {
+            $feedItems->push([
+                'feed_type' => 'news',
+                'feed_id' => $item->id,
+                'kind' => 'News',
+                'title' => $item->title,
+                'body' => $item->excerpt,
+                'owner' => 'SRU Newsroom',
+                'updated_at' => $item->updated_at,
+                'can_delete_source' => false,
+                'source_delete_route' => null,
+            ]);
+        }
+
+        foreach ($events as $item) {
+            $feedItems->push([
+                'feed_type' => 'event',
+                'feed_id' => $item->id,
+                'kind' => 'Event',
+                'title' => $item->title,
+                'body' => trim(($item->excerpt ?? '') . ' ' . ($item->location ? 'Venue: ' . $item->location : '')),
+                'owner' => 'Events Desk',
+                'updated_at' => $item->updated_at,
+                'can_delete_source' => false,
+                'source_delete_route' => null,
+            ]);
+        }
+
+        foreach ($testimonials as $item) {
+            $feedItems->push([
+                'feed_type' => 'testimonial',
+                'feed_id' => $item->id,
+                'kind' => 'Testimonial',
+                'title' => $item->name . ($item->position ? ' • ' . $item->position : ''),
+                'body' => $item->content,
+                'owner' => $item->name,
+                'updated_at' => $item->updated_at,
+                'can_delete_source' => false,
+                'source_delete_route' => null,
+            ]);
+        }
+
+        $feedKeys = $feedItems
+            ->map(fn (array $item) => $item['feed_type'] . ':' . $item['feed_id'])
+            ->values();
+
+        $commentsCountMap = FeedComment::query()
+            ->get()
+            ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
+            ->map(fn ($items) => $items->count());
+
+        $likesCountMap = FeedReaction::query()
+            ->where('reaction', 'like')
+            ->get()
+            ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
+            ->map(fn ($items) => $items->count());
+
+        $items = $feedItems
+            ->filter(fn (array $item) => $feedKeys->contains($item['feed_type'] . ':' . $item['feed_id']))
+            ->map(function (array $item) use ($commentsCountMap, $likesCountMap) {
+                $key = $item['feed_type'] . ':' . $item['feed_id'];
+                $item['comments_count'] = (int) ($commentsCountMap[$key] ?? 0);
+                $item['likes_count'] = (int) ($likesCountMap[$key] ?? 0);
+
+                return $item;
+            })
+            ->sortByDesc('updated_at')
+            ->values();
 
         $actor = Auth::user();
         ActivityLog::record(
@@ -97,34 +193,51 @@ class AdminEngageController extends Controller
         );
 
         return view('admin.engage.engage-manage', [
-            'posts' => $posts,
+            'items' => $items,
             'postTypes' => $this->postTypes,
         ]);
     }
 
     public function edit(int $id): View
     {
-        $post = FeedPost::query()
-            ->with([
-                'user.profile',
-                'comments' => fn ($query) => $query->with('user.profile')->latest(),
-                'reactions' => fn ($query) => $query->with('user.profile')->latest(),
-            ])
-            ->findOrFail($id);
+        return $this->reviewFeed('post', $id);
+    }
+
+    public function reviewFeed(string $feedType, int $feedId): View
+    {
+        $sourceData = $this->loadFeedSourceData($feedType, $feedId);
+        $comments = FeedComment::query()
+            ->with('user.profile')
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->latest()
+            ->get();
+        $reactions = FeedReaction::query()
+            ->with('user.profile')
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->latest()
+            ->get();
 
         $actor = Auth::user();
         ActivityLog::record(
             $actor?->id,
             $actor?->id,
             'admin_engage_edit_opened',
-            ($actor?->name ?? 'Admin') . ' opened engage moderation view for post #' . $post->id,
+            ($actor?->name ?? 'Admin') . ' opened engage moderation view for ' . $feedType . ' #' . $feedId,
             [
-                'post_id' => $post->id,
+                'feed_type' => $feedType,
+                'feed_id' => $feedId,
             ]
         );
 
         return view('admin.engage.engage-edit', [
-            'post' => $post,
+            'feedType' => $feedType,
+            'feedId' => $feedId,
+            'sourceData' => $sourceData,
+            'comments' => $comments,
+            'reactions' => $reactions,
+            'canDeleteSource' => $feedType === 'post',
             'postTypes' => $this->postTypes,
         ]);
     }
@@ -189,7 +302,8 @@ class AdminEngageController extends Controller
     public function destroyComment(int $comment): RedirectResponse
     {
         $commentModel = FeedComment::query()->with(['user.profile'])->findOrFail($comment);
-        $postId = (int) $commentModel->feed_id;
+        $feedId = (int) $commentModel->feed_id;
+        $feedType = (string) $commentModel->feed_type;
         $commentAuthor = $commentModel->user?->display_name ?? 'Unknown User';
         $commentPreview = substr($commentModel->body, 0, 120);
 
@@ -200,9 +314,10 @@ class AdminEngageController extends Controller
             $actor?->id,
             $actor?->id,
             'admin_engage_comment_deleted',
-            ($actor?->name ?? 'Admin') . ' deleted a comment from engage post #' . $postId,
+            ($actor?->name ?? 'Admin') . ' deleted a comment from ' . $feedType . ' #' . $feedId,
             [
-                'post_id' => $postId,
+                'feed_id' => $feedId,
+                'feed_type' => $feedType,
                 'comment_id' => $commentModel->id,
                 'comment_author' => $commentAuthor,
                 'body_preview' => $commentPreview,
@@ -210,14 +325,15 @@ class AdminEngageController extends Controller
         );
 
         return redirect()
-            ->route('admin.engage.review', $postId)
+            ->route('admin.engage.feed.review', [$feedType, $feedId])
             ->with('success', 'Comment deleted successfully.');
     }
 
     public function destroyReaction(int $reaction): RedirectResponse
     {
         $reactionModel = FeedReaction::query()->with(['user.profile'])->findOrFail($reaction);
-        $postId = (int) $reactionModel->feed_id;
+        $feedId = (int) $reactionModel->feed_id;
+        $feedType = (string) $reactionModel->feed_type;
         $reactionAuthor = $reactionModel->user?->display_name ?? 'Unknown User';
 
         FeedReaction::query()->whereKey($reactionModel->id)->delete();
@@ -227,9 +343,10 @@ class AdminEngageController extends Controller
             $actor?->id,
             $actor?->id,
             'admin_engage_reaction_deleted',
-            ($actor?->name ?? 'Admin') . ' deleted a reaction from engage post #' . $postId,
+            ($actor?->name ?? 'Admin') . ' deleted a reaction from ' . $feedType . ' #' . $feedId,
             [
-                'post_id' => $postId,
+                'feed_id' => $feedId,
+                'feed_type' => $feedType,
                 'reaction_id' => $reactionModel->id,
                 'reaction_author' => $reactionAuthor,
                 'reaction' => $reactionModel->reaction,
@@ -237,7 +354,70 @@ class AdminEngageController extends Controller
         );
 
         return redirect()
-            ->route('admin.engage.review', $postId)
+            ->route('admin.engage.feed.review', [$feedType, $feedId])
             ->with('success', 'Reaction deleted successfully.');
+    }
+
+    private function loadFeedSourceData(string $feedType, int $feedId): array
+    {
+        return match ($feedType) {
+            'post' => $this->loadPostSourceData($feedId),
+            'news' => $this->loadNewsSourceData($feedId),
+            'event' => $this->loadEventSourceData($feedId),
+            'testimonial' => $this->loadTestimonialSourceData($feedId),
+            default => abort(404),
+        };
+    }
+
+    private function loadPostSourceData(int $feedId): array
+    {
+        $post = FeedPost::query()->with('user.profile')->findOrFail($feedId);
+
+        return [
+            'kind' => $this->postTypes[$post->post_type] ?? ucfirst((string) $post->post_type),
+            'title' => 'Shared by ' . ($post->user?->display_name ?? $post->user?->name ?? 'Unknown User'),
+            'body' => (string) $post->body,
+            'owner' => $post->user?->display_name ?? $post->user?->name ?? 'Unknown User',
+            'updated_at' => $post->updated_at,
+        ];
+    }
+
+    private function loadNewsSourceData(int $feedId): array
+    {
+        $news = News::query()->findOrFail($feedId);
+
+        return [
+            'kind' => 'News',
+            'title' => (string) $news->title,
+            'body' => (string) ($news->excerpt ?? ''),
+            'owner' => 'SRU Newsroom',
+            'updated_at' => $news->updated_at,
+        ];
+    }
+
+    private function loadEventSourceData(int $feedId): array
+    {
+        $event = Event::query()->findOrFail($feedId);
+
+        return [
+            'kind' => 'Event',
+            'title' => (string) $event->title,
+            'body' => trim((string) ($event->excerpt ?? '') . ' ' . ($event->location ? 'Venue: ' . $event->location : '')),
+            'owner' => 'Events Desk',
+            'updated_at' => $event->updated_at,
+        ];
+    }
+
+    private function loadTestimonialSourceData(int $feedId): array
+    {
+        $testimonial = Testimonial::query()->findOrFail($feedId);
+
+        return [
+            'kind' => 'Testimonial',
+            'title' => (string) $testimonial->name . ($testimonial->position ? ' • ' . $testimonial->position : ''),
+            'body' => (string) ($testimonial->content ?? ''),
+            'owner' => (string) ($testimonial->name ?? 'Alumni'),
+            'updated_at' => $testimonial->updated_at,
+        ];
     }
 }
