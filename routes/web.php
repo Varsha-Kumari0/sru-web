@@ -586,6 +586,10 @@ Route::middleware(['auth'])->group(function () {
 
     // ✅ UPDATE PROFILE (FIXED 🔥)
     Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/update/basic', [ProfileController::class, 'updateBasicProfile'])->name('profile.update.basic');
+    Route::post('/profile/update/education', [ProfileController::class, 'updateEducationProfile'])->name('profile.update.education');
+    Route::post('/profile/update/work', [ProfileController::class, 'updateWorkProfile'])->name('profile.update.work');
+    Route::post('/profile/update/social', [ProfileController::class, 'updateSocialProfile'])->name('profile.update.social');
 
     // 📨 MESSAGES
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');

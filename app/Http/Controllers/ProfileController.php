@@ -19,6 +19,35 @@ use App\Models\ProfileView;
 
 class ProfileController extends Controller
 {
+    private function buildEducationRowsFromSectionRequest(Request $request): array
+    {
+        $sections = ['school', 'ug', 'pg', 'other'];
+        $rows = [];
+
+        foreach ($sections as $section) {
+            $institution = trim((string) $request->input($section . '_institution', ''));
+            $degree = trim((string) $request->input($section . '_degree', ''));
+            $branch = trim((string) $request->input($section . '_branch', ''));
+            $from = $request->input($section . '_from');
+            $to = $request->input($section . '_to');
+
+            if ($institution === '' && $degree === '' && $branch === '' && blank($from) && blank($to)) {
+                continue;
+            }
+
+            $rows[] = [
+                'section' => $section,
+                'institution' => $institution,
+                'degree' => $degree,
+                'branch' => $branch,
+                'from' => $from,
+                'to' => $to,
+            ];
+        }
+
+        return $rows;
+    }
+
     /**
      * Default Laravel profile edit (leave as it is)
      */
@@ -199,6 +228,10 @@ class ProfileController extends Controller
 
         // ✅ VALIDATION
         $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'gender' => 'required|string|in:male,female,other,prefer_not_to_say',
+            'contact_email' => 'required|email|max:255',
             'full_name' => 'required',
             'father_name' => 'required|string|max:255',
             'mobile' => ['required', 'regex:/^[0-9]{10,15}$/'],
@@ -208,6 +241,8 @@ class ProfileController extends Controller
             'branch' => 'required',
             'passing_year' => 'required',
             'current_status' => 'required|in:studying,working',
+            'pursuing_educational_level' => 'nullable|string|max:255',
+            'highest_completed_educational_level' => 'nullable|string|max:255',
 
             // current study details (required only when user is studying)
             'study_institution' => 'required_if:current_status,studying|nullable|string|max:255',
@@ -275,11 +310,15 @@ class ProfileController extends Controller
         $profile = Profile::create([
             'user_id' => Auth::id(),
 
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'gender' => $request->gender,
             'profile_photo' => $imagePath,
 
             'full_name' => $request->full_name,
             'father_name' => $request->father_name,
             'mobile' => $request->mobile,
+            'contact_email' => $request->contact_email,
 
             'city' => $request->city,
             'country' => $request->country,
@@ -293,6 +332,8 @@ class ProfileController extends Controller
             'branch' => $request->branch,
             'passing_year' => $request->passing_year,
             'current_status' => $request->current_status,
+            'pursuing_educational_level' => $request->pursuing_educational_level,
+            'highest_completed_educational_level' => $request->highest_completed_educational_level,
             'study_institution' => $request->current_status === 'studying' ? $request->study_institution : null,
             'study_degree' => $request->current_status === 'studying' ? $request->study_degree : null,
             'study_branch' => $request->current_status === 'studying' ? $request->study_branch : null,
@@ -439,9 +480,15 @@ class ProfileController extends Controller
 
         // ✅ VALIDATION
         $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'gender' => 'required|string|in:male,female,other,prefer_not_to_say',
+            'contact_email' => 'required|email|max:255',
             'city' => 'required',
             'country' => 'required',
             'current_status' => 'required|in:studying,working',
+            'pursuing_educational_level' => 'nullable|string|max:255',
+            'highest_completed_educational_level' => 'nullable|string|max:255',
 
             // current study details (required only when user is studying)
             'study_institution' => 'required_if:current_status,studying|nullable|string|max:255',
@@ -537,14 +584,20 @@ class ProfileController extends Controller
 
         // ✅ UPDATE PROFILE
         $profile->update([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'gender' => $request->gender,
             'city' => $request->city,
             'country' => $request->country,
+            'contact_email' => $request->contact_email,
 
             'linkedin' => $request->linkedin,
             'instagram' => $request->instagram,
             'facebook' => $request->facebook,
             'twitter' => $request->twitter,
             'current_status' => $request->current_status,
+            'pursuing_educational_level' => $request->pursuing_educational_level,
+            'highest_completed_educational_level' => $request->highest_completed_educational_level,
             'study_institution' => $request->current_status === 'studying' ? $request->study_institution : null,
             'study_degree' => $request->current_status === 'studying' ? $request->study_degree : null,
             'study_branch' => $request->current_status === 'studying' ? $request->study_branch : null,
@@ -575,14 +628,20 @@ class ProfileController extends Controller
 
         $updatedProfile = Profile::where('user_id', Auth::id())->first();
         $updatedProfileData = $updatedProfile ? $updatedProfile->only([
+            'first_name',
+            'last_name',
+            'gender',
             'city',
             'country',
+            'contact_email',
             'linkedin',
             'instagram',
             'facebook',
             'twitter',
             'profile_photo',
             'current_status',
+            'pursuing_educational_level',
+            'highest_completed_educational_level',
             'study_institution',
             'study_degree',
             'study_branch',
@@ -632,5 +691,158 @@ class ProfileController extends Controller
         );
 
         return redirect()->route('profile')->with('success', 'Profile updated successfully');
+    }
+
+    public function updateBasicProfile(Request $request): RedirectResponse
+    {
+        $profile = Profile::where('user_id', Auth::id())->first();
+
+        if (! $profile) {
+            return redirect()->route('profile.create');
+        }
+
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'gender' => 'required|string|in:male,female,other,prefer_not_to_say',
+            'contact_email' => 'required|email|max:255',
+            'full_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
+            'mobile' => ['required', 'regex:/^[0-9]{10,15}$/'],
+            'city' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'degree' => 'required|string|max:255',
+            'branch' => 'required|string|max:255',
+            'passing_year' => 'required',
+            'pursuing_educational_level' => 'nullable|string|max:255',
+            'highest_completed_educational_level' => 'nullable|string|max:255',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($request->hasFile('profile_photo')) {
+            $validated['profile_photo'] = $request->file('profile_photo')->store('profiles', 'public');
+        } else {
+            unset($validated['profile_photo']);
+        }
+
+        $profile->update($validated);
+
+        return redirect()->route('profile')->with('success', 'Basic profile details updated successfully');
+    }
+
+    public function updateEducationProfile(Request $request): RedirectResponse
+    {
+        $profile = Profile::where('user_id', Auth::id())->first();
+
+        if (! $profile) {
+            return redirect()->route('profile.create');
+        }
+
+        $request->validate([
+            'current_status' => 'required|in:studying,working',
+            'study_institution' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_degree' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_branch' => 'required_if:current_status,studying|nullable|string|max:255',
+            'study_from' => 'required_if:current_status,studying|nullable|date',
+            'study_to' => 'required_if:current_status,studying|nullable|string|max:255',
+            'school_institution' => 'nullable|string|max:255',
+            'school_degree' => 'nullable|string|max:255',
+            'school_branch' => 'nullable|string|max:255',
+            'school_from' => 'nullable|date',
+            'school_to' => 'nullable|date',
+            'ug_institution' => 'nullable|string|max:255',
+            'ug_degree' => 'nullable|string|max:255',
+            'ug_branch' => 'nullable|string|max:255',
+            'ug_from' => 'nullable|date',
+            'ug_to' => 'nullable|date',
+            'pg_institution' => 'nullable|string|max:255',
+            'pg_degree' => 'nullable|string|max:255',
+            'pg_branch' => 'nullable|string|max:255',
+            'pg_from' => 'nullable|date',
+            'pg_to' => 'nullable|date',
+            'other_institution' => 'nullable|string|max:255',
+            'other_degree' => 'nullable|string|max:255',
+            'other_branch' => 'nullable|string|max:255',
+            'other_from' => 'nullable|date',
+            'other_to' => 'nullable|date',
+        ]);
+
+        $profile->update([
+            'current_status' => $request->current_status,
+            'study_institution' => $request->current_status === 'studying' ? $request->study_institution : null,
+            'study_degree' => $request->current_status === 'studying' ? $request->study_degree : null,
+            'study_branch' => $request->current_status === 'studying' ? $request->study_branch : null,
+            'study_from' => $request->current_status === 'studying' ? $request->study_from : null,
+            'study_to' => $request->current_status === 'studying' ? $request->study_to : null,
+            'previous_education' => $this->buildEducationRowsFromSectionRequest($request),
+        ]);
+
+        return redirect()->route('profile')->with('success', 'Education details updated successfully');
+    }
+
+    public function updateWorkProfile(Request $request): RedirectResponse
+    {
+        $profile = Profile::where('user_id', Auth::id())->first();
+
+        if (! $profile) {
+            return redirect()->route('profile.create');
+        }
+
+        $request->validate([
+            'organization' => 'nullable|array',
+            'organization.*' => 'nullable|string|max:255',
+            'industry' => 'nullable|array',
+            'industry.*' => 'nullable|string|max:255',
+            'role' => 'nullable|array',
+            'role.*' => 'nullable|string|max:255',
+            'location_exp' => 'nullable|array',
+            'location_exp.*' => 'nullable|string|max:255',
+            'from' => 'nullable|array',
+            'from.*' => 'nullable|date',
+            'to' => 'nullable|array',
+            'to.*' => 'nullable|string|max:255',
+        ]);
+
+        Professional::where('user_id', Auth::id())->delete();
+
+        foreach (($request->organization ?? []) as $index => $organization) {
+            $organization = trim((string) $organization);
+
+            if ($organization === '') {
+                continue;
+            }
+
+            Professional::create([
+                'user_id' => Auth::id(),
+                'organization' => $organization,
+                'industry' => $request->industry[$index] ?? null,
+                'role' => $request->role[$index] ?? null,
+                'from' => $request->from[$index] ?? null,
+                'to' => $request->to[$index] ?? null,
+                'location' => $request->location_exp[$index] ?? null,
+            ]);
+        }
+
+        return redirect()->route('profile')->with('success', 'Work experience updated successfully');
+    }
+
+    public function updateSocialProfile(Request $request): RedirectResponse
+    {
+        $profile = Profile::where('user_id', Auth::id())->first();
+
+        if (! $profile) {
+            return redirect()->route('profile.create');
+        }
+
+        $validated = $request->validate([
+            'linkedin' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(linkedin\.com)\/.+/i'],
+            'instagram' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(instagram\.com)\/.+/i'],
+            'facebook' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?(facebook\.com)\/.+/i'],
+            'twitter' => ['required', 'url', 'regex:/^(https?:\/\/)?(www\.)?((x\.com)|(twitter\.com))\/.+/i'],
+        ]);
+
+        $profile->update($validated);
+
+        return redirect()->route('profile')->with('success', 'Social links updated successfully');
     }
 }

@@ -22,6 +22,40 @@
         <div id="step1">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">First Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="first_name" value="{{ old('first_name') }}"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter first name" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Last Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="last_name" value="{{ old('last_name') }}"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter last name" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Gender <span class="text-red-500">*</span></label>
+                    <select name="gender" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" required>
+                        <option value="">Select gender</option>
+                        <option value="male" @selected(old('gender') === 'male')>Male</option>
+                        <option value="female" @selected(old('gender') === 'female')>Female</option>
+                        <option value="other" @selected(old('gender') === 'other')>Other</option>
+                        <option value="prefer_not_to_say" @selected(old('gender') === 'prefer_not_to_say')>Prefer not to say</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Contact Email <span class="text-red-500">*</span></label>
+                    <input type="email" name="contact_email" value="{{ old('contact_email', auth()->user()->email ?? '') }}"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter contact email" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
                     <input type="text" name="full_name" value="{{ old('full_name') }}"
                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
@@ -81,6 +115,30 @@
                     <select name="branch" id="branch"
                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500" required>
                         <option value="">Select Specialization</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Pursuing Educational Level</label>
+                    <select name="pursuing_educational_level" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select level</option>
+                        <option value="school" @selected(old('pursuing_educational_level') === 'school')>School</option>
+                        <option value="ug" @selected(old('pursuing_educational_level') === 'ug')>UG</option>
+                        <option value="pg" @selected(old('pursuing_educational_level') === 'pg')>PG</option>
+                        <option value="other" @selected(old('pursuing_educational_level') === 'other')>Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Highest Completed Educational Level</label>
+                    <select name="highest_completed_educational_level" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select level</option>
+                        <option value="school" @selected(old('highest_completed_educational_level') === 'school')>School</option>
+                        <option value="ug" @selected(old('highest_completed_educational_level') === 'ug')>UG</option>
+                        <option value="pg" @selected(old('highest_completed_educational_level') === 'pg')>PG</option>
+                        <option value="other" @selected(old('highest_completed_educational_level') === 'other')>Other</option>
                     </select>
                 </div>
             </div>
@@ -344,6 +402,10 @@
     });
 
     function validateStep1() {
+        const firstName = document.querySelector('input[name="first_name"]').value.trim();
+        const lastName = document.querySelector('input[name="last_name"]').value.trim();
+        const gender = document.querySelector('select[name="gender"]').value;
+        const contactEmail = document.querySelector('input[name="contact_email"]').value.trim();
         const fullName = document.querySelector('input[name="full_name"]').value.trim();
         const fatherName = document.querySelector('input[name="father_name"]').value.trim();
         const mobile = document.querySelector('input[name="mobile"]').value.trim();
@@ -355,8 +417,8 @@
 
         const mobileValid = validateMobileField();
 
-        if (!fullName || !fatherName || !mobile || !city || !country || !degree || !branch || !passingYear) {
-            alert('Please fill all required fields including degree and specialization');
+        if (!firstName || !lastName || !gender || !contactEmail || !fullName || !fatherName || !mobile || !city || !country || !degree || !branch || !passingYear) {
+            alert('Please fill all required fields in basic profile information and education details.');
             return false;
         }
 
