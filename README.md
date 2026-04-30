@@ -1,6 +1,6 @@
 ﻿# SRU Alumni Portal
 
-A web platform for Sir Syed University of Engineering & Technology (SRUET) alumni — connecting graduates, sharing opportunities, and enabling institutional engagement.
+A web platform for Sri Rajeshwara University (SR University) alumni — connecting graduates, sharing opportunities, and enabling institutional engagement.
 
 ---
 
@@ -268,4 +268,5 @@ Extended documentation is in the `docs/` folder:
 
 ## License
 
-This project is proprietary software developed for Sir Syed University of Engineering & Technology alumni management.
+This project is proprietary software developed for Sri Rajeshwara University alumni management.
+
