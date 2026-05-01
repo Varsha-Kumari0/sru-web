@@ -18,6 +18,9 @@
             <li><a class="hover:text-teal-600" href="{{ route('gallery') }}">Gallery</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('jobs.index') }}">Jobs</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('engage') }}">Engage</a></li>
+            @auth
+                <li><a class="hover:text-teal-600" href="{{ route('messages.index') }}">Messages</a></li>
+            @endauth
             <li><a class="hover:text-teal-600" href="{{ route('contact') }}">Contact</a></li>
         </ul>
 
@@ -64,6 +67,8 @@
             <a href="{{ route('contact') }}" class="block">Contact</a>
 
             @auth
+                <a href="{{ route('messages.index') }}" class="block">Messages</a>
+
                 @php
                     $user = auth()->user();
                     $profileName = trim((string) ($user->profile?->full_name ?? ''));

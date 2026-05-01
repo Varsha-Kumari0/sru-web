@@ -29,6 +29,10 @@
         ? 'nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150'
         : 'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900';
 
+    $messagesClasses = $activeSection === 'messages'
+        ? 'nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-900 hover:text-slate-900'
+        : 'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900';
+
     $activityClasses = $activeSection === 'activity-logs'
         ? 'nav-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-900 hover:text-slate-900'
         : 'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900';
@@ -93,7 +97,7 @@
 
         <p class="text-xs font-semibold tracking-widest uppercase px-3 mb-2 mt-5 text-slate-500">Management</p>
 
-        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 text-slate-500 hover:text-slate-900">
+        <a href="{{ route('messages.index') }}" class="{{ $messagesClasses }}">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>

@@ -202,6 +202,8 @@ User-side actions recorded in activity logs include:
 - user_logged_out
 - profile_created
 - profile_updated
+- message_sent
+- messages_marked_read
 
 ## 7. User Routes Summary
 Public or guest:
@@ -216,6 +218,8 @@ Authenticated alumni:
 - /profile/store
 - /profile/edit
 - /profile/update
+- /messages
+- /messages/{user}
 - /logout
 
 ## 7.1 Recent User-Facing Updates (2026-04-28)
@@ -254,6 +258,53 @@ Authenticated alumni:
 ### Documentation Sync Note (2026-04-28)
 - Documentation was refreshed after admin navigation consistency fixes.
 - Cross-role behavior for alumni routes is unchanged; this note keeps user docs aligned with the latest admin-side navigation and local-auth troubleshooting updates.
+
+## 7.3 Messaging Experience Updates (2026-05-01)
+
+### Messaging Routes
+- Index: GET /messages (name: messages.index)
+- Conversation: GET /messages/{user} (name: messages.show)
+- Send: POST /messages/{user} (name: messages.store)
+- Search users: GET /messages/users/search (name: messages.users.search)
+
+### Name and Header Behavior
+- Conversation header now uses a display-name fallback strategy:
+  - prefers profile full name where applicable
+  - falls back to account name when no profile full name is available
+- Presence text is role-based:
+  - user-to-user chat: shows Online or Last seen
+  - chat with admin role: shows Administrator (no online/last-seen)
+
+### Message Status Indicators
+- Outgoing alumni messages show WhatsApp-style double ticks:
+  - gray double tick: delivered
+  - blue double tick: read
+
+### Attachments Support
+- Alumni can send:
+  - text-only message
+  - file-only message
+  - text + file message
+- Allowed file types:
+  - jpg, jpeg, png, gif
+  - pdf, doc, docx
+  - xls, xlsx
+  - txt, zip
+- Max file size: 10 MB
+- Images render inline in chat bubbles.
+- Non-image files render as download links.
+
+### Presence Tracking and Storage
+- users.last_seen_at stores latest seen time.
+- Authenticated requests update last_seen_at via middleware.
+- messages.content is nullable to support file-only messages.
+- messages.attachment stores uploaded file path.
+- messages.attachment_original_name stores original file name.
+
+### Messaging Migrations Added
+- database/migrations/2026_05_01_000001_add_attachment_to_messages_table.php
+- database/migrations/2026_05_01_000002_make_message_content_nullable.php
+- database/migrations/2026_05_01_000003_add_last_seen_at_to_users_table.php
 
 ## 8. Common Issues and Fixes
 
@@ -300,6 +351,7 @@ Routes and controllers:
 - app/Http/Controllers/Auth/RegisteredUserController.php
 - app/Http/Controllers/Auth/AuthenticatedSessionController.php
 - app/Http/Controllers/ProfileController.php
+- app/Http/Controllers/MessageController.php
 
 Views:
 - resources/views/auth/register.blade.php
@@ -307,13 +359,22 @@ Views:
 - resources/views/profile/create.blade.php
 - resources/views/profile/edit.blade.php
 - resources/views/profile/profile.blade.php
+- resources/views/messages/index.blade.php
+- resources/views/messages/show.blade.php
 
 Models and migrations:
 - app/Models/Profile.php
 - app/Models/Professional.php
+- app/Models/User.php
+- app/Models/Message.php
 - app/Models/ActivityLog.php
+- app/Http/Middleware/UpdateUserLastSeen.php
 - database/migrations/2026_04_23_042025_create_profiles_table.php
 - database/migrations/2026_04_23_053819_create_professionals_table.php
 - database/migrations/2026_04_25_120000_add_father_name_to_profiles_table.php
 - database/migrations/2026_04_27_120000_add_current_study_fields_to_profiles_table.php
 - database/migrations/2026_04_25_090000_create_activity_logs_table.php
+- database/migrations/2026_04_26_create_messages_table.php
+- database/migrations/2026_05_01_000001_add_attachment_to_messages_table.php
+- database/migrations/2026_05_01_000002_make_message_content_nullable.php
+- database/migrations/2026_05_01_000003_add_last_seen_at_to_users_table.php

@@ -180,8 +180,8 @@
             'time' => $post->created_at?->diffForHumans() ?? 'Recently',
             'title' => 'Shared by ' . $authorName,
             'body' => $post->body,
-            'href' => route('profile'),
-            'cta' => 'View profile',
+            'href' => route('dashboard.feed.details', ['post', $post->id]),
+            'cta' => 'View details',
             'accent' => '#2a9d8f',
             'sort_at' => $post->created_at,
         ]);
@@ -196,8 +196,8 @@
             'time' => optional($item->published_at ?? $item->created_at)->format('d M Y') ?? 'Recently',
             'title' => $item->title,
             'body' => $item->excerpt,
-            'href' => route('news.show', $item->id),
-            'cta' => 'Open note',
+            'href' => route('dashboard.feed.details', ['news', $item->id]),
+            'cta' => 'View details',
             'accent' => '#2a9d8f',
             'sort_at' => $item->published_at ?? $item->created_at,
         ]);
@@ -212,8 +212,8 @@
             'time' => optional($event->start_at)->format('d M Y, g:i A') ?? 'Upcoming',
             'title' => $event->title,
             'body' => trim(($event->excerpt ?? '') . ' ' . ($event->location ? 'Venue: ' . $event->location : '')),
-            'href' => route('events.show', $event->id),
-            'cta' => 'Event details',
+            'href' => route('dashboard.feed.details', ['event', $event->id]),
+            'cta' => 'View details',
             'accent' => '#c9a84c',
             'sort_at' => $event->start_at,
         ]);
@@ -228,8 +228,8 @@
             'time' => trim(($testimonial->position ?? '') . (($testimonial->company ?? null) ? ' at ' . $testimonial->company : '')) ?: 'Alumni story',
             'title' => 'A story from the network',
             'body' => $testimonial->content,
-            'href' => route('testimonials.index'),
-            'cta' => 'Read stories',
+            'href' => route('dashboard.feed.details', ['testimonial', $testimonial->id]),
+            'cta' => 'View details',
             'accent' => '#1a2d4a',
             'sort_at' => $testimonial->created_at,
         ]);

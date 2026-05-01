@@ -350,6 +350,34 @@ The profile record currently includes additional personal/social fields such as:
   - `loadTestimonialSourceData()` — loads Testimonial
 - `destroyComment()` and `destroyReaction()` now redirect back to `admin.engage.feed.review` after deletion.
 
+### 2.16 Messaging Module Enhancements (2026-05-01)
+- Admin sidebar Messages entry now opens the shared messaging inbox route:
+  - GET /messages (name: messages.index)
+- Conversations use display-name fallback logic so generic placeholder names are replaced by profile full name where available.
+- Chat header presence rendering is role-aware:
+  - for normal users: Online or Last seen
+  - for admin counterpart: Administrator label (no online/last-seen)
+- Message composer supports attachments from both admin and alumni chats.
+- Supported attachment formats:
+  - jpg, jpeg, png, gif
+  - pdf, doc, docx
+  - xls, xlsx
+  - txt, zip
+- Max attachment size: 10 MB.
+- File-only messages are supported (text content can be empty).
+- Attachment rendering in conversation:
+  - image attachments show inline preview
+  - non-image attachments show download links
+- Outgoing messages show WhatsApp-style delivery/read status:
+  - gray double tick: delivered
+  - blue double tick: read
+- New message popup includes user search by name/full name/passing year and can open direct chat.
+- Core messaging routes in use:
+  - GET /messages (messages.index)
+  - GET /messages/{user} (messages.show)
+  - POST /messages/{user} (messages.store)
+  - GET /messages/users/search (messages.users.search)
+
 ## 3. Permanent Activity Audit
 
 ### 3.1 activity_logs Table
@@ -389,6 +417,8 @@ Current events include:
 - admin_avatar_updated
 - alumni_deleted
 - activity_logs_exported
+- message_sent
+- messages_marked_read
 
 ## 4. Sidebar and UI Consistency
 - All 19 admin pages share a single sidebar partial: `resources/views/admin/partials/sidebar.blade.php`.
@@ -417,6 +447,7 @@ Current events include:
 - routes/web.php
 - app/Http/Controllers/AdminController.php
 - app/Http/Controllers/AdminEngageController.php
+- app/Http/Controllers/MessageController.php
 - app/Http/Controllers/EventController.php
 - app/Http/Controllers/NewsController.php
 - app/Http/Controllers/ProfileController.php
@@ -425,13 +456,19 @@ Current events include:
 - app/Models/Profile.php
 - app/Models/News.php
 - app/Models/Event.php
+- app/Models/Message.php
 - app/Models/FeedPost.php
 - app/Models/FeedComment.php
 - app/Models/FeedReaction.php
 - app/Models/ActivityLog.php
+- app/Http/Middleware/UpdateUserLastSeen.php
 - database/migrations/2026_04_25_090000_create_activity_logs_table.php
 - database/migrations/2026_04_25_111645_create_events_table.php
 - database/migrations/2026_04_25_120000_add_avatar_to_users_table.php
+- database/migrations/2026_04_26_create_messages_table.php
+- database/migrations/2026_05_01_000001_add_attachment_to_messages_table.php
+- database/migrations/2026_05_01_000002_make_message_content_nullable.php
+- database/migrations/2026_05_01_000003_add_last_seen_at_to_users_table.php
 
 ### Admin Views
 - resources/views/admin/partials/sidebar.blade.php (shared sidebar partial, included by all admin pages)

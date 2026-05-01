@@ -27,7 +27,7 @@ class MessageController extends Controller
                 return $message->sender_id === $userId ? $message->receiver_id : $message->sender_id;
             })
             ->map(function ($messages, $otherUserId) use ($userId) {
-                $user = User::query()->find($otherUserId);
+                $user = User::query()->with('profile')->find($otherUserId);
                 $latestMessage = $messages->first();
                 $unreadCount = $messages->where('receiver_id', $userId)->where('is_read', false)->count();
 
@@ -38,11 +38,17 @@ class MessageController extends Controller
                 ];
             });
 
-        return view('messages.index', compact('conversations'));
+        $adminUser = User::query()
+            ->where('role', 'admin')
+            ->where('id', '!=', $userId)
+            ->first();
+
+        return view('messages.index', compact('conversations', 'adminUser'));
     }
 
     public function show(User $user): View
     {
+        $user->load('profile');
         $currentUserId = Auth::id();
 
         // Mark messages as read
@@ -80,16 +86,31 @@ class MessageController extends Controller
         $senderId = Auth::id();
 
         $request->validate([
-            'content' => 'required|string|max:1000',
-            'subject' => 'nullable|string|max:255',
+            'content'    => 'nullable|string|max:1000',
+            'subject'    => 'nullable|string|max:255',
+            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,txt,zip',
         ]);
 
+        if (empty(trim((string) $request->input('content', ''))) && !$request->hasFile('attachment')) {
+            return redirect()->back()->withErrors(['content' => 'Please enter a message or attach a file.']);
+        }
+
+        $attachmentPath = null;
+        $attachmentOriginalName = null;
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $attachmentOriginalName = $file->getClientOriginalName();
+            $attachmentPath = $file->store('message-attachments', 'public');
+        }
+
         $message = Message::create([
-            'sender_id' => $senderId,
-            'receiver_id' => $user->id,
-            'subject' => $request->input('subject'),
-            'content' => $request->input('content'),
-            'is_read' => false,
+            'sender_id'               => $senderId,
+            'receiver_id'             => $user->id,
+            'subject'                 => $request->input('subject'),
+            'content'                 => $request->input('content', ''),
+            'attachment'              => $attachmentPath,
+            'attachment_original_name' => $attachmentOriginalName,
+            'is_read'                 => false,
         ]);
 
         $actor = Auth::user();
@@ -99,10 +120,11 @@ class MessageController extends Controller
             'message_sent',
             ($actor?->name ?? 'Alumni') . ' sent a message to ' . ($user->name ?? 'User'),
             [
-                'message_id' => $message->id,
+                'message_id'       => $message->id,
                 'receiver_user_id' => $user->id,
-                'receiver_name' => $user->name,
-                'has_subject' => !empty($request->input('subject')),
+                'receiver_name'    => $user->name,
+                'has_subject'      => !empty($request->input('subject')),
+                'has_attachment'   => $attachmentPath !== null,
             ]
         );
 
@@ -114,14 +136,29 @@ class MessageController extends Controller
         $senderId = Auth::id();
 
         $request->validate([
-            'content' => 'required|string|max:1000',
+            'content'    => 'nullable|string|max:1000',
+            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,txt,zip',
         ]);
 
+        if (empty(trim((string) $request->input('content', ''))) && !$request->hasFile('attachment')) {
+            return response()->json(['success' => false, 'error' => 'Please enter a message or attach a file.'], 422);
+        }
+
+        $attachmentPath = null;
+        $attachmentOriginalName = null;
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $attachmentOriginalName = $file->getClientOriginalName();
+            $attachmentPath = $file->store('message-attachments', 'public');
+        }
+
         $message = Message::create([
-            'sender_id' => $senderId,
-            'receiver_id' => $user->id,
-            'content' => $request->input('content'),
-            'is_read' => false,
+            'sender_id'               => $senderId,
+            'receiver_id'             => $user->id,
+            'content'                 => $request->input('content', ''),
+            'attachment'              => $attachmentPath,
+            'attachment_original_name' => $attachmentOriginalName,
+            'is_read'                 => false,
         ]);
 
         $actor = Auth::user();
@@ -131,16 +168,19 @@ class MessageController extends Controller
             'message_sent',
             ($actor?->name ?? 'Alumni') . ' sent a message to ' . ($user->name ?? 'User'),
             [
-                'message_id' => $message->id,
+                'message_id'       => $message->id,
                 'receiver_user_id' => $user->id,
-                'receiver_name' => $user->name,
-                'has_subject' => false,
+                'receiver_name'    => $user->name,
+                'has_subject'      => false,
+                'has_attachment'   => $attachmentPath !== null,
             ]
         );
 
         return response()->json([
-            'success' => true,
-            'message' => $message->load(['sender']),
+            'success'    => true,
+            'message'    => $message->load(['sender']),
+            'attachment_url'  => $attachmentPath ? asset('storage/' . $attachmentPath) : null,
+            'attachment_name' => $attachmentOriginalName,
         ]);
     }
 
@@ -152,5 +192,41 @@ class MessageController extends Controller
             ->count();
 
         return response()->json(['unread_count' => $unreadCount]);
+    }
+
+    public function searchUsers(Request $request): JsonResponse
+    {
+        $queryText = trim((string) $request->query('q', ''));
+        $currentUserId = Auth::id();
+
+        $users = User::query()
+            ->with('profile')
+            ->where('id', '!=', $currentUserId)
+            ->when($queryText !== '', function ($query) use ($queryText) {
+                $query->where(function ($nested) use ($queryText) {
+                    $nested->where('name', 'like', '%' . $queryText . '%')
+                        ->orWhereHas('profile', function ($profileQuery) use ($queryText) {
+                            $profileQuery->where('full_name', 'like', '%' . $queryText . '%')
+                                ->orWhere('passing_year', 'like', '%' . $queryText . '%');
+                        });
+                });
+            })
+            ->orderBy('name')
+            ->limit(25)
+            ->get()
+            ->map(function (User $user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->display_name,
+                    'passing_year' => $user->profile?->passing_year,
+                    'batch' => $user->profile?->passing_year ? ('Batch ' . $user->profile->passing_year) : null,
+                    'chat_url' => route('messages.show', $user->id),
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'users' => $users,
+        ]);
     }
 }

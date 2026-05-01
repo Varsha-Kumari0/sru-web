@@ -9,6 +9,7 @@ A web platform for Sri Rajeshwara University (SR University) alumni — connecti
 - [Overview](#overview)
 - [Tech Stack](#tech-stack)
 - [Features](#features)
+- [Recent Changes](#recent-changes)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Environment Configuration](#environment-configuration)
@@ -72,6 +73,27 @@ Administrators can manage all content and alumni data through a dedicated admin 
 - **Engage / Feed Moderation** — review and delete comments and reactions across all feed types (posts, news, events, testimonials)
 - **Activity Logs** — full audit trail with grouping, hover-expanded change details, and CSV export
 - **Admin Profile** — sidebar avatar upload
+
+---
+
+## Recent Changes
+
+### 2026-05-01: Messaging Enhancements
+- Added file attachments in chat for both admin and alumni users.
+- Supported types: jpg, jpeg, png, gif, pdf, doc, docx, xls, xlsx, txt, zip (max 10 MB).
+- Enabled file-only messages (message text is optional when attachment is present).
+- Added inline image previews and downloadable non-image files in conversation bubbles.
+- Added WhatsApp-style message status indicators:
+  - gray double tick = delivered
+  - blue double tick = read
+- Improved name display in chats using display-name fallback logic to avoid placeholder account names.
+- Added role-aware presence in chat header:
+  - normal users: Online / Last seen
+  - admins: Administrator label (no online/last-seen)
+- Added and applied messaging-related migrations:
+  - attachment fields in messages table
+  - nullable content in messages table
+  - last_seen_at in users table
 
 ---
 

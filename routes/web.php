@@ -99,6 +99,17 @@ Route::get('/gallery/albums/{id}', [GalleryController::class, 'albumShow'])->nam
 Route::get('/gallery/videos/{id}', [GalleryController::class, 'videoShow'])->name('gallery.video.show');
 Route::get('/engage', function () {
     $actor = Auth::user();
+    $engagePosts = collect();
+
+    if ($actor) {
+        $engagePosts = FeedPost::query()
+            ->where('user_id', $actor->id)
+            ->whereIn('post_type', ['mentoring', 'meetup', 'opportunity'], 'and', false)
+            ->latest()
+            ->get()
+            ->groupBy('post_type');
+    }
+
     ActivityLog::record(
         $actor?->id,
         $actor?->id,
@@ -106,7 +117,9 @@ Route::get('/engage', function () {
         ($actor?->name ?? 'Guest') . ' viewed engage page'
     );
 
-    return view('pages.engage');
+    return view('pages.engage', [
+        'engagePosts' => $engagePosts,
+    ]);
 })->name('engage');
 
 Route::get('/engage/mentor-students', function () {
@@ -144,6 +157,94 @@ Route::get('/engage/share-opportunities', function () {
 
     return view('pages.share-opportunities');
 })->name('engage.share');
+
+Route::get('/engage/section/{postType}', function (string $postType) {
+    $allowedTypes = ['mentoring', 'meetup', 'opportunity'];
+    abort_unless(in_array($postType, $allowedTypes, true), 404);
+
+    $actor = Auth::user();
+
+    $posts = FeedPost::query()
+        ->with('user.profile')
+        ->where('post_type', $postType)
+        ->latest()
+        ->get();
+
+    $postIds = $posts->pluck('id');
+
+    $reactionCounts = $postIds->isEmpty()
+        ? collect()
+        : FeedReaction::query()
+            ->where('feed_type', 'post')
+            ->whereIn('feed_id', $postIds->all(), 'and', false)
+            ->get()
+            ->groupBy(fn ($item) => 'post:' . $item->feed_id)
+            ->map(fn ($items) => $items->count());
+
+    $commentCounts = $postIds->isEmpty()
+        ? collect()
+        : FeedComment::query()
+            ->where('feed_type', 'post')
+            ->whereIn('feed_id', $postIds->all(), 'and', false)
+            ->get()
+            ->groupBy(fn ($item) => 'post:' . $item->feed_id)
+            ->map(fn ($items) => $items->count());
+
+    $commentGroups = $postIds->isEmpty()
+        ? collect()
+        : FeedComment::query()
+            ->with('user.profile')
+            ->where('feed_type', 'post')
+            ->whereIn('feed_id', $postIds->all(), 'and', false)
+            ->latest()
+            ->get()
+            ->groupBy(fn ($item) => 'post:' . $item->feed_id);
+
+    $shareCounts = $postIds->isEmpty()
+        ? collect()
+        : FeedShare::query()
+            ->where('feed_type', 'post')
+            ->whereIn('feed_id', $postIds->all(), 'and', false)
+            ->get()
+            ->groupBy(fn ($item) => 'post:' . $item->feed_id)
+            ->map(fn ($items) => $items->count());
+
+    $viewerReactionKeys = $actor && ! $postIds->isEmpty()
+        ? FeedReaction::query()
+            ->where('user_id', $actor->id)
+            ->where('feed_type', 'post')
+            ->whereIn('feed_id', $postIds->all(), 'and', false)
+            ->get()
+            ->mapWithKeys(fn ($item) => ['post:' . $item->feed_id => true])
+        : collect();
+
+    $sectionTitle = match ($postType) {
+        'mentoring' => 'Mentor Students',
+        'meetup' => 'Host an Event',
+        'opportunity' => 'Share Opportunities',
+        default => 'Engage Section',
+    };
+
+    ActivityLog::record(
+        $actor?->id,
+        $actor?->id,
+        'engage_section_viewed',
+        ($actor?->name ?? 'Guest') . ' viewed engage section details',
+        ['section' => $postType]
+    );
+
+    return view('pages.engage-section-details', [
+        'sectionTitle' => $sectionTitle,
+        'postType' => $postType,
+        'posts' => $posts,
+        'reactionCounts' => $reactionCounts,
+        'commentCounts' => $commentCounts,
+        'commentGroups' => $commentGroups,
+        'shareCounts' => $shareCounts,
+        'viewerReactionKeys' => $viewerReactionKeys,
+    ]);
+})->name('engage.section.details');
+
 Route::view('/contact', 'pages.contact')->name('contact');
 // Route::view('/jobs', 'pages.jobs')->name('jobs.index');
 Route::middleware('auth')->group(function () {
@@ -322,6 +423,98 @@ Route::get('/feed', function () {
 })->middleware(['auth'])->name('feed');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard/feed/{feedType}/{feedId}', function (string $feedType, int $feedId) {
+        abort_unless(resolveFeedTarget($feedType, $feedId), 404);
+
+        $sourceData = match ($feedType) {
+            'post' => (function () use ($feedId) {
+                $post = FeedPost::query()->with(['user.profile'])->findOrFail($feedId);
+                $owner = $post->user?->profile?->full_name ?: ($post->user?->name ?? 'Alumni');
+
+                return [
+                    'kind' => ucwords($post->post_type),
+                    'title' => 'Shared by ' . $owner,
+                    'owner' => $owner,
+                    'time' => $post->created_at?->diffForHumans() ?? 'Recently',
+                    'body' => $post->body,
+                    'updated_at' => $post->updated_at,
+                ];
+            })(),
+            'news' => (function () use ($feedId) {
+                $news = News::query()->findOrFail($feedId);
+
+                return [
+                    'kind' => 'Campus Note',
+                    'title' => $news->title,
+                    'owner' => 'SRU Newsroom',
+                    'time' => optional($news->published_at ?? $news->created_at)?->diffForHumans() ?? 'Recently',
+                    'body' => $news->excerpt,
+                    'updated_at' => $news->updated_at,
+                ];
+            })(),
+            'event' => (function () use ($feedId) {
+                $event = Event::query()->findOrFail($feedId);
+
+                return [
+                    'kind' => 'Gathering',
+                    'title' => $event->title,
+                    'owner' => 'Events Desk',
+                    'time' => optional($event->start_at)?->diffForHumans() ?? 'Upcoming',
+                    'body' => trim(($event->excerpt ?? '') . ' ' . ($event->location ? 'Venue: ' . $event->location : '')),
+                    'updated_at' => $event->updated_at,
+                ];
+            })(),
+            'testimonial' => (function () use ($feedId) {
+                $testimonial = Testimonial::query()->findOrFail($feedId);
+
+                return [
+                    'kind' => 'Alumni Voice',
+                    'title' => 'A story from the network',
+                    'owner' => $testimonial->name,
+                    'time' => $testimonial->created_at?->diffForHumans() ?? 'Recently',
+                    'body' => $testimonial->content,
+                    'updated_at' => $testimonial->updated_at,
+                ];
+            })(),
+            default => abort(404),
+        };
+
+        $comments = FeedComment::query()
+            ->with('user.profile')
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->latest()
+            ->get();
+
+        $likesCount = FeedReaction::query()
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->where('reaction', 'like')
+            ->count('*');
+
+        $sharesCount = FeedShare::query()
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->count('*');
+
+        $viewerLiked = FeedReaction::query()
+            ->where('user_id', Auth::id())
+            ->where('feed_type', $feedType)
+            ->where('feed_id', $feedId)
+            ->where('reaction', 'like')
+            ->exists();
+
+        return view('pages.feed-details', [
+            'feedType' => $feedType,
+            'feedId' => $feedId,
+            'sourceData' => $sourceData,
+            'comments' => $comments,
+            'likesCount' => $likesCount,
+            'sharesCount' => $sharesCount,
+            'viewerLiked' => $viewerLiked,
+        ]);
+    })->name('dashboard.feed.details');
+
     Route::post('/dashboard/preferences/feed-density', function (Request $request) {
         $validated = $request->validate([
             'density' => ['required', 'string', 'in:comfortable,compact'],
@@ -394,8 +587,8 @@ Route::middleware(['auth'])->group(function () {
                     'time' => 'Just now',
                     'title' => 'Shared by ' . $authorName,
                     'body' => $post->body,
-                    'href' => route('profile'),
-                    'cta' => 'View profile',
+                    'href' => route('dashboard.feed.details', ['post', $post->id]),
+                    'cta' => 'View details',
                     'accent' => '#2a9d8f',
                     'like_url' => route('dashboard.feed.like', ['post', $post->id]),
                     'comment_url' => route('dashboard.feed.comments.store', ['post', $post->id]),
@@ -593,6 +786,7 @@ Route::middleware(['auth'])->group(function () {
 
     // 📨 MESSAGES
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/users/search', [MessageController::class, 'searchUsers'])->name('messages.users.search');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
     Route::get('/messages/unread/count', [MessageController::class, 'getUnreadCount'])->name('messages.unread.count');
