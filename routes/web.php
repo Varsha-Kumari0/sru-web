@@ -23,6 +23,7 @@ use App\Models\GalleryVideo;
 use App\Models\News;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -57,26 +58,28 @@ Route::get('/', function () {
             : redirect()->route('dashboard');
     }
 
-    $news = News::query()
-        ->latest('published_at')
-        ->take(4)
-        ->get();
-
-    $events = Event::query()
-        ->where('start_at', '>=', now())
-        ->orderBy('start_at', 'asc')
-        ->take(3)
-        ->get();
-
-    $jobs = JobOpportunity::query()
-        ->latest()
-        ->take(4)
-        ->get();
+    $homePayload = Cache::remember('home:guest:v1', now()->addMinutes(2), function (): array {
+        return [
+            'news' => News::query()
+                ->latest('published_at')
+                ->take(4)
+                ->get(),
+            'events' => Event::query()
+                ->where('start_at', '>=', now())
+                ->orderBy('start_at', 'asc')
+                ->take(3)
+                ->get(),
+            'jobs' => JobOpportunity::query()
+                ->latest()
+                ->take(4)
+                ->get(),
+        ];
+    });
 
     return view('welcome', [
-        'news' => $news,
-        'events' => $events,
-        'jobs' => $jobs,
+        'news' => $homePayload['news'],
+        'events' => $homePayload['events'],
+        'jobs' => $homePayload['jobs'],
     ]);
 });
 
@@ -301,8 +304,7 @@ Route::get('/dashboard', function () {
 
     $memberCount = User::query()
         ->where('role', 'user')
-        ->get()
-        ->count();
+        ->count('*');
 
     $upcomingEvents = Event::query()
         ->where('start_at', '>=', now())
@@ -328,78 +330,68 @@ Route::get('/dashboard', function () {
         ->take(10)
         ->get();
 
-    $feedTypes = ['post', 'news', 'event', 'testimonial'];
+    $feedTargets = [
+        'post' => $latestPosts->pluck('id')->all(),
+        'news' => $latestNews->pluck('id')->all(),
+        'event' => $upcomingEvents->pluck('id')->all(),
+        'testimonial' => $latestTestimonials->pluck('id')->all(),
+    ];
 
-    $reactionCounts = FeedReaction::query()
-        ->where(function ($query) use ($feedTypes) {
-            foreach ($feedTypes as $index => $feedType) {
-                if ($index === 0) {
-                    $query->where('feed_type', $feedType);
-                } else {
-                    $query->orWhere('feed_type', $feedType);
-                }
-            }
-        })
-        ->get()
-        ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
-        ->map(fn ($items) => $items->count());
+    $hasFeedTargets = collect($feedTargets)->flatten()->isNotEmpty();
 
-    $commentCounts = FeedComment::query()
-        ->where(function ($query) use ($feedTypes) {
-            foreach ($feedTypes as $index => $feedType) {
-                if ($index === 0) {
-                    $query->where('feed_type', $feedType);
-                } else {
-                    $query->orWhere('feed_type', $feedType);
+    $applyFeedScope = function ($query) use ($feedTargets): void {
+        $query->where(function ($outer) use ($feedTargets) {
+            foreach ($feedTargets as $feedType => $feedIds) {
+                if (empty($feedIds)) {
+                    continue;
                 }
-            }
-        })
-        ->get()
-        ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
-        ->map(fn ($items) => $items->count());
 
-    $shareCounts = FeedShare::query()
-        ->where(function ($query) use ($feedTypes) {
-            foreach ($feedTypes as $index => $feedType) {
-                if ($index === 0) {
-                    $query->where('feed_type', $feedType);
-                } else {
-                    $query->orWhere('feed_type', $feedType);
-                }
+                $outer->orWhere(function ($inner) use ($feedType, $feedIds) {
+                    $inner->where('feed_type', $feedType)
+                        ->whereIn('feed_id', $feedIds, 'and', false);
+                });
             }
-        })
-        ->get()
-        ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
-        ->map(fn ($items) => $items->count());
+        });
+    };
 
-    $viewerReactionKeys = FeedReaction::query()
-        ->where('user_id', $user->id)
-        ->where(function ($query) use ($feedTypes) {
-            foreach ($feedTypes as $index => $feedType) {
-                if ($index === 0) {
-                    $query->where('feed_type', $feedType);
-                } else {
-                    $query->orWhere('feed_type', $feedType);
-                }
-            }
-        })
-        ->get()
-        ->mapWithKeys(fn ($item) => [$item->feed_type . ':' . $item->feed_id => true]);
+    if ($hasFeedTargets) {
+        $reactionCounts = FeedReaction::query()
+            ->tap($applyFeedScope)
+            ->get()
+            ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
+            ->map(fn ($items) => $items->count());
 
-    $commentGroups = FeedComment::query()
-        ->with('user')
-        ->where(function ($query) use ($feedTypes) {
-            foreach ($feedTypes as $index => $feedType) {
-                if ($index === 0) {
-                    $query->where('feed_type', $feedType);
-                } else {
-                    $query->orWhere('feed_type', $feedType);
-                }
-            }
-        })
-        ->latest()
-        ->get()
-        ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id);
+        $commentCounts = FeedComment::query()
+            ->tap($applyFeedScope)
+            ->get()
+            ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
+            ->map(fn ($items) => $items->count());
+
+        $shareCounts = FeedShare::query()
+            ->tap($applyFeedScope)
+            ->get()
+            ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id)
+            ->map(fn ($items) => $items->count());
+
+        $viewerReactionKeys = FeedReaction::query()
+            ->where('user_id', $user->id)
+            ->tap($applyFeedScope)
+            ->get()
+            ->mapWithKeys(fn ($item) => [$item->feed_type . ':' . $item->feed_id => true]);
+
+        $commentGroups = FeedComment::query()
+            ->with('user.profile')
+            ->tap($applyFeedScope)
+            ->latest()
+            ->get()
+            ->groupBy(fn ($item) => $item->feed_type . ':' . $item->feed_id);
+    } else {
+        $reactionCounts = collect();
+        $commentCounts = collect();
+        $shareCounts = collect();
+        $viewerReactionKeys = collect();
+        $commentGroups = collect();
+    }
 
     return view('dashboard', compact(
         'user',

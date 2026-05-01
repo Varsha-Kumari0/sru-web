@@ -2,25 +2,38 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class UpdateUserLastSeen
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check()) {
-            $user = Auth::user();
+        $response = $next($request);
 
-            if (!$user->last_seen_at || $user->last_seen_at->lt(now()->subSeconds(30))) {
-                $user->forceFill([
-                    'last_seen_at' => now(),
-                ])->saveQuietly();
-            }
+        if (! Auth::check()) {
+            return $response;
         }
 
-        return $next($request);
+        if (! $request->isMethod('GET') || $request->expectsJson()) {
+            return $response;
+        }
+
+        $userId = (int) Auth::id();
+        $lockKey = 'users:last-seen-updated:' . $userId;
+
+        if (! Cache::add($lockKey, true, now()->addMinutes(5))) {
+            return $response;
+        }
+
+        User::query()->whereKey($userId)->update([
+            'last_seen_at' => now(),
+        ]);
+
+        return $response;
     }
 }
