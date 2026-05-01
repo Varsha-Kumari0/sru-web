@@ -188,6 +188,67 @@
                         @endforelse
                     </div>
                 </div>
+
+                <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="font-display text-lg font-semibold text-[#1a1a2e]">Latest Jobs</h3>
+                        <a href="{{ route('jobs.index') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View All</a>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($latestJobs as $job)
+                            <a href="{{ route('jobs.index') }}" target="_blank" rel="noopener noreferrer" class="block rounded-lg border border-[#eef0f5] bg-[#f9fafc] px-4 py-3 transition-colors duration-150 hover:bg-[#f1f5fb]">
+                                <div class="flex items-start justify-between gap-3">
+                                    <p class="truncate text-sm font-semibold text-[#1a1a2e]">{{ $job->title }}</p>
+                                    <span class="flex-shrink-0 rounded-md bg-[#e8f0fe] px-2 py-0.5 text-[10px] font-semibold text-[#1a73e8]">
+                                        {{ ucfirst($job->type ?? 'job') }}
+                                    </span>
+                                </div>
+                                <p class="mt-1 text-xs text-[#555]">{{ $job->company_name ?? 'Company not set' }}</p>
+                                <p class="mt-2 text-[11px] text-[#888]">
+                                    Updated {{ $job->updated_at?->diffForHumans() ?? 'just now' }}
+                                    @if($job->application_deadline)
+                                        • Apply by {{ $job->application_deadline->format('d M Y') }}
+                                    @endif
+                                </p>
+                            </a>
+                        @empty
+                            <div class="rounded-lg border border-dashed border-[#dde3ec] bg-[#f9fafc] px-4 py-6 text-center text-sm text-[#888]">
+                                No jobs found.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="font-display text-lg font-semibold text-[#1a1a2e]">Latest Engage</h3>
+                        <a href="{{ route('engage') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View All</a>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($latestEngage as $post)
+                            @php
+                                $authorName = trim((string) ($post->user?->profile?->full_name ?? ''));
+                                if ($authorName === '') {
+                                    $authorName = trim((string) ($post->user?->name ?? 'Alumni'));
+                                }
+                            @endphp
+                            <a href="{{ route('dashboard.feed.details', ['feedType' => 'post', 'feedId' => $post->id]) }}" target="_blank" rel="noopener noreferrer" class="block rounded-lg border border-[#eef0f5] bg-[#f9fafc] px-4 py-3 transition-colors duration-150 hover:bg-[#f1f5fb]">
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-xs font-semibold text-[#1a73e8] uppercase tracking-wide">{{ strtoupper($post->post_type ?? 'post') }}</p>
+                                    <p class="text-[11px] text-[#888]">{{ $post->updated_at?->diffForHumans() ?? 'just now' }}</p>
+                                </div>
+                                <p class="mt-1 line-clamp-2 text-sm text-[#1a1a2e]">{{ \Illuminate\Support\Str::limit($post->body, 120) }}</p>
+                                <p class="mt-2 text-[11px] text-[#555]">By {{ $authorName }}</p>
+                            </a>
+                        @empty
+                            <div class="rounded-lg border border-dashed border-[#dde3ec] bg-[#f9fafc] px-4 py-6 text-center text-sm text-[#888]">
+                                No engage posts found.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
 
         </section>
@@ -234,6 +295,45 @@
                     @empty
                         <p class="text-sm text-[#aaa]">No recent activity yet.</p>
                     @endforelse
+                </div>
+            </div>
+
+            <div class="rounded-xl bg-[#ffffff] border border-[#dde3ec] p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-display text-lg font-semibold text-[#1a1a2e]">Gallery</h3>
+                    <a href="{{ route('gallery') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View All</a>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <p class="mb-2 text-[11px] font-semibold tracking-[0.08em] uppercase text-[#555]">Latest Albums</p>
+                        <div class="space-y-2">
+                            @forelse($latestGalleryAlbums as $album)
+                                <a href="{{ route('gallery.album.show', $album->id) }}" target="_blank" rel="noopener noreferrer" class="block rounded-lg border border-[#eef0f5] bg-[#f9fafc] px-3 py-2 transition-colors duration-150 hover:bg-[#f1f5fb]">
+                                    <p class="truncate text-sm font-semibold text-[#1a1a2e]">{{ $album->title }}</p>
+                                    <p class="mt-1 line-clamp-1 text-xs text-[#555]">{{ $album->summary }}</p>
+                                    <p class="mt-1 text-[11px] text-[#888]">Updated {{ $album->updated_at?->diffForHumans() ?? 'just now' }}</p>
+                                </a>
+                            @empty
+                                <p class="text-xs text-[#aaa]">No albums yet.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="mb-2 text-[11px] font-semibold tracking-[0.08em] uppercase text-[#555]">Latest Videos</p>
+                        <div class="space-y-2">
+                            @forelse($latestGalleryVideos as $video)
+                                <a href="{{ route('gallery.video.show', $video->id) }}" target="_blank" rel="noopener noreferrer" class="block rounded-lg border border-[#eef0f5] bg-[#f9fafc] px-3 py-2 transition-colors duration-150 hover:bg-[#f1f5fb]">
+                                    <p class="truncate text-sm font-semibold text-[#1a1a2e]">{{ $video->title }}</p>
+                                    <p class="mt-1 line-clamp-1 text-xs text-[#555]">{{ $video->summary }}</p>
+                                    <p class="mt-1 text-[11px] text-[#888]">Updated {{ $video->updated_at?->diffForHumans() ?? 'just now' }}</p>
+                                </a>
+                            @empty
+                                <p class="text-xs text-[#aaa]">No videos yet.</p>
+                            @endforelse
+                        </div>
+                    </div>
                 </div>
             </div>
         </aside>

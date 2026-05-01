@@ -18,6 +18,8 @@ use App\Models\FeedComment;
 use App\Models\FeedPost;
 use App\Models\FeedReaction;
 use App\Models\FeedShare;
+use App\Models\GalleryAlbum;
+use App\Models\GalleryVideo;
 use App\Models\News;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
@@ -862,7 +864,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         $recentActivity = ActivityLog::query()
             ->latest('created_at')
-            ->take(8)
+            ->take(6.7)
             ->get()
             ->map(fn ($item) => [
                 'type' => in_array($item->action, ['user_registered', 'profile_created'], true) ? 'registered' : 'updated',
@@ -881,6 +883,29 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ->take(5)
             ->get(['id', 'title', 'excerpt', 'event_type', 'start_at', 'location']);
 
+        $latestJobs = JobOpportunity::query()
+            ->latest('updated_at')
+            ->take(5)
+            ->get(['id', 'title', 'company_name', 'type', 'updated_at', 'application_deadline']);
+
+        $latestEngage = FeedPost::query()
+            ->with(['user.profile'])
+            ->latest('updated_at')
+            ->take(5)
+            ->get(['id', 'user_id', 'post_type', 'body', 'updated_at']);
+
+        $latestGalleryAlbums = GalleryAlbum::query()
+            ->where('is_active', true)
+            ->latest('updated_at')
+            ->take(3)
+            ->get(['id', 'title', 'summary', 'updated_at']);
+
+        $latestGalleryVideos = GalleryVideo::query()
+            ->where('is_active', true)
+            ->latest('updated_at')
+            ->take(3)
+            ->get(['id', 'title', 'summary', 'updated_at']);
+
         $totalChange = 'All time';
         $totalChipText = $weeklyNewCount > 0 ? ('↑ ' . $weeklyNewCount . ' this week') : 'No new this week';
         $batchChipText = $yearsCount > 0 ? ($yearsCount . ' recorded batches') : 'No batch data';
@@ -896,6 +921,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
             'recentActivity',
             'latestNews',
             'upcomingEvents',
+            'latestJobs',
+            'latestEngage',
+            'latestGalleryAlbums',
+            'latestGalleryVideos',
             'totalChipText',
             'batchChipText',
             'messagesChipText'
