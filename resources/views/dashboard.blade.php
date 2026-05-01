@@ -48,13 +48,50 @@
         font-size: 0.82rem;
         font-weight: 800;
         color: #64748b;
-        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
     }
 
     .pulse-action:hover,
     .pulse-action.is-active {
         background: #eefaf8;
         color: #1a2d4a;
+        transform: translateY(-1px);
+    }
+
+    .js-share-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        min-height: 44px;
+    }
+
+    .js-share-menu {
+        min-width: 14rem;
+    }
+
+    .js-share-menu button,
+    .js-share-menu .share-menu-item {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: none;
+        background: transparent;
+        color: #334155;
+        font-size: 0.95rem;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .js-share-menu button:hover,
+    .js-share-menu .share-menu-item:hover {
+        background: #f8fafc;
+    }
+
+    .js-share-menu .share-menu-item {
+        border-radius: 0.75rem;
     }
 
     .avatar-mark {
@@ -339,15 +376,14 @@
                                         <p class="mt-3 font-bold" style="color:#1a2d4a;">{{ $item['source'] }}</p>
                                         <p class="text-xs text-slate-500">{{ $item['time'] }}</p>
                                     </div>
-                                    <a href="{{ $item['href'] }}"
-                                        class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#2a9d8f]">
+                                    <a href="{{ $item['href'] }}" class="js-feed-link rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#2a9d8f]">
                                         {{ $item['cta'] }}
                                     </a>
                                 </div>
 
                                 <h2 class="mt-5 text-xl md:text-2xl font-bold leading-snug" style="color:#1a2d4a;">
                                     {{ $item['title'] }}</h2>
-                                <p class="mt-3 text-sm leading-7 text-slate-600">{{ $item['body'] }}</p>
+                                <p class="mt-3 text-sm leading-7 text-slate-600 js-feed-body">{{ $item['body'] }}</p>
 
                                 <div class="mt-5 grid grid-cols-3 gap-2 border-y border-gray-100 py-3">
                                     <form method="POST"
@@ -365,15 +401,35 @@
                                         Comment <span
                                             class="font-black js-comment-count">{{ $commentCounts->get($feedKey, 0) }}</span>
                                     </a>
-                                    <form method="POST"
-                                        action="{{ route('dashboard.feed.share', [$item['feed_type'], $item['feed_id']]) }}"
-                                        class="js-share-form">
-                                        @csrf
-                                        <button type="submit" class="pulse-action w-full">
-                                            Share <span
-                                                class="font-black js-share-count">{{ $shareCounts->get($feedKey, 0) }}</span>
+                                    <div class="relative js-share-dropdown">
+                                        <button type="button" class="pulse-action w-full js-share-toggle" aria-haspopup="menu" aria-expanded="false">
+                                            <span>Share</span>
+                                            <span class="font-black js-share-count">{{ $shareCounts->get($feedKey, 0) }}</span>
                                         </button>
-                                    </form>
+                                        <div role="menu" class="absolute left-0 top-full mt-2 hidden rounded-xl bg-white shadow-lg z-10 js-share-menu">
+                                            <form method="POST"
+                                                action="{{ route('dashboard.feed.share', [$item['feed_type'], $item['feed_id']]) }}"
+                                                class="js-share-form">
+                                                @csrf
+                                                <input type="hidden" name="share_type" class="js-share-type" value="profile">
+                                                <button type="submit" class="share-menu-item" role="menuitem" data-share-type="profile">
+                                                    <span>📌</span> Repost on Profile
+                                                </button>
+                                            </form>
+                                            <button type="button" class="share-menu-item js-share-social" role="menuitem" data-platform="instagram">
+                                                <span>📷</span> Share to Instagram
+                                            </button>
+                                            <button type="button" class="share-menu-item js-share-social" role="menuitem" data-platform="facebook">
+                                                <span>f</span> Share to Facebook
+                                            </button>
+                                            <button type="button" class="share-menu-item js-share-social" role="menuitem" data-platform="twitter">
+                                                <span>𝕏</span> Share to Twitter
+                                            </button>
+                                            <button type="button" class="share-menu-item js-share-social" role="menuitem" data-platform="linkedin">
+                                                <span>in</span> Share to LinkedIn
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div id="comments-{{ $feedDomId }}" class="mt-4 space-y-3">
@@ -588,13 +644,13 @@
                                 <p class="mt-3 font-bold" style="color:#1a2d4a;">${escapeHtml(post.source)}</p>
                                 <p class="text-xs text-slate-500">${escapeHtml(post.time)}</p>
                             </div>
-                            <a href="${escapeHtml(post.href)}" class="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#2a9d8f]">
+                            <a href="${escapeHtml(post.href)}" class="js-feed-link rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-slate-600 hover:border-[#2a9d8f]">
                                 ${escapeHtml(post.cta)}
                             </a>
                         </div>
 
                         <h2 class="mt-5 text-xl md:text-2xl font-bold leading-snug" style="color:#1a2d4a;">${escapeHtml(post.title)}</h2>
-                        <p class="mt-3 text-sm leading-7 text-slate-600">${escapeHtml(post.body)}</p>
+                        <p class="mt-3 text-sm leading-7 text-slate-600 js-feed-body">${escapeHtml(post.body)}</p>
 
                         <div class="mt-5 grid grid-cols-3 gap-2 border-y border-gray-100 py-3">
                             <form method="POST" action="${escapeHtml(post.like_url)}" class="js-like-form">
@@ -607,12 +663,33 @@
                             <a href="#comments-${escapeHtml(domId)}" class="pulse-action text-center js-focus-comment">
                                 Comment <span class="font-black js-comment-count">0</span>
                             </a>
-                            <form method="POST" action="${escapeHtml(post.share_url)}" class="js-share-form">
-                                ${csrfInput()}
-                                <button type="submit" class="pulse-action w-full">
-                                    Share <span class="font-black js-share-count">0</span>
+                            <div class="relative js-share-dropdown">
+                                <button type="button" class="pulse-action w-full js-share-toggle">
+                                    <span>Share</span>
+                                    <span class="font-black js-share-count">0</span>
                                 </button>
-                            </form>
+                                <div class="absolute left-0 top-full mt-2 hidden rounded-xl bg-white shadow-lg z-10 js-share-menu">
+                                    <form method="POST" action="${escapeHtml(post.share_url)}" class="js-share-form">
+                                        ${csrfInput()}
+                                        <input type="hidden" name="share_type" class="js-share-type" value="profile">
+                                        <button type="submit" class="share-menu-item" data-share-type="profile">
+                                            <span>📌</span> Repost on Profile
+                                        </button>
+                                    </form>
+                                    <button type="button" class="share-menu-item js-share-social" data-platform="instagram">
+                                        <span>📷</span> Share to Instagram
+                                    </button>
+                                    <button type="button" class="share-menu-item js-share-social" data-platform="facebook">
+                                        <span>f</span> Share to Facebook
+                                    </button>
+                                    <button type="button" class="share-menu-item js-share-social" data-platform="twitter">
+                                        <span>𝕏</span> Share to Twitter
+                                    </button>
+                                    <button type="button" class="share-menu-item js-share-social" data-platform="linkedin">
+                                        <span>in</span> Share to LinkedIn
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div id="comments-${escapeHtml(domId)}" class="mt-4 space-y-3">
@@ -718,7 +795,11 @@
 
                 try {
                     const data = await submitJson(shareForm);
-                    shareForm.querySelector('.js-share-count').textContent = data.count;
+                    const dropdown = shareForm.closest('.js-share-dropdown');
+                    if (dropdown) {
+                        dropdown.querySelector('.js-share-count').textContent = data.count;
+                        dropdown.querySelector('.js-share-menu').classList.add('hidden');
+                    }
                     showToast('Shared to your alumni activity.');
                     updateSessionAction('Shared a feed item.');
                 } catch (error) {
@@ -776,6 +857,85 @@
 
             if (input) {
                 input.focus();
+            }
+        });
+
+        // Share dropdown functionality
+        document.addEventListener('click', function(event) {
+            const toggle = event.target.closest('.js-share-toggle');
+            const socialBtn = event.target.closest('.js-share-social');
+            
+            if (toggle) {
+                event.preventDefault();
+                event.stopPropagation();
+                const dropdown = toggle.closest('.js-share-dropdown');
+                const menu = dropdown.querySelector('.js-share-menu');
+                const isHidden = menu.classList.contains('hidden');
+                
+                document.querySelectorAll('.js-share-menu').forEach(m => {
+                    m.classList.add('hidden');
+                    const trigger = m.closest('.js-share-dropdown')?.querySelector('.js-share-toggle');
+                    if (trigger) {
+                        trigger.setAttribute('aria-expanded', 'false');
+                    }
+                });
+
+                if (isHidden) {
+                    menu.classList.remove('hidden');
+                    toggle.setAttribute('aria-expanded', 'true');
+                }
+            }
+            
+            if (socialBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                const platform = socialBtn.dataset.platform;
+                const dropdown = socialBtn.closest('.js-share-dropdown');
+                const feedItem = dropdown.closest('[data-feed-item]');
+
+                const postContent = feedItem ? feedItem.querySelector('.js-feed-body')?.textContent?.trim() || 'Check this out!' : 'Check this out!';
+                const postUrl = feedItem?.querySelector('.js-feed-link')?.href || window.location.href;
+
+                let shareUrl = '';
+                const encodedUrl = encodeURIComponent(postUrl);
+                const encodedText = encodeURIComponent(postContent.substring(0, 120));
+
+                switch(platform) {
+                    case 'instagram':
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(`${postContent}\n\n${postUrl}`);
+                        }
+                        showToast('Instagram share content copied. Paste it in the Instagram app.');
+                        break;
+                    case 'facebook':
+                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+                        window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=400');
+                        break;
+                    case 'twitter':
+                        shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`;
+                        window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=400');
+                        break;
+                    case 'linkedin':
+                        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+                        window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=400');
+                        break;
+                }
+                
+                dropdown.querySelector('.js-share-menu').classList.add('hidden');
+                updateSessionAction(`Shared to ${platform}.`);
+            }
+        });
+        
+        // Close share menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.js-share-dropdown')) {
+                document.querySelectorAll('.js-share-menu').forEach(menu => {
+                    menu.classList.add('hidden');
+                    const trigger = menu.closest('.js-share-dropdown')?.querySelector('.js-share-toggle');
+                    if (trigger) {
+                        trigger.setAttribute('aria-expanded', 'false');
+                    }
+                });
             }
         });
     })();
