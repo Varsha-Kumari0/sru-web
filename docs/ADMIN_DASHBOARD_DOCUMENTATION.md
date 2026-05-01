@@ -372,10 +372,21 @@ The profile record currently includes additional personal/social fields such as:
   - gray double tick: delivered
   - blue double tick: read
 - New message popup includes user search by name/full name/passing year and can open direct chat.
+- Message send interaction behavior:
+  - Enter sends immediately
+  - Shift+Enter inserts newline
+  - multi-line message text is preserved in bubble rendering
+  - optimistic in-page append is used for instant send feedback
+- Conversation URLs no longer expose numeric IDs:
+  - encrypted user token route parameter is used in /messages/{userToken}
+  - invalid token access resolves to 404
+- Messaging avatars now render in chat header, conversation list, and new-message search results:
+  - profile photo first, then account avatar fallback, then initial
+  - contain-fit styling is used to avoid image crop inside circular frames
 - Core messaging routes in use:
   - GET /messages (messages.index)
-  - GET /messages/{user} (messages.show)
-  - POST /messages/{user} (messages.store)
+  - GET /messages/{userToken} (messages.show)
+  - POST /messages/{userToken} (messages.store)
   - GET /messages/users/search (messages.users.search)
 
 ## 3. Permanent Activity Audit

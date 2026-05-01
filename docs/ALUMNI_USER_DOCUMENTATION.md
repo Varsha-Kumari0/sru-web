@@ -219,7 +219,7 @@ Authenticated alumni:
 - /profile/edit
 - /profile/update
 - /messages
-- /messages/{user}
+- /messages/{userToken}
 - /logout
 
 ## 7.1 Recent User-Facing Updates (2026-04-28)
@@ -263,9 +263,14 @@ Authenticated alumni:
 
 ### Messaging Routes
 - Index: GET /messages (name: messages.index)
-- Conversation: GET /messages/{user} (name: messages.show)
-- Send: POST /messages/{user} (name: messages.store)
+- Conversation: GET /messages/{userToken} (name: messages.show)
+- Send: POST /messages/{userToken} (name: messages.store)
 - Search users: GET /messages/users/search (name: messages.users.search)
+
+### URL Privacy for Conversations
+- Conversation routes now use encrypted tokens instead of raw numeric IDs.
+- Browser URLs no longer expose user IDs such as /messages/1.
+- Invalid or tampered message tokens return 404.
 
 ### Name and Header Behavior
 - Conversation header now uses a display-name fallback strategy:
@@ -280,6 +285,12 @@ Authenticated alumni:
   - gray double tick: delivered
   - blue double tick: read
 
+### Message Input Behavior
+- Press Enter to send message immediately.
+- Press Shift+Enter to insert a new line in the message box.
+- Multi-line content is preserved in message bubbles after send and reload.
+- Send flow uses instant in-page append for faster chat UX.
+
 ### Attachments Support
 - Alumni can send:
   - text-only message
@@ -293,6 +304,11 @@ Authenticated alumni:
 - Max file size: 10 MB
 - Images render inline in chat bubbles.
 - Non-image files render as download links.
+- Avatar rendering in messaging surfaces (header, conversation list, new message search):
+  - uses profile photo when available
+  - falls back to account avatar when available
+  - otherwise shows initial-letter fallback
+  - avatar image fit uses contain-style rendering to avoid crop
 
 ### Presence Tracking and Storage
 - users.last_seen_at stores latest seen time.

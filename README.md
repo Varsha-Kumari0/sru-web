@@ -83,13 +83,18 @@ Administrators can manage all content and alumni data through a dedicated admin 
 - Supported types: jpg, jpeg, png, gif, pdf, doc, docx, xls, xlsx, txt, zip (max 10 MB).
 - Enabled file-only messages (message text is optional when attachment is present).
 - Added inline image previews and downloadable non-image files in conversation bubbles.
+- Conversation routes now use encrypted user tokens, so raw numeric user IDs are not exposed in URLs.
 - Added WhatsApp-style message status indicators:
   - gray double tick = delivered
   - blue double tick = read
+- Enter now sends messages immediately; Shift+Enter inserts newline.
+- Multi-line message content is preserved in chat bubbles.
+- Message send uses instant in-page append for faster feedback.
 - Improved name display in chats using display-name fallback logic to avoid placeholder account names.
 - Added role-aware presence in chat header:
   - normal users: Online / Last seen
   - admins: Administrator label (no online/last-seen)
+- Added avatar rendering across messaging UI (chat header, conversation list, new-message search) with contain-fit styling to avoid crop.
 - Added and applied messaging-related migrations:
   - attachment fields in messages table
   - nullable content in messages table
