@@ -10,7 +10,7 @@
                 <h1 class="text-2xl font-bold text-[#1a2d5a]">Messages</h1>
                 <div class="flex items-center gap-2">
                     @if(!empty($adminUser))
-                        <a href="{{ route('messages.show', $adminUser->id) }}" class="rounded-lg border border-[#1a2d5a] px-4 py-2 text-sm font-semibold text-[#1a2d5a] hover:bg-[#f4f6f9]">
+                        <a href="{{ $adminChatUrl }}" class="rounded-lg border border-[#1a2d5a] px-4 py-2 text-sm font-semibold text-[#1a2d5a] hover:bg-[#f4f6f9]">
                             Message Admin
                         </a>
                     @endif
@@ -23,12 +23,21 @@
             <div class="divide-y divide-[#e2e8f0]">
                 @forelse($conversations as $conversation)
                     <div class="p-6 hover:bg-[#f4f6f9] transition-colors">
-                        <a href="{{ route('messages.show', $conversation['user']->id) }}" class="flex items-center space-x-4">
+                        <a href="{{ $conversation['chat_url'] }}" class="flex items-center space-x-4">
+                            @php
+                                $conversationAvatar = $conversation['user']->profile?->profile_photo
+                                    ? asset('storage/' . $conversation['user']->profile->profile_photo)
+                                    : ($conversation['user']->avatar ? asset('storage/' . $conversation['user']->avatar) : null);
+                            @endphp
                             <div class="flex-shrink-0">
                                 <div class="w-12 h-12 bg-[#1a2d5a] rounded-full flex items-center justify-center">
-                                    <span class="text-white font-semibold text-lg">
-                                        {{ substr($conversation['user']->display_name, 0, 1) }}
-                                    </span>
+                                    @if($conversationAvatar)
+                                        <img src="{{ $conversationAvatar }}" alt="{{ $conversation['user']->display_name }}" class="w-12 h-12 rounded-full object-contain bg-white p-0.5">
+                                    @else
+                                        <span class="text-white font-semibold text-lg">
+                                            {{ substr($conversation['user']->display_name, 0, 1) }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
 
@@ -124,11 +133,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         resultsContainer.innerHTML = users.map(function (user) {
             const batchText = user.batch || 'Batch not set';
+            const avatar = user.avatar_url
+                ? `<img src="${user.avatar_url}" alt="${user.name}" class="w-10 h-10 rounded-full object-contain bg-white p-0.5">`
+                : `<div class="w-10 h-10 rounded-full bg-[#1a2d5a] text-white flex items-center justify-center text-sm font-semibold">${(user.name || 'U').charAt(0)}</div>`;
 
             return `
                 <a href="${user.chat_url}" class="block rounded-lg border border-[#e2e8f0] px-3 py-3 hover:bg-[#f4f6f9]">
-                    <p class="text-sm font-semibold text-[#1a2d5a]">${user.name}</p>
-                    <p class="text-xs text-gray-600 mt-1">${batchText}</p>
+                    <div class="flex items-center gap-3">
+                        ${avatar}
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-[#1a2d5a] truncate">${user.name}</p>
+                            <p class="text-xs text-gray-600 mt-1">${batchText}</p>
+                        </div>
+                    </div>
                 </a>
             `;
         }).join('');

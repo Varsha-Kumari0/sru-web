@@ -16,10 +16,19 @@
                             </svg>
                         </button>
                         <div class="flex items-center space-x-3">
+                            @php
+                                $headerAvatar = $user->profile?->profile_photo
+                                    ? asset('storage/' . $user->profile->profile_photo)
+                                    : ($user->avatar ? asset('storage/' . $user->avatar) : null);
+                            @endphp
                             <div class="w-10 h-10 bg-[#1a2d5a] rounded-full flex items-center justify-center">
-                                <span class="text-white font-semibold">
-                                    {{ substr($user->display_name, 0, 1) }}
-                                </span>
+                                @if($headerAvatar)
+                                    <img src="{{ $headerAvatar }}" alt="{{ $user->display_name }}" class="w-10 h-10 rounded-full object-contain bg-white p-0.5">
+                                @else
+                                    <span class="text-white font-semibold">
+                                        {{ substr($user->display_name, 0, 1) }}
+                                    </span>
+                                @endif
                             </div>
                             <div>
                                 <h1 class="text-lg font-semibold text-[#1a2d5a]">{{ $user->display_name }}</h1>
@@ -45,7 +54,7 @@
                     <div class="flex {{ $message->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }}">
                         <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg {{ $message->sender_id === auth()->id() ? 'bg-[#1a2d5a] text-white' : 'bg-[#f4f6f9] text-[#1a2d5a] border border-[#e2e8f0]' }}">
                             @if(!empty($message->content))
-                                <p class="text-sm">{{ $message->content }}</p>
+                                <p class="text-sm whitespace-pre-line break-words">{{ $message->content }}</p>
                             @endif
                             @if($message->attachment)
                                 @php
@@ -75,7 +84,7 @@
                         </div>
                     </div>
                 @empty
-                    <div class="text-center py-8">
+                    <div id="empty-messages-state" class="text-center py-8">
                         <p class="text-gray-600">No messages yet. Start the conversation!</p>
                     </div>
                 @endforelse
@@ -91,7 +100,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
-                <form id="message-form" action="{{ route('messages.store', $user->id) }}" method="POST" enctype="multipart/form-data" class="flex items-end space-x-2">
+                <form id="message-form" action="{{ route('messages.store', ['userToken' => $userToken]) }}" method="POST" enctype="multipart/form-data" class="flex items-end space-x-2">
                     @csrf
                     <input type="file" id="file-input" name="attachment" class="hidden"
                            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
@@ -113,6 +122,7 @@
                         ></textarea>
                     </div>
                     <button
+                        id="send-button"
                         type="submit"
                         class="flex-shrink-0 bg-[#1a2d5a] hover:bg-[#141d42] text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center"
                     >
@@ -146,7 +156,133 @@ function clearFile() {
 document.addEventListener('DOMContentLoaded', function() {
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
+    const fileInput = document.getElementById('file-input');
+    const sendButton = document.getElementById('send-button');
     const messagesContainer = document.getElementById('messages-container');
+    const emptyState = document.getElementById('empty-messages-state');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    function escapeHtml(value) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+
+        return String(value || '').replace(/[&<>"']/g, function(char) {
+            return map[char];
+        });
+    }
+
+    function formatNow() {
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        }).format(new Date());
+    }
+
+    function renderAttachmentHtml(file, uploadedUrl, uploadedName) {
+        const name = uploadedName || file?.name || 'Attachment';
+        const ext = (name.split('.').pop() || '').toLowerCase();
+        const imageExt = ['jpg', 'jpeg', 'png', 'gif'];
+
+        if (uploadedUrl && imageExt.includes(ext)) {
+            return `<img src="${escapeHtml(uploadedUrl)}" alt="Attachment" class="mt-2 rounded max-w-full max-h-48 object-contain">`;
+        }
+
+        if (file && imageExt.includes(ext)) {
+            const localUrl = URL.createObjectURL(file);
+            return `<img src="${escapeHtml(localUrl)}" alt="Attachment" class="mt-2 rounded max-w-full max-h-48 object-contain">`;
+        }
+
+        if (uploadedUrl) {
+            return `<a href="${escapeHtml(uploadedUrl)}" target="_blank" download="${escapeHtml(name)}" class="mt-2 flex items-center gap-2 text-xs underline opacity-90 hover:opacity-100">` +
+                '<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>' +
+                `${escapeHtml(name)}</a>`;
+        }
+
+        return `<p class="mt-2 text-xs opacity-90">Attached: ${escapeHtml(name)}</p>`;
+    }
+
+    function appendOutgoingMessage(content, file, uploadedUrl, uploadedName) {
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex justify-end';
+
+        const contentHtml = content ? `<p class="text-sm whitespace-pre-line break-words">${escapeHtml(content)}</p>` : '';
+        const attachmentHtml = file ? renderAttachmentHtml(file, uploadedUrl, uploadedName) : '';
+
+        wrapper.innerHTML = `
+            <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-[#1a2d5a] text-white">
+                ${contentHtml}
+                ${attachmentHtml}
+                <div class="mt-1 flex items-center justify-end gap-1 text-xs opacity-80">
+                    <span>${formatNow()}</span>
+                    <span class="inline-flex items-center text-slate-300" title="Delivered">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 13l3 3 5-7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13l3 3 5-7" />
+                        </svg>
+                    </span>
+                </div>
+            </div>
+        `;
+
+        messagesContainer.appendChild(wrapper);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    async function sendMessageAjax() {
+        const content = (messageInput.value || '').trim();
+        const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+        if (!content && !file) {
+            return;
+        }
+
+        appendOutgoingMessage(content, file, null, null);
+
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        clearFile();
+
+        sendButton.disabled = true;
+        sendButton.classList.add('opacity-60', 'cursor-not-allowed');
+
+        const formData = new FormData();
+        formData.append('content', content);
+        if (file) {
+            formData.append('attachment', file);
+        }
+
+        try {
+            const response = await fetch(messageForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send message');
+            }
+        } catch (error) {
+            window.location.reload();
+        } finally {
+            sendButton.disabled = false;
+            sendButton.classList.remove('opacity-60', 'cursor-not-allowed');
+        }
+    }
 
     // Auto-resize textarea
     messageInput.addEventListener('input', function() {
@@ -154,12 +290,21 @@ document.addEventListener('DOMContentLoaded', function() {
         this.style.height = this.scrollHeight + 'px';
     });
 
-    // Submit form with Enter (but allow Shift+Enter for new lines)
+    // Submit with Enter, keep Shift+Enter for newline
     messageInput.addEventListener('keydown', function(e) {
+        if (e.isComposing) {
+            return;
+        }
+
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            messageForm.requestSubmit();
+            sendMessageAjax();
         }
+    });
+
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendMessageAjax();
     });
 
     // Scroll to bottom on load

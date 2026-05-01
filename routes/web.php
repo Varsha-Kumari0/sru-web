@@ -787,9 +787,9 @@ Route::middleware(['auth'])->group(function () {
     // 📨 MESSAGES
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/users/search', [MessageController::class, 'searchUsers'])->name('messages.users.search');
-    Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
-    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
     Route::get('/messages/unread/count', [MessageController::class, 'getUnreadCount'])->name('messages.unread.count');
+    Route::get('/messages/{userToken}', [MessageController::class, 'show'])->name('messages.show');
+    Route::post('/messages/{userToken}', [MessageController::class, 'store'])->name('messages.store');
 
     // 🛠️ SKILLS
     Route::resource('skills', SkillController::class)->except(['show']);

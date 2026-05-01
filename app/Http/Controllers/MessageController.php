@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 
 class MessageController extends Controller
 {
@@ -35,6 +37,7 @@ class MessageController extends Controller
                     'user' => $user,
                     'latest_message' => $latestMessage,
                     'unread_count' => $unreadCount,
+                    'chat_url' => route('messages.show', ['userToken' => $this->encodeUserToken((int) $otherUserId)]),
                 ];
             });
 
@@ -43,11 +46,16 @@ class MessageController extends Controller
             ->where('id', '!=', $userId)
             ->first();
 
-        return view('messages.index', compact('conversations', 'adminUser'));
+        $adminChatUrl = $adminUser
+            ? route('messages.show', ['userToken' => $this->encodeUserToken((int) $adminUser->id)])
+            : null;
+
+        return view('messages.index', compact('conversations', 'adminUser', 'adminChatUrl'));
     }
 
-    public function show(User $user): View
+    public function show(string $userToken): View
     {
+        $user = $this->resolveUserFromToken($userToken);
         $user->load('profile');
         $currentUserId = Auth::id();
 
@@ -63,10 +71,10 @@ class MessageController extends Controller
                 $actor?->id,
                 $user->id,
                 'messages_marked_read',
-                ($actor?->name ?? 'Alumni') . ' read messages from ' . ($user->name ?? 'User'),
+                ($actor?->display_name ?? 'Alumni') . ' read messages from ' . ($user->display_name ?? 'User'),
                 [
                     'counterpart_user_id' => $user->id,
-                    'counterpart_name' => $user->name,
+                    'counterpart_name' => $user->display_name,
                     'messages_marked_read' => $markedAsRead,
                 ]
             );
@@ -78,11 +86,12 @@ class MessageController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('messages.show', compact('user', 'messages'));
+        return view('messages.show', compact('user', 'messages', 'userToken'));
     }
 
-    public function store(Request $request, User $user): RedirectResponse
+    public function store(Request $request, string $userToken): RedirectResponse|JsonResponse
     {
+        $user = $this->resolveUserFromToken($userToken);
         $senderId = Auth::id();
 
         $request->validate([
@@ -92,6 +101,13 @@ class MessageController extends Controller
         ]);
 
         if (empty(trim((string) $request->input('content', ''))) && !$request->hasFile('attachment')) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Please enter a message or attach a file.',
+                ], 422);
+            }
+
             return redirect()->back()->withErrors(['content' => 'Please enter a message or attach a file.']);
         }
 
@@ -118,15 +134,24 @@ class MessageController extends Controller
             $actor?->id,
             $user->id,
             'message_sent',
-            ($actor?->name ?? 'Alumni') . ' sent a message to ' . ($user->name ?? 'User'),
+            ($actor?->display_name ?? 'Alumni') . ' sent a message to ' . ($user->display_name ?? 'User'),
             [
                 'message_id'       => $message->id,
                 'receiver_user_id' => $user->id,
-                'receiver_name'    => $user->name,
+                'receiver_name'    => $user->display_name,
                 'has_subject'      => !empty($request->input('subject')),
                 'has_attachment'   => $attachmentPath !== null,
             ]
         );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message->load(['sender']),
+                'attachment_url' => $attachmentPath ? asset('storage/' . $attachmentPath) : null,
+                'attachment_name' => $attachmentOriginalName,
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Message sent successfully!');
     }
@@ -166,11 +191,11 @@ class MessageController extends Controller
             $actor?->id,
             $user->id,
             'message_sent',
-            ($actor?->name ?? 'Alumni') . ' sent a message to ' . ($user->name ?? 'User'),
+            ($actor?->display_name ?? 'Alumni') . ' sent a message to ' . ($user->display_name ?? 'User'),
             [
                 'message_id'       => $message->id,
                 'receiver_user_id' => $user->id,
-                'receiver_name'    => $user->name,
+                'receiver_name'    => $user->display_name,
                 'has_subject'      => false,
                 'has_attachment'   => $attachmentPath !== null,
             ]
@@ -218,9 +243,12 @@ class MessageController extends Controller
                 return [
                     'id' => $user->id,
                     'name' => $user->display_name,
+                    'avatar_url' => $user->profile?->profile_photo
+                        ? asset('storage/' . $user->profile->profile_photo)
+                        : ($user->avatar ? asset('storage/' . $user->avatar) : null),
                     'passing_year' => $user->profile?->passing_year,
                     'batch' => $user->profile?->passing_year ? ('Batch ' . $user->profile->passing_year) : null,
-                    'chat_url' => route('messages.show', $user->id),
+                    'chat_url' => route('messages.show', ['userToken' => $this->encodeUserToken((int) $user->id)]),
                 ];
             })
             ->values();
@@ -228,5 +256,26 @@ class MessageController extends Controller
         return response()->json([
             'users' => $users,
         ]);
+    }
+
+    private function encodeUserToken(int $userId): string
+    {
+        return Crypt::encryptString((string) $userId);
+    }
+
+    private function resolveUserFromToken(string $userToken): User
+    {
+        try {
+            $decryptedUserId = (int) Crypt::decryptString($userToken);
+        } catch (DecryptException) {
+            abort(404);
+        }
+
+        $user = User::query()->find($decryptedUserId);
+        if (!$user) {
+            abort(404);
+        }
+
+        return $user;
     }
 }
