@@ -257,6 +257,9 @@ The profile record currently includes additional personal/social fields such as:
 - Feed compatibility route added:
   - GET /feed (name: feed)
   - Authenticated users are redirected to /dashboard (which then applies role-based routing).
+  - Effective role landing after redirect:
+    - alumni/user role -> /dashboard
+    - admin role -> /admin/dashboard
   - Unauthenticated users are redirected to /login by auth middleware.
 - Password reset request page (/forgot-password) now shows clearer validation feedback:
   - top alert banner when validation fails

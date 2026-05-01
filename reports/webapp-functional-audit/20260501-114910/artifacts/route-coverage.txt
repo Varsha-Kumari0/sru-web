@@ -1,0 +1,11 @@
+Target URL: http://127.0.0.1:8000
+
+Prioritized route coverage:
+- Public: /, /login
+- Admin session: /admin/dashboard, /jobs, /profile (redirect), /feed (redirect)
+- Alumni session: /dashboard, /jobs, /profile, /feed (redirect)
+
+Route behavior notes:
+- Admin: /profile and /feed normalized to /admin/dashboard
+- Alumni: /feed normalized to /dashboard
+- Jobs page showed zero opportunities and matched DB count

@@ -226,6 +226,7 @@ Authenticated alumni:
 - Behavior:
   - authenticated users on /feed are redirected to /dashboard
   - unauthenticated users on /feed are redirected to /login
+  - when an admin account uses /feed, the flow ultimately lands on /admin/dashboard via role-based redirect
 
 ### Forgot Password Validation Visibility
 - Route: GET /forgot-password, Submit: POST /forgot-password.
