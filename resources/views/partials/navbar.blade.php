@@ -18,9 +18,6 @@
             <li><a class="hover:text-teal-600" href="{{ route('gallery') }}">Gallery</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('jobs.index') }}">Jobs</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('engage') }}">Engage</a></li>
-            @auth
-                <li><a class="hover:text-teal-600" href="{{ route('messages.index') }}">Messages</a></li>
-            @endauth
             <li><a class="hover:text-teal-600" href="{{ route('contact') }}">Contact</a></li>
         </ul>
 
@@ -34,7 +31,25 @@
                         ? $profileName
                         : ($accountName !== '' ? $accountName : 'Profile');
                     $avatarInitial = strtoupper(substr($displayName, 0, 1));
+                    $unreadMessageCount = \App\Models\Message::query()
+                        ->where('receiver_id', $user->id)
+                        ->where('is_read', false)
+                        ->count();
                 @endphp
+
+                <a href="{{ route('messages.index') }}"
+                   class="relative mr-3 inline-flex h-10 w-10 items-center justify-center rounded-full text-[#0a1f44] hover:bg-slate-100"
+                   aria-label="Messages">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M4 6.5h16v11H4z" />
+                        <path d="m4 7 8 6 8-6" />
+                    </svg>
+                    @if($unreadMessageCount > 0)
+                        <span class="absolute right-0 top-0 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-[#f25555] px-1 text-[10px] font-bold leading-none text-white">
+                            {{ $unreadMessageCount > 9 ? '9+' : $unreadMessageCount }}
+                        </span>
+                    @endif
+                </a>
 
                 <a href="{{ route('profile') }}"
                    class="inline-flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-semibold border-[#dbe5f5] text-[#0a1f44] bg-white">
