@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Crypt;
 
 class User extends Authenticatable
 {
@@ -95,5 +96,15 @@ class User extends Authenticatable
         }
 
         return $name !== '' ? $name : ($profileName !== '' ? $profileName : 'Unknown User');
+    }
+
+    public function getMessageTokenAttribute(): string
+    {
+        return self::messageTokenFor((int) $this->id);
+    }
+
+    public static function messageTokenFor(int $userId): string
+    {
+        return Crypt::encryptString((string) $userId);
     }
 }

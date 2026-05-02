@@ -260,7 +260,7 @@ class MessageController extends Controller
 
     private function encodeUserToken(int $userId): string
     {
-        return Crypt::encryptString((string) $userId);
+        return User::messageTokenFor($userId);
     }
 
     private function resolveUserFromToken(string $userToken): User

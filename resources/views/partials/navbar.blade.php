@@ -1,6 +1,6 @@
 <nav class="sticky top-0 z-50 bg-white/95 border-b border-slate-200/80 backdrop-blur">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <a href="{{ url('/') }}" class="flex items-center gap-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 grid grid-cols-[auto_auto] md:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
+        <a href="{{ url('/') }}" class="flex shrink-0 items-center gap-3">
             <span class="w-10 h-10 rounded-full inline-flex items-center justify-center text-white font-bold text-sm bg-[#0a1f44]">SRU</span>
             <span>
                 <span class="block text-sm font-bold text-[#0a1f44]">SR University</span>
@@ -8,9 +8,9 @@
             </span>
         </a>
 
-        <button id="mobile-menu-btn" class="md:hidden text-slate-700 font-semibold" type="button">Menu</button>
+        <button id="mobile-menu-btn" class="justify-self-end md:hidden text-slate-700 font-semibold" type="button">Menu</button>
 
-        <ul class="hidden md:flex items-center gap-6 text-xs font-bold tracking-wider uppercase text-slate-600">
+        <ul class="hidden md:flex min-w-0 items-center justify-center gap-3 text-[10px] font-bold tracking-wider uppercase text-slate-600 lg:gap-5 lg:text-[11px] xl:gap-6 xl:text-xs">
             <li><a class="hover:text-teal-600" href="{{ url('/') }}">Home</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('about') }}">About</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('events.index') }}">Events</a></li>
@@ -24,7 +24,7 @@
             <li><a class="hover:text-teal-600" href="{{ route('contact') }}">Contact</a></li>
         </ul>
 
-        <div class="hidden md:block">
+        <div class="hidden shrink-0 justify-self-end whitespace-nowrap md:flex md:items-center">
             @auth
                 @php
                     $user = auth()->user();
@@ -39,7 +39,7 @@
                 <a href="{{ route('profile') }}"
                    class="inline-flex items-center gap-2 px-3 py-2 rounded-full border text-xs font-semibold border-[#dbe5f5] text-[#0a1f44] bg-white">
                     <span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-white text-[11px] font-bold bg-[#0a1f44]">{{ $avatarInitial }}</span>
-                    <span class="max-w-[130px] truncate">{{ $displayName }}</span>
+                    <span class="max-w-[90px] truncate lg:max-w-[110px] xl:max-w-[130px]">{{ $displayName }}</span>
                 </a>
 
                 <form method="POST" action="{{ route('logout') }}" class="inline">

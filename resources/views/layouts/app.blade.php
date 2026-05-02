@@ -11,6 +11,7 @@
 <body class="min-h-screen bg-[#f2f0e8] text-slate-800">
     <header>
         @include('partials.navbar')
+    </header>
 
     <div class="p-6">
         @yield('content')
