@@ -7,6 +7,9 @@ use App\Models\Event;
 use App\Models\FeedComment;
 use App\Models\FeedPost;
 use App\Models\FeedReaction;
+use App\Models\GalleryAlbum;
+use App\Models\GalleryVideo;
+use App\Models\JobOpportunity;
 use App\Models\News;
 use App\Models\Testimonial;
 use Illuminate\Http\RedirectResponse;
@@ -365,6 +368,9 @@ class AdminEngageController extends Controller
             'news' => $this->loadNewsSourceData($feedId),
             'event' => $this->loadEventSourceData($feedId),
             'testimonial' => $this->loadTestimonialSourceData($feedId),
+            'job' => $this->loadJobSourceData($feedId),
+            'gallery_album' => $this->loadGalleryAlbumSourceData($feedId),
+            'gallery_video' => $this->loadGalleryVideoSourceData($feedId),
             default => abort(404),
         };
     }
@@ -418,6 +424,45 @@ class AdminEngageController extends Controller
             'body' => (string) ($testimonial->content ?? ''),
             'owner' => (string) ($testimonial->name ?? 'Alumni'),
             'updated_at' => $testimonial->updated_at,
+        ];
+    }
+
+    private function loadJobSourceData(int $feedId): array
+    {
+        $job = JobOpportunity::query()->findOrFail($feedId);
+
+        return [
+            'kind' => 'Job',
+            'title' => (string) $job->title,
+            'body' => trim((string) ($job->description ?? '') . ' ' . ($job->company_name ? 'Company: ' . $job->company_name : '')),
+            'owner' => (string) ($job->company_name ?? 'Career Desk'),
+            'updated_at' => $job->updated_at,
+        ];
+    }
+
+    private function loadGalleryAlbumSourceData(int $feedId): array
+    {
+        $album = GalleryAlbum::query()->findOrFail($feedId);
+
+        return [
+            'kind' => 'Gallery Album',
+            'title' => (string) $album->title,
+            'body' => (string) ($album->summary ?? ''),
+            'owner' => 'Gallery Desk',
+            'updated_at' => $album->updated_at,
+        ];
+    }
+
+    private function loadGalleryVideoSourceData(int $feedId): array
+    {
+        $video = GalleryVideo::query()->findOrFail($feedId);
+
+        return [
+            'kind' => 'Gallery Video',
+            'title' => (string) $video->title,
+            'body' => (string) ($video->summary ?? ''),
+            'owner' => 'Gallery Desk',
+            'updated_at' => $video->updated_at,
         ];
     }
 }

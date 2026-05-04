@@ -63,7 +63,7 @@
                     </div>
 
                     <div class="mt-5 flex items-center justify-end gap-3">
-                        <a href="{{ route('admin.engage.manage') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Review</a>
+                        <a href="{{ route('admin.engage.feed.review', ['job', $job->id]) }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Review</a>
                         <a href="{{ route('admin.jobs.edit', $job->id) }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Update</a>
                         <form method="POST" action="{{ route('admin.jobs.delete', $job->id) }}" onsubmit="return confirm('Delete this job opportunity?');">
                             @csrf
