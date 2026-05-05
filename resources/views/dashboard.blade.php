@@ -483,7 +483,7 @@
                     <div class="mt-4 space-y-4">
                         @forelse($latestMembers as $member)
                         @php($memberName = $member->profile?->full_name ?: $member->name)
-                        <a href="{{ route('messages.show', $member->id) }}" class="flex items-center gap-3">
+                        <a href="{{ route('messages.show', ['userToken' => $member->message_token]) }}" class="flex items-center gap-3">
                             <span
                                 class="h-10 w-10 rounded-2xl inline-flex items-center justify-center text-sm font-black text-white avatar-mark shrink-0">
                                 {{ strtoupper(substr($memberName ?: 'A', 0, 1)) }}
