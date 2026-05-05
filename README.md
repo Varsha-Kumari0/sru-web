@@ -65,7 +65,7 @@ Administrators can manage all content and alumni data through a dedicated admin 
 
 ### Admin Side
 - **Dashboard** — live stats (total alumni, news, events), recent activity feed
-- **Alumni Management** — view, search, filter, edit, and delete alumni records; CSV export
+- **Alumni Management** — view, search, filter, edit, and delete alumni records; expanded View Details modal and aligned CSV export
 - **News Management** — create, edit, and delete news articles with image upload
 - **Events Management** — create, edit, and delete events with full field support
 - **Gallery Management** — manage photo albums and videos
@@ -77,6 +77,22 @@ Administrators can manage all content and alumni data through a dedicated admin 
 ---
 
 ## Recent Changes
+
+### 2026-05-04: Alumni Details & CSV Alignment
+- Expanded **Admin -> All SRU Alumni -> View Details** to explicitly show additional recorded alumni fields:
+  - first/last name, gender, contact email
+  - pursuing/highest-completed education levels
+  - previous education and study details
+  - aggregated work experience history
+  - achievements summary
+- Updated alumni list row previews to use the latest available professional record.
+- Added eager loading for multi-experience and achievements data in the All Alumni list/export flow.
+- Aligned **All SRU Alumni CSV export** with the expanded details modal fields.
+- CSV export now includes 42 columns, including:
+  - contact and profile expansion fields
+  - education-level fields
+  - all work experiences
+  - skills and achievements
 
 ### 2026-05-01: Messaging Enhancements
 - Added file attachments in chat for both admin and alumni users.

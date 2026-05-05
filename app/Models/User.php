@@ -70,6 +70,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all professional records for the user.
+     */
+    public function professionals(): HasMany
+    {
+        return $this->hasMany(Professional::class);
+    }
+
+    /**
      * Get job and internship opportunities posted by the user.
      */
     public function jobOpportunities(): HasMany
@@ -83,6 +91,14 @@ class User extends Authenticatable
     public function skills(): HasMany
     {
         return $this->hasMany(Skill::class);
+    }
+
+    /**
+     * Get the user's achievements.
+     */
+    public function achievements(): HasMany
+    {
+        return $this->hasMany(Achievement::class);
     }
 
     public function getDisplayNameAttribute(): string

@@ -941,7 +941,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         $usersQuery = User::query()
             ->where('role', 'user')
-            ->with(['profile', 'professional', 'skills']);
+            ->with(['profile', 'professional', 'professionals', 'skills', 'achievements']);
 
         if ($selectedFilterBy !== 'all' && $selectedFilterValue !== '') {
             if ($selectedFilterBy === 'branch') {
@@ -1043,7 +1043,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
         $usersQuery = User::query()
             ->where('role', 'user')
-            ->with(['profile', 'professional'])
+            ->with(['profile', 'professional', 'professionals', 'skills', 'achievements'])
             ->orderByDesc('id');
 
         if ($selectedFilterBy !== 'all' && $selectedFilterValue !== '') {
@@ -1098,23 +1098,115 @@ Route::middleware(['auth', 'admin'])->group(function () {
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, [
-                'ID', 'Account Name', 'Email',
-                'Full Name', 'Father Name', 'Phone', 'City', 'Country',
-                'Degree', 'Branch / Specialization', 'Graduation Year',
-                'Current Status', 'Company',
-                'LinkedIn', 'Facebook', 'Instagram', 'Twitter',
-                'Organization', 'Industry', 'Role',
-                'Work From', 'Work To', 'Work Location',
+                'ID',
+                'Account Name',
+                'Email',
+                'Full Name',
+                'First Name',
+                'Last Name',
+                'Gender',
+                'Father Name',
+                'Contact Email',
+                'Phone',
+                'City',
+                'Country',
+                'Degree',
+                'Branch / Specialization',
+                'Graduation Year',
+                'Current Status',
+                'Pursuing Educational Level',
+                'Highest Completed Educational Level',
+                'Company',
+                'Employment From',
+                'Employment To',
+                'Study Institution',
+                'Study Degree',
+                'Study Branch',
+                'Study From',
+                'Study To',
+                'Previous Education',
+                'Bio / Description',
+                'LinkedIn',
+                'Facebook',
+                'Instagram',
+                'Twitter',
+                'Organization',
+                'Industry',
+                'Role',
+                'Work From',
+                'Work To',
+                'Work Location',
+                'All Work Experiences',
+                'Skills',
+                'Achievements',
                 'Registered',
             ]);
 
             foreach ($users as $u) {
+                $professionalRecords = collect($u->professionals ?? [])
+                    ->sortByDesc(function ($record) {
+                        return $record->from ?? $record->created_at;
+                    })
+                    ->values();
+
+                $primaryProfessional = $professionalRecords->first() ?? $u->professional;
+
+                $previousEducationText = collect($u->profile?->previous_education ?? [])
+                    ->map(function ($row) {
+                        return implode(' | ', [
+                            $row['institution'] ?? '',
+                            $row['degree'] ?? '',
+                            $row['branch'] ?? '',
+                            $row['from'] ?? '',
+                            $row['to'] ?? '',
+                        ]);
+                    })
+                    ->filter()
+                    ->implode("\n");
+
+                $workExperiencesText = $professionalRecords
+                    ->map(function ($record) {
+                        return implode(' | ', [
+                            $record->organization ?? '',
+                            $record->industry ?? '',
+                            $record->role ?? '',
+                            trim((string) ($record->from ?? '') . ' - ' . (string) ($record->to ?? 'Present')),
+                            $record->location ?? '',
+                        ]);
+                    })
+                    ->filter()
+                    ->implode("\n");
+
+                $skillsText = collect($u->skills ?? [])
+                    ->pluck('name')
+                    ->map(fn ($name) => is_string($name) ? trim($name) : '')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->implode(', ');
+
+                $achievementsText = collect($u->achievements ?? [])
+                    ->map(function ($achievement) {
+                        return implode(' | ', [
+                            $achievement->title ?? '',
+                            $achievement->category ?? '',
+                            (string) ($achievement->earned_at ?? ''),
+                        ]);
+                    })
+                    ->filter()
+                    ->values()
+                    ->implode("\n");
+
                 fputcsv($handle, [
                     $u->id,
                     $u->name,
                     $u->email,
                     $u->profile?->full_name ?? $u->name,
+                    $u->profile?->first_name ?? '-',
+                    $u->profile?->last_name ?? '-',
+                    $u->profile?->gender ?? '-',
                     $u->profile?->father_name ?? '-',
+                    $u->profile?->contact_email ?? '-',
                     $u->profile?->mobile ?? '-',
                     $u->profile?->city ?? '-',
                     $u->profile?->country ?? '-',
@@ -1122,17 +1214,31 @@ Route::middleware(['auth', 'admin'])->group(function () {
                     $u->profile?->branch ?? '-',
                     $u->profile?->passing_year ?? '-',
                     $u->profile?->current_status ?? '-',
+                    $u->profile?->pursuing_educational_level ?? '-',
+                    $u->profile?->highest_completed_educational_level ?? '-',
                     $u->profile?->company ?? '-',
+                    $u->profile?->employment_from ?? '-',
+                    $u->profile?->employment_to ?? '-',
+                    $u->profile?->study_institution ?? '-',
+                    $u->profile?->study_degree ?? '-',
+                    $u->profile?->study_branch ?? '-',
+                    $u->profile?->study_from ?? '-',
+                    $u->profile?->study_to ?? '-',
+                    $previousEducationText !== '' ? $previousEducationText : '-',
+                    $u->profile?->description ?? '-',
                     $u->profile?->linkedin ?? '-',
                     $u->profile?->facebook ?? '-',
                     $u->profile?->instagram ?? '-',
                     $u->profile?->twitter ?? '-',
-                    $u->professional?->organization ?? '-',
-                    $u->professional?->industry ?? '-',
-                    $u->professional?->role ?? '-',
-                    $u->professional?->from ?? '-',
-                    $u->professional?->to ?? '-',
-                    $u->professional?->location ?? '-',
+                    $primaryProfessional?->organization ?? '-',
+                    $primaryProfessional?->industry ?? '-',
+                    $primaryProfessional?->role ?? '-',
+                    $primaryProfessional?->from ?? '-',
+                    $primaryProfessional?->to ?? '-',
+                    $primaryProfessional?->location ?? '-',
+                    $workExperiencesText !== '' ? $workExperiencesText : '-',
+                    $skillsText !== '' ? $skillsText : '-',
+                    $achievementsText !== '' ? $achievementsText : '-',
                     $u->created_at?->format('d M Y') ?? '-',
                 ]);
             }

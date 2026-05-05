@@ -136,6 +136,27 @@
 						<?php else: ?>
 							<?php foreach ($users as $user): ?>
 								<?php
+									$professionalRecords = collect($user->professionals ?? [])
+										->sortByDesc(function ($record) {
+											return $record->from ?? $record->created_at;
+										})
+										->values();
+
+									$primaryProfessional = $professionalRecords->first() ?? $user->professional;
+
+									$workExperiencesText = $professionalRecords
+										->map(function ($record) {
+											return implode(' | ', [
+												$record->organization ?? '',
+												$record->industry ?? '',
+												$record->role ?? '',
+												trim((string) ($record->from ?? '') . ' - ' . (string) ($record->to ?? 'Present')),
+												$record->location ?? '',
+											]);
+										})
+										->filter()
+										->implode("\n");
+
 									$displayName = $user->profile?->full_name ?? $user->name;
 									$profilePhotoUrl = $user->profile?->profile_photo ? asset('storage/' . $user->profile->profile_photo) : null;
 									$initials = strtoupper(substr($displayName, 0, 1));
@@ -150,15 +171,32 @@
 										->implode(', ');
 									$skillsText = $skillsText !== '' ? $skillsText : '-';
 
+									$achievementsText = collect($user->achievements ?? [])
+										->map(function ($achievement) {
+											return implode(' | ', [
+												$achievement->title ?? '',
+												$achievement->category ?? '',
+												$achievement->earned_at ? $achievement->earned_at->format('d M Y') : '',
+											]);
+										})
+										->filter()
+										->values()
+										->implode("\n");
+									$achievementsText = $achievementsText !== '' ? $achievementsText : '-';
+
 									$knownProfileFields = [
 										'id',
 										'user_id',
 										'created_at',
 										'updated_at',
 										'profile_photo',
+										'first_name',
+										'last_name',
+										'gender',
 										'full_name',
 										'father_name',
 										'mobile',
+										'contact_email',
 										'city',
 										'country',
 										'linkedin',
@@ -169,6 +207,8 @@
 										'branch',
 										'passing_year',
 										'current_status',
+										'pursuing_educational_level',
+										'highest_completed_educational_level',
 										'company',
 										'employment_from',
 										'employment_to',
@@ -237,9 +277,13 @@
 										->all();
 									$detailPayload = [
 										'user_name' => $user->name,
+										'first_name' => $user->profile?->first_name ?? '-',
+										'last_name' => $user->profile?->last_name ?? '-',
+										'gender' => $user->profile?->gender ?? '-',
 										'full_name' => $displayName,
 										'profile_photo' => $profilePhotoUrl,
 										'email' => $user->email,
+										'contact_email' => $user->profile?->contact_email ?? '-',
 										'phone' => $user->profile?->mobile ?? '-',
 										'father_name' => $user->profile?->father_name ?? '-',
 										'city' => $user->profile?->city ?? '-',
@@ -252,6 +296,8 @@
 										'branch' => $user->profile?->branch ?? '-',
 										'passing_year' => $user->profile?->passing_year ?? '-',
 										'current_status' => $user->profile?->current_status ?? '-',
+										'pursuing_educational_level' => $user->profile?->pursuing_educational_level ?? '-',
+										'highest_completed_educational_level' => $user->profile?->highest_completed_educational_level ?? '-',
 										'company' => $user->profile?->company ?? '-',
 										'employment_from' => $user->profile?->employment_from ?? '-',
 										'employment_to' => $user->profile?->employment_to ?? '-',
@@ -273,13 +319,15 @@
 											})
 											->filter()
 											->implode("\n") ?: '-',
-										'organization' => $user->professional?->organization ?? '-',
-										'industry' => $user->professional?->industry ?? '-',
-										'role' => $user->professional?->role ?? '-',
-										'work_from' => $user->professional?->from ?? '-',
-										'work_to' => $user->professional?->to ?? '-',
-										'work_location' => $user->professional?->location ?? '-',
+										'organization' => $primaryProfessional?->organization ?? '-',
+										'industry' => $primaryProfessional?->industry ?? '-',
+										'role' => $primaryProfessional?->role ?? '-',
+										'work_from' => $primaryProfessional?->from ?? '-',
+										'work_to' => $primaryProfessional?->to ?? '-',
+										'work_location' => $primaryProfessional?->location ?? '-',
+										'work_experiences' => $workExperiencesText !== '' ? $workExperiencesText : '-',
 										'skills' => $skillsText,
+										'achievements' => $achievementsText,
 										'registered' => $user->created_at?->format('d M Y') ?? '-',
 										'dynamic_profile_fields' => $dynamicProfileFields,
 										'dynamic_professional_fields' => $dynamicProfessionalFields,
@@ -300,9 +348,9 @@
 									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->mobile ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->branch ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->passing_year ?? '-' }}</td>
-									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->organization ?? '-' }}</td>
-									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->role ?? '-' }}</td>
-									<td class="px-4 py-3 text-slate-700">{{ $user->professional?->location ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $primaryProfessional?->organization ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $primaryProfessional?->role ?? '-' }}</td>
+									<td class="px-4 py-3 text-slate-700">{{ $primaryProfessional?->location ?? '-' }}</td>
 									<td class="px-4 py-3">
 										<div class="flex items-center gap-2">
 											<button type="button"
@@ -482,9 +530,14 @@ window.addEventListener('DOMContentLoaded', toggleValueFilter);
 		title.textContent = data.full_name || data.user_name || 'Alumni Details';
 
 		const entries = [
+			['Username', data.user_name],
 			['Full Name', data.full_name],
+			['First Name', data.first_name],
+			['Last Name', data.last_name],
+			['Gender', data.gender],
 			['Father Name', data.father_name],
 			['Email', data.email],
+			['Contact Email', data.contact_email],
 			['Phone', data.phone],
 			['City', data.city],
 			['Country', data.country],
@@ -500,6 +553,8 @@ window.addEventListener('DOMContentLoaded', toggleValueFilter);
 			['Branch', data.branch],
 			['Graduation Year', data.passing_year],
 			['Current Status', data.current_status],
+			['Pursuing Educational Level', data.pursuing_educational_level],
+			['Highest Completed Educational Level', data.highest_completed_educational_level],
 			['Company', data.company],
 			['Employment From', data.employment_from],
 			['Employment To', data.employment_to],
@@ -512,7 +567,9 @@ window.addEventListener('DOMContentLoaded', toggleValueFilter);
 			['Work From', data.work_from],
 			['Work To', data.work_to],
 			['Work Location', data.work_location],
+			['All Work Experiences', data.work_experiences],
 			['Skills', data.skills],
+			['Achievements', data.achievements],
 			['Registered', data.registered],
 		];
 

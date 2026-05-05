@@ -259,6 +259,16 @@ Authenticated alumni:
 - Documentation was refreshed after admin navigation consistency fixes.
 - Cross-role behavior for alumni routes is unchanged; this note keeps user docs aligned with the latest admin-side navigation and local-auth troubleshooting updates.
 
+## 7.3 Admin Data Consumption Alignment (2026-05-04)
+
+- Alumni profile data captured from user-side flows is now explicitly surfaced in Admin -> All SRU Alumni -> View Details and CSV export.
+- Newly emphasized fields in admin details/export include:
+  - first_name, last_name, gender, contact_email
+  - pursuing_educational_level, highest_completed_educational_level
+  - previous_education, study fields, bio/description
+  - all work experiences (aggregated), skills, achievements
+- This keeps admin-side visibility aligned with data that alumni users actually submit and update.
+
 ## 7.3 Messaging Experience Updates (2026-05-01)
 
 ### Messaging Routes

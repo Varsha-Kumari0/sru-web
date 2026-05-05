@@ -32,8 +32,13 @@
         border: 1px solid #e5e7eb;
         border-radius: 18px;
         box-shadow: 0 5px 22px rgba(26, 45, 74, 0.055);
-        overflow: hidden;
+        overflow: visible;
+        z-index: 0;
         transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+
+    .pulse-post.is-share-open {
+        z-index: 70;
     }
 
     .pulse-post:hover {
@@ -68,6 +73,7 @@
 
     .js-share-menu {
         min-width: 14rem;
+        z-index: 50;
     }
 
     .js-share-menu button,
@@ -799,6 +805,7 @@
                     if (dropdown) {
                         dropdown.querySelector('.js-share-count').textContent = data.count;
                         dropdown.querySelector('.js-share-menu').classList.add('hidden');
+                        dropdown.closest('.pulse-post')?.classList.remove('is-share-open');
                     }
                     showToast('Shared to your alumni activity.');
                     updateSessionAction('Shared a feed item.');
@@ -860,6 +867,23 @@
             }
         });
 
+        function closeAllShareMenus() {
+            document.querySelectorAll('.js-share-menu').forEach(function (menu) {
+                menu.classList.add('hidden');
+                const dropdown = menu.closest('.js-share-dropdown');
+                const trigger = dropdown?.querySelector('.js-share-toggle');
+                const card = dropdown?.closest('.pulse-post');
+
+                if (trigger) {
+                    trigger.setAttribute('aria-expanded', 'false');
+                }
+
+                if (card) {
+                    card.classList.remove('is-share-open');
+                }
+            });
+        }
+
         // Share dropdown functionality
         document.addEventListener('click', function(event) {
             const toggle = event.target.closest('.js-share-toggle');
@@ -870,19 +894,17 @@
                 event.stopPropagation();
                 const dropdown = toggle.closest('.js-share-dropdown');
                 const menu = dropdown.querySelector('.js-share-menu');
+                const card = dropdown.closest('.pulse-post');
                 const isHidden = menu.classList.contains('hidden');
                 
-                document.querySelectorAll('.js-share-menu').forEach(m => {
-                    m.classList.add('hidden');
-                    const trigger = m.closest('.js-share-dropdown')?.querySelector('.js-share-toggle');
-                    if (trigger) {
-                        trigger.setAttribute('aria-expanded', 'false');
-                    }
-                });
+                closeAllShareMenus();
 
                 if (isHidden) {
                     menu.classList.remove('hidden');
                     toggle.setAttribute('aria-expanded', 'true');
+                    if (card) {
+                        card.classList.add('is-share-open');
+                    }
                 }
             }
             
@@ -922,6 +944,7 @@
                 }
                 
                 dropdown.querySelector('.js-share-menu').classList.add('hidden');
+                dropdown.closest('.pulse-post')?.classList.remove('is-share-open');
                 updateSessionAction(`Shared to ${platform}.`);
             }
         });
@@ -929,13 +952,7 @@
         // Close share menu when clicking outside
         document.addEventListener('click', function(event) {
             if (!event.target.closest('.js-share-dropdown')) {
-                document.querySelectorAll('.js-share-menu').forEach(menu => {
-                    menu.classList.add('hidden');
-                    const trigger = menu.closest('.js-share-dropdown')?.querySelector('.js-share-toggle');
-                    if (trigger) {
-                        trigger.setAttribute('aria-expanded', 'false');
-                    }
-                });
+                closeAllShareMenus();
             }
         });
     })();

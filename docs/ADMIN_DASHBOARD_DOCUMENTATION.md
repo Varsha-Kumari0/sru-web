@@ -72,11 +72,17 @@ The profile record currently includes additional personal/social fields such as:
   - avatar shown in table using object-fit:contain with border, matching the dashboard style
   - photo shown in a larger details modal using the same contain/center fit behavior
 - View details modal includes expanded alumni profile values from the profile table:
+  - first_name
+  - last_name
+  - gender
   - father_name
+  - contact_email
   - linkedin
   - facebook
   - instagram
   - twitter
+  - pursuing_educational_level
+  - highest_completed_educational_level
   - employment_from
   - employment_to
   - study_institution
@@ -86,8 +92,11 @@ The profile record currently includes additional personal/social fields such as:
   - study_to
   - previous_education
   - description
+- View details modal now also includes:
+  - all work experiences (aggregated from all professional records)
+  - achievements summary
 - The details modal was widened for easier scanning of long alumni records.
-- Export CSV button in page header exports the alumni list fields shown in the current export route.
+- Export CSV button in page header now exports the same expanded detail set shown in View Details.
 
 ### 2.3 Edit Alumni Page
 - Route: GET /admin/alumni/{id}/edit (name: admin.alumni.edit)
@@ -527,12 +536,16 @@ Current events include:
 - Profile create/update validation includes stricter social-link URL checks for LinkedIn, Instagram, Facebook, and X/Twitter.
 
 ## 6.1 CSV Export Columns
-The All SRU Alumni export currently includes these 24 columns:
+The All SRU Alumni export currently includes these 42 columns:
 - ID, Account Name, Email
-- Full Name, Father Name, Phone, City, Country
-- Degree, Branch / Specialization, Graduation Year, Current Status, Company
+- Full Name, First Name, Last Name, Gender, Father Name, Contact Email, Phone, City, Country
+- Degree, Branch / Specialization, Graduation Year, Current Status, Pursuing Educational Level, Highest Completed Educational Level
+- Company, Employment From, Employment To
+- Study Institution, Study Degree, Study Branch, Study From, Study To
+- Previous Education, Bio / Description
 - LinkedIn, Facebook, Instagram, Twitter
 - Organization, Industry, Role, Work From, Work To, Work Location
+- All Work Experiences, Skills, Achievements
 - Registered
 
 Export notes:
@@ -557,7 +570,7 @@ Recommended checks:
 12. In Edit Alumni, verify Degree populates Branch/Specialization options and Branch stays blank/disabled when Degree is empty.
 13. After editing an alumni record, open Activity Logs and verify the table shows only the summary line by default; hover the row and verify it expands to show per-field change details, including employment date changes when edited.
 14. Trigger the same non-change action multiple times (for example opening the same admin page repeatedly), then open Activity Logs and verify those repeated events are grouped into one row; hover the grouped row and verify the expanded panel shows "First in group" timestamp and every occurrence timestamp in the timeline.
-15. Use the Export CSV button on All SRU Alumni; verify the file has the documented 24 columns and filtered exports only include matching rows.
+15. Use the Export CSV button on All SRU Alumni; verify the file has the documented 42 columns (including Contact Email, education-level fields, All Work Experiences, Skills, and Achievements) and filtered exports only include matching rows.
 16. Click the admin sidebar avatar, upload a new image, and verify it updates on Dashboard, All SRU Alumni, Activity Logs, and Edit Alumni pages.
   Also verify the uploaded image is visually contained (not cropped) and aligns with the alumni dashboard fit style.
 17. Create a new News item and verify the Recent News panel shows a green "Created" badge with a "Created:" timestamp.
