@@ -17,6 +17,7 @@
             <li><a class="hover:text-teal-600" href="{{ route('newsroom') }}">Newsroom</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('gallery') }}">Gallery</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('jobs.index') }}">Jobs</a></li>
+            <li><a class="hover:text-teal-600" href="{{ route('testimonials.index') }}">Testimonials</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('engage') }}">Engage</a></li>
             <li><a class="hover:text-teal-600" href="{{ route('contact') }}">Contact</a></li>
         </ul>
@@ -78,6 +79,7 @@
             <a href="{{ route('newsroom') }}" class="block">Newsroom</a>
             <a href="{{ route('gallery') }}" class="block">Gallery</a>
             <a href="{{ route('jobs.index') }}" class="block">Jobs</a>
+            <a href="{{ route('testimonials.index') }}" class="block">Testimonials</a>
             <a href="{{ route('engage') }}" class="block">Engage</a>
             <a href="{{ route('contact') }}" class="block">Contact</a>
 

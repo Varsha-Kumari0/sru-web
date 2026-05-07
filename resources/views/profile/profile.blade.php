@@ -8,6 +8,8 @@
         $experiences = collect($experiences ?? []);
         $skills = collect($skills ?? []);
         $achievements = collect($achievements ?? []);
+        $endorsedSkillIds = collect($endorsedSkillIds ?? [])->map(fn ($skillId) => (int) $skillId)->all();
+        $isOwnProfile = $isOwnProfile ?? true;
         $previousEducation = collect($profile?->previous_education ?? []);
 
         $displayName = trim((string) ($profile?->full_name ?? ''));
@@ -155,16 +157,18 @@
                                 A structured view of the alumni profile, grouped by basic information, education, work, social links, skills, and achievements.
                             </p>
 
-                            <div class="mt-5 flex flex-wrap gap-3">
-                                <a href="{{ route('profile.edit') }}"
-                                   class="inline-flex items-center rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1a2d4a] transition hover:opacity-90">
-                                    Complete Profile
-                                </a>
-                                <a href="{{ route('profile.edit') }}"
-                                   class="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20">
-                                    Edit Profile
-                                </a>
-                            </div>
+                            @if($isOwnProfile)
+                                <div class="mt-5 flex flex-wrap gap-3">
+                                    <a href="{{ route('profile.edit') }}"
+                                       class="inline-flex items-center rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1a2d4a] transition hover:opacity-90">
+                                        Complete Profile
+                                    </a>
+                                    <a href="{{ route('profile.edit') }}"
+                                       class="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20">
+                                        Edit Profile
+                                    </a>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur">
@@ -225,11 +229,13 @@
                             <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{{ $card['label'] }}</p>
                             <p class="mt-2 text-lg font-black" style="color: {{ $card['color'] }};">{{ $card['value'] }}</p>
                             <p class="mt-1 text-xs text-slate-500">{{ $card['complete'] ? 'Ready to share' : 'Needs attention' }}</p>
-                            <div class="mt-3">
-                                <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
-                                    {{ $card['complete'] ? 'Edit' : 'Complete' }}
-                                </a>
-                            </div>
+                            @if($isOwnProfile)
+                                <div class="mt-3">
+                                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
+                                        {{ $card['complete'] ? 'Edit' : 'Complete' }}
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </section>
@@ -245,9 +251,11 @@
                                 <span class="profile-pill {{ $basicProfileComplete ? 'bg-[#eefaf8] text-[#1a2d4a]' : 'bg-amber-50 text-amber-700' }}">
                                     {{ $sectionStatus($basicProfileComplete) }}
                                 </span>
-                                <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
-                                    {{ $basicProfileComplete ? 'Edit' : 'Complete' }}
-                                </a>
+                                @if($isOwnProfile)
+                                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
+                                        {{ $basicProfileComplete ? 'Edit' : 'Complete' }}
+                                    </a>
+                                @endif
                             </div>
                         </div>
 
@@ -290,9 +298,11 @@
                                 <span class="profile-pill bg-[#eefaf8] text-[#1a2d4a]">
                                     {{ $sectionStatus($studyComplete || $workComplete) }}
                                 </span>
-                                <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
-                                    {{ ($studyComplete || $workComplete) ? 'Edit' : 'Complete' }}
-                                </a>
+                                @if($isOwnProfile)
+                                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
+                                        {{ ($studyComplete || $workComplete) ? 'Edit' : 'Complete' }}
+                                    </a>
+                                @endif
                             </div>
                         </div>
 
@@ -334,14 +344,16 @@
                             </div>
                         @endif
 
-                        <div class="mt-4 flex gap-3">
-                            <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full bg-[#1a2d4a] px-4 py-2 text-sm font-bold text-white">
-                                Complete Profile
-                            </a>
-                            <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700">
-                                Edit
-                            </a>
-                        </div>
+                        @if($isOwnProfile)
+                            <div class="mt-4 flex gap-3">
+                                <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full bg-[#1a2d4a] px-4 py-2 text-sm font-bold text-white">
+                                    Complete Profile
+                                </a>
+                                <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700">
+                                    Edit
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </section>
 
@@ -357,9 +369,11 @@
                                     <span class="profile-pill {{ ($groupedEducation->get($key, collect())->isNotEmpty()) ? 'bg-[#eefaf8] text-[#1a2d4a]' : 'bg-amber-50 text-amber-700' }}">
                                         {{ $sectionStatus($groupedEducation->get($key, collect())->isNotEmpty()) }}
                                     </span>
-                                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
-                                        {{ $groupedEducation->get($key, collect())->isNotEmpty() ? 'Edit' : 'Complete' }}
-                                    </a>
+                                    @if($isOwnProfile)
+                                        <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
+                                            {{ $groupedEducation->get($key, collect())->isNotEmpty() ? 'Edit' : 'Complete' }}
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
 
@@ -393,9 +407,11 @@
                                 <span class="profile-pill {{ $socialComplete ? 'bg-[#eefaf8] text-[#1a2d4a]' : 'bg-amber-50 text-amber-700' }}">
                                     {{ $sectionStatus($socialComplete) }}
                                 </span>
-                                <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
-                                    {{ $socialComplete ? 'Edit' : 'Complete' }}
-                                </a>
+                                @if($isOwnProfile)
+                                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 text-sm font-bold text-slate-700">
+                                        {{ $socialComplete ? 'Edit' : 'Complete' }}
+                                    </a>
+                                @endif
                             </div>
                         </div>
 
@@ -427,17 +443,45 @@
                                 <h2 class="profile-label">Skills and Achievements</h2>
                                 <p class="mt-2 text-sm text-slate-500">Additional profile sections shown on the profile page.</p>
                             </div>
-                            <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700">
-                                Edit
-                            </a>
+                            @if($isOwnProfile)
+                                <div class="flex flex-wrap gap-2">
+                                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700">
+                                        Edit
+                                    </a>
+                                    <a href="{{ route('skills.index') }}" class="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700">
+                                        Manage Skills
+                                    </a>
+                                    <a href="{{ route('achievements.create') }}" class="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700">
+                                        Add Achievement
+                                    </a>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="mb-5">
                             <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400 mb-3">Skills</p>
                             @if($skills->isNotEmpty())
-                                <div class="flex flex-wrap gap-2">
+                                <div class="space-y-3">
                                     @foreach($skills as $skill)
-                                        <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700">{{ $skill->name }}</span>
+                                        @php($isEndorsed = in_array((int) $skill->id, $endorsedSkillIds, true))
+                                        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-800">{{ $skill->name }}</p>
+                                                <p class="mt-1 text-xs text-slate-500" data-endorsement-count="{{ $skill->id }}">
+                                                    {{ $skill->endorsements_count }} endorsement{{ $skill->endorsements_count !== 1 ? 's' : '' }}
+                                                </p>
+                                            </div>
+                                            @if(! $isOwnProfile)
+                                                <button
+                                                    type="button"
+                                                    data-endorse-button="{{ $skill->id }}"
+                                                    data-endorsed="{{ $isEndorsed ? 'true' : 'false' }}"
+                                                    onclick="toggleEndorsement({{ $skill->id }})"
+                                                    class="rounded-full px-4 py-2 text-xs font-bold {{ $isEndorsed ? 'border border-[#1a2d4a] bg-white text-[#1a2d4a] hover:bg-slate-100' : 'bg-[#1a2d4a] text-white hover:bg-[#2a9d8f]' }}">
+                                                    {{ $isEndorsed ? 'Endorsed' : 'Endorse' }}
+                                                </button>
+                                            @endif
+                                        </div>
                                     @endforeach
                                 </div>
                             @else
@@ -481,4 +525,57 @@
             </div>
         @endif
     </div>
+
+    <script>
+        function toggleEndorsement(skillId) {
+            const button = document.querySelector(`[data-endorse-button="${skillId}"]`);
+            if (!button) {
+                return;
+            }
+
+            const isEndorsed = button.getAttribute('data-endorsed') === 'true';
+            button.disabled = true;
+
+            fetch(`/skills/${skillId}/endorse`, {
+                method: isEndorsed ? 'DELETE' : 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+                .then(response => response.json().then(data => ({ ok: response.ok, data })))
+                .then(({ ok, data }) => {
+                    if (!ok || !data.success) {
+                        alert(data.error || 'Could not update endorsement');
+                        return;
+                    }
+
+                    setEndorsementState(skillId, !isEndorsed, data.endorsements_count);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Could not update endorsement');
+                })
+                .finally(() => {
+                    button.disabled = false;
+                });
+        }
+
+        function setEndorsementState(skillId, isEndorsed, count) {
+            const button = document.querySelector(`[data-endorse-button="${skillId}"]`);
+            const countLabel = document.querySelector(`[data-endorsement-count="${skillId}"]`);
+
+            if (button) {
+                button.setAttribute('data-endorsed', isEndorsed ? 'true' : 'false');
+                button.textContent = isEndorsed ? 'Endorsed' : 'Endorse';
+                button.className = isEndorsed
+                    ? 'rounded-full px-4 py-2 text-xs font-bold border border-[#1a2d4a] bg-white text-[#1a2d4a] hover:bg-slate-100'
+                    : 'rounded-full px-4 py-2 text-xs font-bold bg-[#1a2d4a] text-white hover:bg-[#2a9d8f]';
+            }
+
+            if (countLabel) {
+                countLabel.textContent = `${count} endorsement${count === 1 ? '' : 's'}`;
+            }
+        }
+    </script>
 @endsection

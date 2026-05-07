@@ -15,10 +15,12 @@ class Skill extends Model
         'user_id',
         'name',
         'level',
+        'endorsements',
         'endorsements_count',
     ];
 
     protected $casts = [
+        'endorsements' => 'integer',
         'endorsements_count' => 'integer',
     ];
 

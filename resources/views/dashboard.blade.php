@@ -47,6 +47,11 @@
         transform: translateY(-2px);
     }
 
+    .pulse-post:has(.js-share-menu:not(.hidden)) {
+        overflow: visible;
+        z-index: 20;
+    }
+
     .pulse-action {
         border-radius: 999px;
         padding: 0.55rem 0.9rem;
