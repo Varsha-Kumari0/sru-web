@@ -16,6 +16,8 @@ use App\Models\Skill;
 use App\Models\Achievement;
 use App\Models\Connection;
 use App\Models\ProfileView;
+use App\Models\SkillEndorsement;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
@@ -142,18 +144,59 @@ class ProfileController extends Controller
             ($actor?->name ?? 'User') . ' viewed profile page'
         );
 
-        $profile = Profile::where('user_id', auth()->id())->first();
-        $experiences = Professional::where('user_id', auth()->id())->get();
-        $skills = Skill::where('user_id', auth()->id())->get();
-        $achievements = Achievement::where('user_id', auth()->id())->orderBy('earned_at', 'desc')->get();
-        
+        return $this->renderProfile($actor, true);
+    }
+
+    public function showAlumniProfile(User $user)
+    {
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ((int) $user->id === (int) Auth::id()) {
+            return redirect()->route('profile');
+        }
+
+        $actor = Auth::user();
+        ActivityLog::record(
+            $actor?->id,
+            $user->id,
+            'profile_viewed',
+            ($actor?->name ?? 'User') . ' viewed profile page for ' . ($user->display_name ?? 'Alumni')
+        );
+
+        ProfileView::firstOrCreate([
+            'profile_user_id' => $user->id,
+            'visitor_user_id' => $actor?->id,
+        ]);
+
+        return $this->renderProfile($user, false);
+    }
+
+    private function renderProfile(User $profileUser, bool $isOwnProfile): View
+    {
+        $profileUserId = $profileUser->id;
+        $viewerId = Auth::id();
+
+        $profile = Profile::where('user_id', $profileUserId)->first();
+        $experiences = Professional::where('user_id', $profileUserId)->get();
+        $skills = Skill::where('user_id', $profileUserId)
+            ->with(['endorsements.endorser.profile'])
+            ->get();
+        $achievements = Achievement::where('user_id', $profileUserId)->orderBy('earned_at', 'desc')->get();
+        $endorsedSkillIds = SkillEndorsement::query()
+            ->where('endorser_id', $viewerId)
+            ->pluck('skill_id')
+            ->map(fn ($skillId) => (int) $skillId)
+            ->all();
+
         // Get connection count
-        $connectionCount = Connection::where('user_id', auth()->id())
+        $connectionCount = Connection::where('user_id', $profileUserId)
             ->where('status', 'connected')
             ->count();
         
         // Get profile views count
-        $profileViewsCount = ProfileView::where('profile_user_id', auth()->id())->count();
+        $profileViewsCount = ProfileView::where('profile_user_id', $profileUserId)->count();
         
         // Get counts for stats
         $skillsCount = $skills->count();
@@ -167,7 +210,10 @@ class ProfileController extends Controller
             'connectionCount',
             'profileViewsCount',
             'skillsCount',
-            'achievementsCount'
+            'achievementsCount',
+            'endorsedSkillIds',
+            'isOwnProfile',
+            'profileUser'
         ));
     }
 

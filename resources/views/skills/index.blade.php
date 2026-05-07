@@ -26,7 +26,7 @@
                                         </span>
                                     </div>
                                     <div class="flex space-x-2">
-                                        <button onclick="editSkill({{ $skill->id }}, '{{ $skill->name }}', '{{ $skill->level }}')"
+                                        <button onclick="editSkill({{ $skill->id }}, @js($skill->name), @js($skill->level))"
                                                 class="text-[#c0006a] hover:text-[#9a0052] text-sm">
                                             Edit
                                         </button>
@@ -65,6 +65,55 @@
                                 Add Your First Skill
                             </button>
                         </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white rounded-lg shadow-sm border border-[#e2e8f0]">
+            <div class="px-6 py-4 border-b border-[#e2e8f0]">
+                <h2 class="text-xl font-bold text-[#1a2d5a]">Endorse Alumni Skills</h2>
+                <p class="mt-1 text-sm text-gray-600">Recognize skills shared by other alumni.</p>
+            </div>
+
+            <div class="p-6">
+                @if(($endorsementSkills ?? collect())->count() > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @foreach($endorsementSkills as $skill)
+                            @php
+                                $ownerName = $skill->user?->profile?->full_name ?: ($skill->user?->name ?? 'Alumni');
+                                $isEndorsed = in_array($skill->id, $endorsedSkillIds ?? [], true);
+                            @endphp
+                            <div class="border border-[#e2e8f0] rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <h3 class="font-semibold text-[#1a2d5a] truncate">{{ $skill->name }}</h3>
+                                        <a href="{{ route('profile.show', $skill->user_id) }}" class="mt-1 block text-sm text-gray-600 truncate hover:text-[#1a2d5a] hover:underline">{{ $ownerName }}</a>
+                                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $skill->level_color }}">
+                                                {{ $skill->level_text }}
+                                            </span>
+                                            <span class="text-sm text-gray-600" data-endorsement-count="{{ $skill->id }}">
+                                                {{ $skill->endorsements_count }} endorsement{{ $skill->endorsements_count !== 1 ? 's' : '' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        data-endorse-button="{{ $skill->id }}"
+                                        data-endorsed="{{ $isEndorsed ? 'true' : 'false' }}"
+                                        onclick="toggleEndorsement({{ $skill->id }})"
+                                        class="shrink-0 rounded-lg px-3 py-2 text-sm font-semibold {{ $isEndorsed ? 'border border-[#1a2d5a] text-[#1a2d5a] bg-white hover:bg-[#f4f6f9]' : 'bg-[#1a2d5a] text-white hover:bg-[#141d42]' }}">
+                                        {{ $isEndorsed ? 'Endorsed' : 'Endorse' }}
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center py-10">
+                        <h3 class="text-sm font-medium text-[#1a2d5a]">No alumni skills available yet</h3>
+                        <p class="mt-1 text-sm text-gray-600">When other alumni add skills, you can endorse them here.</p>
                     </div>
                 @endif
             </div>
@@ -148,7 +197,32 @@
     </div>
 </div>
 
+<div id="endorsersModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 max-w-[92vw] shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-[#1a2d5a]">Endorsed by</h3>
+                <button type="button" onclick="closeEndorsersModal()" class="text-gray-500 hover:text-[#1a2d5a]">Close</button>
+            </div>
+            <div id="endorsersModalBody" class="space-y-2 text-sm text-gray-700"></div>
+        </div>
+    </div>
+</div>
+
 <script>
+const skillEndorsers = @json($skills->mapWithKeys(function ($skill) {
+    $endorsements = $skill->relationLoaded('endorsements')
+        ? $skill->getRelation('endorsements')
+        : collect();
+
+    return [
+        $skill->id => $endorsements->map(function ($endorsement) {
+            return $endorsement->endorser?->profile?->full_name
+                ?: ($endorsement->endorser_name ?: 'Alumni');
+        })->values(),
+    ];
+}));
+
 function openAddSkillModal() {
     document.getElementById('addSkillModal').classList.remove('hidden');
 }
@@ -264,8 +338,76 @@ function deleteSkill(id) {
 }
 
 function showEndorsers(skillId) {
-    // This would open a modal to show endorsers
-    alert('Endorsers view coming soon!');
+    const modal = document.getElementById('endorsersModal');
+    const body = document.getElementById('endorsersModalBody');
+    const endorsers = skillEndorsers[skillId] || [];
+
+    body.innerHTML = endorsers.length
+        ? endorsers.map(name => `<div class="rounded-lg border border-[#e2e8f0] px-3 py-2">${escapeHtml(name)}</div>`).join('')
+        : '<p class="text-gray-600">No endorsements yet.</p>';
+
+    modal.classList.remove('hidden');
+}
+
+function closeEndorsersModal() {
+    document.getElementById('endorsersModal').classList.add('hidden');
+}
+
+function toggleEndorsement(skillId) {
+    const button = document.querySelector(`[data-endorse-button="${skillId}"]`);
+    if (!button) {
+        return;
+    }
+
+    const isEndorsed = button.getAttribute('data-endorsed') === 'true';
+    button.disabled = true;
+
+    fetch(`/skills/${skillId}/endorse`, {
+        method: isEndorsed ? 'DELETE' : 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok || !data.success) {
+            alert(data.error || 'Could not update endorsement');
+            return;
+        }
+
+        setEndorsementState(skillId, !isEndorsed, data.endorsements_count);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Could not update endorsement');
+    })
+    .finally(() => {
+        button.disabled = false;
+    });
+}
+
+function setEndorsementState(skillId, isEndorsed, count) {
+    const button = document.querySelector(`[data-endorse-button="${skillId}"]`);
+    const countLabel = document.querySelector(`[data-endorsement-count="${skillId}"]`);
+
+    if (button) {
+        button.setAttribute('data-endorsed', isEndorsed ? 'true' : 'false');
+        button.textContent = isEndorsed ? 'Endorsed' : 'Endorse';
+        button.className = isEndorsed
+            ? 'shrink-0 rounded-lg px-3 py-2 text-sm font-semibold border border-[#1a2d5a] text-[#1a2d5a] bg-white hover:bg-[#f4f6f9]'
+            : 'shrink-0 rounded-lg px-3 py-2 text-sm font-semibold bg-[#1a2d5a] text-white hover:bg-[#141d42]';
+    }
+
+    if (countLabel) {
+        countLabel.textContent = `${count} endorsement${count === 1 ? '' : 's'}`;
+    }
+}
+
+function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value;
+    return div.innerHTML;
 }
 </script>
 @endsection

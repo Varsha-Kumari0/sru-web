@@ -43,7 +43,8 @@ class SkillSeeder extends Seeder
                 Skill::create([
                     'user_id' => $user->id,
                     'name' => $userSkills[$i],
-                    'endorsements' => rand(0, 15),
+                    'endorsements' => 0,
+                    'endorsements_count' => 0,
                 ]);
             }
         }

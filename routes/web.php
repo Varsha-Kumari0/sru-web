@@ -91,6 +91,9 @@ use App\Models\Professional;
 Route::get('/profile', [ProfileController::class, 'showProfile'])
     ->middleware(['auth'])
     ->name('profile');
+Route::get('/alumni/{user}/profile', [ProfileController::class, 'showAlumniProfile'])
+    ->middleware(['auth'])
+    ->name('profile.show');
 
 Route::get('/newsroom', [NewsController::class, 'index'])->name('newsroom');
 Route::get('/newsroom/{id}', [NewsController::class, 'show'])->name('news.show');

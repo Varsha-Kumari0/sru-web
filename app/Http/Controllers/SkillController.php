@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SkillController extends Controller
 {
@@ -30,8 +31,25 @@ class SkillController extends Controller
             ($user->name ?? 'User') . ' opened skills page'
         );
 
-        $skills = $user->skills()->with('endorsements')->get();
-        return view('skills.index', compact('skills'));
+        $skills = $user->skills()
+            ->with(['endorsements.endorser.profile'])
+            ->get();
+
+        $endorsedSkillIds = SkillEndorsement::query()
+            ->where('endorser_id', $user->id)
+            ->pluck('skill_id')
+            ->map(fn ($skillId) => (int) $skillId)
+            ->all();
+
+        $endorsementSkills = Skill::query()
+            ->with(['user.profile', 'endorsements' => function ($query) use ($user) {
+                $query->where('endorser_id', $user->id);
+            }])
+            ->where('user_id', '!=', $user->id)
+            ->latest('updated_at')
+            ->get();
+
+        return view('skills.index', compact('skills', 'endorsementSkills', 'endorsedSkillIds'));
     }
 
     public function create(): View
@@ -63,6 +81,7 @@ class SkillController extends Controller
             'user_id' => $user->id,
             'name' => $request->name,
             'level' => $request->level ?? 'beginner',
+            'endorsements' => 0,
             'endorsements_count' => 0,
         ]);
 
@@ -187,6 +206,10 @@ class SkillController extends Controller
             abort(401);
         }
 
+        if ((int) $skill->user_id === (int) $user->id) {
+            return response()->json(['error' => 'You cannot endorse your own skill'], 422);
+        }
+
         // Check if user already endorsed this skill
         if ($skill->endorsements()->where('endorser_id', $user->id)->exists()) {
             return response()->json(['error' => 'You have already endorsed this skill'], 400);
@@ -197,7 +220,10 @@ class SkillController extends Controller
             'endorser_name' => $user->name,
         ]);
 
-        Skill::query()->whereKey($skill->getKey())->increment('endorsements_count', 1);
+        Skill::query()->whereKey($skill->getKey())->update([
+            'endorsements' => DB::raw('endorsements + 1'),
+            'endorsements_count' => DB::raw('endorsements_count + 1'),
+        ]);
         $skill->refresh();
 
         ActivityLog::record(
@@ -236,7 +262,10 @@ class SkillController extends Controller
         }
 
         SkillEndorsement::query()->whereKey($endorsementId)->delete();
-        Skill::query()->whereKey($skill->getKey())->decrement('endorsements_count', 1);
+        Skill::query()->whereKey($skill->getKey())->update([
+            'endorsements' => DB::raw('CASE WHEN endorsements > 0 THEN endorsements - 1 ELSE 0 END'),
+            'endorsements_count' => DB::raw('CASE WHEN endorsements_count > 0 THEN endorsements_count - 1 ELSE 0 END'),
+        ]);
         $skill->refresh();
 
         ActivityLog::record(
