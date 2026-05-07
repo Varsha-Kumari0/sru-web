@@ -26,7 +26,7 @@
 	<header class="sticky top-0 z-40 flex items-center justify-between px-6 pt-[1.9rem] pb-[1.7em] xl:px-9 bg-white border-b border-slate-300">
 		<div>
 			<h2 class="font-display text-2xl font-semibold">All SRU Alumni</h2>
-			<p class="text-xs mt-0.5 text-slate-500">{{ now()->format('l, d F Y') }} - Total records: {{ $users->count() }}</p>
+			<p class="text-xs mt-0.5 text-slate-500">{{ now()->format('l, d F Y') }} - Total records: {{ $users->total() }}</p>
 		</div>
 		<a href="{{ route('admin.allalumini.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
 			<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -50,7 +50,7 @@
 		@endif
 
 		<form id="alumniFilterForm" method="GET" action="{{ route('admin.allalumini') }}" class="mb-5 rounded-xl border border-slate-300 bg-white p-4">
-			<div class="grid grid-cols-1 gap-3 md:grid-cols-[minmax(160px,220px)_1fr_auto_auto] md:items-end">
+			<div class="grid grid-cols-1 gap-3 md:grid-cols-[minmax(160px,220px)_1fr_minmax(100px,140px)_auto_auto] md:items-end">
 				<div>
 					<label for="filter_by" class="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500">Filter By</label>
 					<select id="filter_by" name="filter_by" onchange="handleFilterByChange()" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none">
@@ -103,6 +103,14 @@
 						</div>
 					</div>
 				</div>
+				<div>
+					<label for="per_page" class="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500">Show</label>
+					<select id="per_page" name="per_page" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:border-blue-500 focus:outline-none">
+						@foreach(($allowedPerPage ?? [20, 50, 100, 500, 1000]) as $size)
+							<option value="{{ $size }}" {{ (int) ($perPage ?? 20) === (int) $size ? 'selected' : '' }}>{{ $size }}</option>
+						@endforeach
+					</select>
+				</div>
 				<button type="submit" class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
 					Apply Filter
 				</button>
@@ -122,8 +130,6 @@
 							<th class="px-4 py-3 text-left">Mobile</th>
 							<th class="px-4 py-3 text-left">Branch</th>
 							<th class="px-4 py-3 text-left">Graduation Year</th>
-							<th class="px-4 py-3 text-left">Organization</th>
-							<th class="px-4 py-3 text-left">Role</th>
 							<th class="px-4 py-3 text-left">Location</th>
 							<th class="px-4 py-3 text-left">Action</th>
 						</tr>
@@ -131,7 +137,7 @@
 					<tbody>
 						<?php if ($users->isEmpty()): ?>
 							<tr>
-								<td colspan="9" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
+								<td colspan="7" class="px-4 py-8 text-center text-slate-500">No alumni records found.</td>
 							</tr>
 						<?php else: ?>
 							<?php foreach ($users as $user): ?>
@@ -348,8 +354,6 @@
 									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->mobile ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->branch ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $user->profile?->passing_year ?? '-' }}</td>
-									<td class="px-4 py-3 text-slate-700">{{ $primaryProfessional?->organization ?? '-' }}</td>
-									<td class="px-4 py-3 text-slate-700">{{ $primaryProfessional?->role ?? '-' }}</td>
 									<td class="px-4 py-3 text-slate-700">{{ $primaryProfessional?->location ?? '-' }}</td>
 									<td class="px-4 py-3">
 										<div class="flex items-center gap-2">
@@ -392,6 +396,9 @@
 						<?php endif; ?>
 					</tbody>
 				</table>
+			</div>
+			<div class="border-t border-slate-200 bg-white px-4 py-3">
+				{{ $users->onEachSide(1)->links() }}
 			</div>
 		</div>
 	</div>

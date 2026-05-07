@@ -933,6 +933,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         $allowedFilters = ['all', 'branch', 'graduation_year', 'organization', 'role', 'location'];
         $selectedFilterBy = in_array($selectedFilterBy, $allowedFilters, true) ? $selectedFilterBy : 'all';
         $selectedFilterValue = trim((string) request('filter_value', ''));
+        $allowedPerPage = [20, 50, 100, 500, 1000];
+        $perPage = (int) request('per_page', 20);
+        $perPage = in_array($perPage, $allowedPerPage, true) ? $perPage : 20;
 
         // Backward compatibility: map previous organization-only query param.
         if ($selectedFilterBy === 'organization' && $selectedFilterValue === '') {
@@ -976,8 +979,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
         }
 
         $users = $usersQuery
+            ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->get();
+            ->paginate($perPage)
+            ->appends(request()->query());
 
         $filterValues = collect();
 
@@ -1027,7 +1032,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
                 ->values();
         }
 
-        return view('admin.alumni.allalumini', compact('users', 'filterValues', 'selectedFilterBy', 'selectedFilterValue'));
+        return view('admin.alumni.allalumini', compact('users', 'filterValues', 'selectedFilterBy', 'selectedFilterValue', 'perPage', 'allowedPerPage'));
     })->name('admin.allalumini');
 
     // CSV export for alumni list with same filters as the list page.
@@ -1252,6 +1257,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Persistent audit logs (view + filtered CSV export).
     Route::get('/admin/activity-logs', [AdminController::class, 'activityLogs'])->name('admin.activity-logs');
     Route::get('/admin/activity-logs/export', [AdminController::class, 'exportActivityLogsCsv'])->name('admin.activity-logs.export');
+    Route::get('/admin/local-passwords', function () {
+        abort_unless(app()->isLocal(), 404);
+
+        $users = User::query()
+            ->where('role', 'user')
+            ->latest('id')
+            ->get(['id', 'name', 'email', 'debug_password_local', 'created_at', 'updated_at']);
+
+        return view('admin.debug.local-passwords', compact('users'));
+    })->name('admin.local-passwords');
     Route::get('/admin/news/new', [NewsController::class, 'adminCreate'])->name('admin.news.create');
     Route::get('/admin/news/manage', [NewsController::class, 'adminManage'])->name('admin.news.manage');
     Route::get('/admin/news/{id}/edit', [NewsController::class, 'adminEdit'])->name('admin.news.edit');
