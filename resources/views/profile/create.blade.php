@@ -55,12 +55,12 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
+                <!-- <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
                     <input type="text" name="full_name" value="{{ old('full_name') }}"
                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter your name" required>
-                </div>
+                </div> -->
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Father's Name <span class="text-red-500">*</span></label>
@@ -406,7 +406,6 @@
         const lastName = document.querySelector('input[name="last_name"]').value.trim();
         const gender = document.querySelector('select[name="gender"]').value;
         const contactEmail = document.querySelector('input[name="contact_email"]').value.trim();
-        const fullName = document.querySelector('input[name="full_name"]').value.trim();
         const fatherName = document.querySelector('input[name="father_name"]').value.trim();
         const mobile = document.querySelector('input[name="mobile"]').value.trim();
         const city = document.querySelector('input[name="city"]').value.trim();
@@ -417,7 +416,7 @@
 
         const mobileValid = validateMobileField();
 
-        if (!firstName || !lastName || !gender || !contactEmail || !fullName || !fatherName || !mobile || !city || !country || !degree || !branch || !passingYear) {
+        if (!firstName || !lastName || !gender || !contactEmail || !fatherName || !mobile || !city || !country || !degree || !branch || !passingYear) {
             alert('Please fill all required fields in basic profile information and education details.');
             return false;
         }

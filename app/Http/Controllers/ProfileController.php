@@ -232,7 +232,6 @@ class ProfileController extends Controller
             'last_name' => 'required|string|max:255',
             'gender' => 'required|string|in:male,female,other,prefer_not_to_say',
             'contact_email' => 'required|email|max:255',
-            'full_name' => 'required',
             'father_name' => 'required|string|max:255',
             'mobile' => ['required', 'regex:/^[0-9]{10,15}$/'],
             'city' => 'required',
@@ -315,7 +314,7 @@ class ProfileController extends Controller
             'gender' => $request->gender,
             'profile_photo' => $imagePath,
 
-            'full_name' => $request->full_name,
+            'full_name' => trim($request->first_name . ' ' . $request->last_name),
             'father_name' => $request->father_name,
             'mobile' => $request->mobile,
             'contact_email' => $request->contact_email,
